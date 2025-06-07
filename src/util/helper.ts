@@ -8,16 +8,18 @@ export function littleEndianToInteger(bytes: Uint8Array): bigint {
   return result;
 }
 
-export function integerToLittleEndian(value: bigint, length?: number) {
-  const bytes: number[] = length ? new Array(length) : [];
+export function integerToLittleEndian(value: bigint, length: number) {
+  const bytes = new Uint8Array(length);
 
   let temp = value;
-  while (temp > 0n) {
-    bytes.push(Number(temp & 0xffn));
+  let i = 0;
+  while (temp > 0n && i < length) {
+    bytes[i] = Number(temp & 0xffn);
     temp >>= 8n;
+    i++;
   }
 
-  return new Uint8Array(bytes);
+  return bytes;
 }
 
 export function readVarInt(bytes: Uint8Array) {
@@ -38,7 +40,7 @@ export function readVarInt(bytes: Uint8Array) {
 export function encodeVarInt(value: number) {
   if (value < 0xfd) {
     return new Uint8Array([value]);
-  } 
+  }
   // 2^16
   else if (value < 0x10000) {
     return new Uint8Array([0xfd, ...integerToLittleEndian(BigInt(value), 2)]);
@@ -49,9 +51,8 @@ export function encodeVarInt(value: number) {
   }
   // 2^64 is max value
   else if (value < 0x10000000000000000) {
-    return new Uint8Array([0xff, ...integerToLittleEndian(BigInt(value), 8)])
-  }
-  else {
+    return new Uint8Array([0xff, ...integerToLittleEndian(BigInt(value), 8)]);
+  } else {
     throw new Error('Value too large to encode as a varint.');
   }
 }
