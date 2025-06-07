@@ -37,20 +37,20 @@ export function readVarInt(bytes: Uint8Array) {
   }
 }
 
-export function encodeVarInt(value: number) {
-  if (value < 0xfd) {
-    return new Uint8Array([value]);
+export function encodeVarInt(value: bigint) {
+  if (value < 0xfdn) {
+    return new Uint8Array([Number(value)]);
   }
   // 2^16
-  else if (value < 0x10000) {
+  else if (value < 0x10000n) {
     return new Uint8Array([0xfd, ...integerToLittleEndian(BigInt(value), 2)]);
   }
   // 2^32
-  else if (value < 0x100000000) {
+  else if (value < 0x100000000n) {
     return new Uint8Array([0xfe, ...integerToLittleEndian(BigInt(value), 4)]);
   }
   // 2^64 is max value
-  else if (value < 0x10000000000000000) {
+  else if (value < 0x10000000000000000n) {
     return new Uint8Array([0xff, ...integerToLittleEndian(BigInt(value), 8)]);
   } else {
     throw new Error('Value too large to encode as a varint.');
