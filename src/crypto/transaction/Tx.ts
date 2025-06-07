@@ -1,3 +1,6 @@
+import { ByteStream } from '@/util/ByteStream';
+import { hexToBytes, littleEndianToInteger, readVarInt } from '@/util/helper';
+
 export default class Tx {
   version: number;
   inputs: TxIn[];
@@ -9,6 +12,23 @@ export default class Tx {
     this.inputs = inputs;
     this.outputs = outputs;
     this.locktime = locktime;
+  }
+
+  /**
+   * Parse a tx from a hex string: https://en.bitcoin.it/wiki/Transaction
+   * @param hex - hex string of a transaction
+   */
+  static fromHex(hex: string) {
+    const bytes = hexToBytes(hex);
+    const stream = new ByteStream(bytes);
+
+    const version = littleEndianToInteger(stream.read(4));
+    const inputCount = readVarInt(bytes.slice(4, 13));
+
+    const inputs = [];
+    for (let i = 0; i < inputCount; i++) {
+
+    }
   }
 }
 

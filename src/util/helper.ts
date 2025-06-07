@@ -56,3 +56,25 @@ export function encodeVarInt(value: bigint) {
     throw new Error('Value too large to encode as a varint.');
   }
 }
+
+export function hexToBytes(hex: string) {
+  hex = hex.replace('0x', '');
+
+  const bytes = new Uint8Array(hex.length / 2);
+
+  if (hex.length % 2 !== 0) {
+    hex = '0' + hex;
+  }
+
+  for (let i = 0; i < hex.length; i += 2) {
+    const byte = parseInt(hex.slice(i, i + 2), 16);
+    if (isNaN(Number(byte))) {
+      throw new Error('Invalid hex string');
+    }
+
+    bytes[i / 2] = byte;
+  }
+
+  return bytes;
+}
+
