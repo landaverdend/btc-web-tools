@@ -1,5 +1,5 @@
 import { ByteStream } from '@/util/ByteStream';
-import { hexToBytes, littleEndianToInteger, readVarInt } from '@/util/helper';
+import { hexToBytes, littleEndianToInteger } from '@/util/helper';
 
 export default class Tx {
   version: number;
@@ -19,34 +19,66 @@ export default class Tx {
    * @param hex - hex string of a transaction
    */
   static fromHex(hex: string) {
-    const bytes = hexToBytes(hex);
-    const stream = new ByteStream(bytes);
+    const stream = new ByteStream(hexToBytes(hex));
 
-    const version = littleEndianToInteger(stream.read(4));
-    const inputCount = readVarInt(bytes.slice(4, 13));
+    const version = Number(littleEndianToInteger(stream.read(4))); // First 4 bytes are the version
+    const inputCount = stream.readVarInt(); // Var int can take up to 9 bytes
 
-    const inputs = [];
+    const inputs: TxIn[] = [];
     for (let i = 0; i < inputCount; i++) {
-
+      inputs.push(TxIn.fromStream(stream));
     }
+
+    const outputs: TxOut[] = [];
+
+    const locktime = Number();
+    return new Tx(version, inputs, outputs, locktime);
+  }
+
+  toString() {
+    let out = `Tx(\nversion: ${this.version},\n inputs: [`;
+    for (const input of this.inputs) {
+      out += `\n\t ${input.toString()}`;
+    }
+    out += `\n],\n outputs: [`;
+    for (const output of this.outputs) {
+      out += `\n ${output.toString()}`;
+    }
+    out += `\n]\n, locktime: ${this.locktime}`;
+    return out;
   }
 }
 
 export class TxIn {
-  prevTx: Tx;
+  prevTx: Uint8Array;
   prevIndex: number; // index of the output in the previous transaction...
   scriptSig: string;
   sequence: number;
 
-  constructor(prevTx: Tx, prevIndex: number, sequence: number, scriptSig?: string) {
+  constructor(prevTx: Uint8Array, prevIndex: number, sequence: number, scriptSig?: string) {
     this.prevTx = prevTx;
     this.prevIndex = prevIndex;
     this.sequence = sequence;
     this.scriptSig = scriptSig ?? '';
   }
 
+  static fromStream(stream: ByteStream) {
+    const prevTx = stream.read(32).reverse(); // Reverse the bytes to get the hash
+    const prevIndex = Number(littleEndianToInteger(stream.read(4)));
+
+    // Read in the script/parse it...
+
+    return new TxIn(prevTx, prevIndex, 0xffffffff);
+  }
+
   toHex() {
     return '';
+  }
+
+  toString() {
+    return `TxIn {\n\tprevTx: ${this.prevTx.join('')},\n\t prevIndex: ${this.prevIndex},\n\tsequence: ${
+      this.sequence
+    },\n\tscriptSig: ${this.scriptSig}`;
   }
 }
 

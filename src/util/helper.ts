@@ -77,4 +77,3 @@ export function hexToBytes(hex: string) {
 
   return bytes;
 }
-
