@@ -1,5 +1,6 @@
 import { ByteStream } from '@/util/ByteStream';
 import { hexToBytes, littleEndianToInteger } from '@/util/helper';
+import { Script } from '../script/Script';
 
 export default class Tx {
   version: number;
@@ -30,8 +31,14 @@ export default class Tx {
     }
 
     const outputs: TxOut[] = [];
+    const outputCount = stream.readVarInt();
 
-    const locktime = Number();
+    for (let i = 0; i < outputCount; i++) {
+      outputs.push(TxOut.fromStream(stream));
+    }
+
+    const locktime = Number(littleEndianToInteger(stream.read(4)));
+
     return new Tx(version, inputs, outputs, locktime);
   }
 
@@ -52,23 +59,24 @@ export default class Tx {
 export class TxIn {
   prevTx: Uint8Array;
   prevIndex: number; // index of the output in the previous transaction...
-  scriptSig: string;
+  scriptSig: Script;
   sequence: number;
 
-  constructor(prevTx: Uint8Array, prevIndex: number, sequence: number, scriptSig?: string) {
+  constructor(prevTx: Uint8Array, prevIndex: number, sequence: number, scriptSig?: Script) {
     this.prevTx = prevTx;
     this.prevIndex = prevIndex;
     this.sequence = sequence;
-    this.scriptSig = scriptSig ?? '';
+    this.scriptSig = scriptSig ?? new Script();
   }
 
   static fromStream(stream: ByteStream) {
     const prevTx = stream.read(32).reverse(); // Reverse the bytes to get the hash
     const prevIndex = Number(littleEndianToInteger(stream.read(4)));
 
-    // Read in the script/parse it...
+    const scriptSig = Script.fromStream(stream);
+    const sequence = Number(littleEndianToInteger(stream.read(4)));
 
-    return new TxIn(prevTx, prevIndex, 0xffffffff);
+    return new TxIn(prevTx, prevIndex, sequence, scriptSig);
   }
 
   toHex() {
@@ -82,4 +90,21 @@ export class TxIn {
   }
 }
 
-export class TxOut {}
+export class TxOut {
+  value: number;
+  scriptPubkey: string;
+
+  constructor(value: number, scriptPubkey: string) {
+    this.value = value;
+    this.scriptPubkey = scriptPubkey;
+  }
+
+  static fromStream(stream: ByteStream) {
+    // const value = Number(littleEndianToInteger());
+    const amount = Number(littleEndianToInteger(stream.read(8)));
+    // TODO: add script parsing...
+    const scriptPubkey = '';
+
+    return new TxOut(amount, scriptPubkey);
+  }
+}

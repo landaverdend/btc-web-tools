@@ -1,9 +1,12 @@
 import { littleEndianToInteger } from './helper';
 
 export class ByteStream {
+  private bytes: Uint8Array;
   private position: number = 0;
 
-  constructor(private bytes: Uint8Array) {}
+  constructor(bytes?: Uint8Array) {
+    this.bytes = bytes ?? new Uint8Array();
+  }
 
   read(length: number) {
     const result = this.bytes.slice(this.position, this.position + length);
@@ -24,6 +27,15 @@ export class ByteStream {
     } else {
       return firstByte;
     }
+  }
+
+  // Concatenate bytes to the end of the stream.
+  write(bytes: Uint8Array) {
+    this.bytes = new Uint8Array([...this.bytes, ...bytes]);
+  }
+
+  toBytes() {
+    return this.bytes;
   }
 
   getPosition() {

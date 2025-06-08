@@ -8,8 +8,12 @@ export function littleEndianToInteger(bytes: Uint8Array): bigint {
   return result;
 }
 
-export function integerToLittleEndian(value: bigint, length: number) {
+export function integerToLittleEndian(value: number | bigint, length: number) {
   const bytes = new Uint8Array(length);
+
+  if (typeof value === 'number') {
+    value = BigInt(value);
+  }
 
   let temp = value;
   let i = 0;
@@ -37,21 +41,23 @@ export function readVarInt(bytes: Uint8Array) {
   }
 }
 
-export function encodeVarInt(value: bigint) {
+export function encodeVarInt(value: number | bigint) {
+  value = BigInt(value);
+
   if (value < 0xfdn) {
     return new Uint8Array([Number(value)]);
   }
   // 2^16
   else if (value < 0x10000n) {
-    return new Uint8Array([0xfd, ...integerToLittleEndian(BigInt(value), 2)]);
+    return new Uint8Array([0xfd, ...integerToLittleEndian(value, 2)]);
   }
   // 2^32
   else if (value < 0x100000000n) {
-    return new Uint8Array([0xfe, ...integerToLittleEndian(BigInt(value), 4)]);
+    return new Uint8Array([0xfe, ...integerToLittleEndian(value, 4)]);
   }
   // 2^64 is max value
   else if (value < 0x10000000000000000n) {
-    return new Uint8Array([0xff, ...integerToLittleEndian(BigInt(value), 8)]);
+    return new Uint8Array([0xff, ...integerToLittleEndian(value, 8)]);
   } else {
     throw new Error('Value too large to encode as a varint.');
   }
@@ -76,4 +82,8 @@ export function hexToBytes(hex: string) {
   }
 
   return bytes;
+}
+
+export function bytesToHex(bytes: Uint8Array) {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }

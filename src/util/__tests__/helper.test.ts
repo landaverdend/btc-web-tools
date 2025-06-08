@@ -102,6 +102,7 @@ describe('encodeVarInt', () => {
   test('correct conversion for very large value', () => {
     const want = new Uint8Array([0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01]);
 
+    // const want = 0x010000000000000000n;
     const val = 0x0100000000000000n;
     const got = encodeVarInt(val);
     expect(got).toEqual(want);
