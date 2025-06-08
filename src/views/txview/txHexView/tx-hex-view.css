@@ -1,6 +1,14 @@
-
-
 .tx-hex-view-container {
   flex: 1;
   align-items: center;
+
+  width: 50%;
+  p {
+    max-width: 95%;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    font-family: monospace;
+    padding: 1rem;
+    overflow-wrap: break-word;
+  }
 }
