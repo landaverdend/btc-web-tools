@@ -1,5 +1,5 @@
 import { ByteStream } from '@/util/ByteStream';
-import { hexToBytes, littleEndianToInteger } from '@/util/helper';
+import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
 import { Script } from '../script/Script';
 
 export default class Tx {
@@ -54,6 +54,33 @@ export default class Tx {
     out += `\n]\n, locktime: ${this.locktime}`;
     return out;
   }
+
+  toHex() {
+    return bytesToHex(this.toBytes());
+  }
+
+  toBytes() {
+    const stream = new ByteStream();
+
+    stream.write(integerToLittleEndian(this.version, 4));
+    const inputCount = this.inputs.length;
+    stream.write(encodeVarInt(inputCount));
+
+    for (const input of this.inputs) {
+      stream.write(input.toBytes());
+    }
+
+    const outputCount = this.outputs.length;
+    stream.write(encodeVarInt(outputCount));
+
+    for (const output of this.outputs) {
+      stream.write(output.toBytes());
+    }
+
+    stream.write(integerToLittleEndian(this.locktime, 4));
+
+    return stream.toBytes();
+  }
 }
 
 export class TxIn {
@@ -79,8 +106,15 @@ export class TxIn {
     return new TxIn(prevTx, prevIndex, sequence, scriptSig);
   }
 
-  toHex() {
-    return '';
+  toBytes() {
+    const stream = new ByteStream();
+
+    stream.write(this.prevTx.reverse());
+    stream.write(integerToLittleEndian(this.prevIndex, 4));
+    stream.write(this.scriptSig.toBytes());
+    stream.write(integerToLittleEndian(this.sequence, 4));
+
+    return stream.toBytes();
   }
 
   toString() {
@@ -91,12 +125,21 @@ export class TxIn {
 }
 
 export class TxOut {
-  value: number;
+  amount: number;
   scriptPubkey: Script;
 
   constructor(value: number, scriptPubkey?: Script) {
-    this.value = value;
+    this.amount = value;
     this.scriptPubkey = scriptPubkey ?? new Script();
+  }
+
+  toBytes() {
+    const stream = new ByteStream();
+
+    stream.write(integerToLittleEndian(this.amount, 8));
+    stream.write(this.scriptPubkey.toBytes());
+
+    return stream.toBytes();
   }
 
   static fromStream(stream: ByteStream) {

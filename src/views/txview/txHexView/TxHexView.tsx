@@ -1,5 +1,12 @@
+import Tx from '@/crypto/transaction/Tx';
 import './tx-hex-view.css';
 
-export default function TxHexView() {
+
+type TXHVProps = {
+  tx: Tx;
+};
+
+export default function TxHexView({ tx }: TXHVProps) {
+
   return <div className="flex-column tx-hex-view-container">TxHexView</div>;
 }

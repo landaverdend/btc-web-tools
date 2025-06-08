@@ -37,12 +37,16 @@ export class Script {
   }
 
   toHex() {
+    return bytesToHex(this.toBytes());
+  }
+
+  toBytes() {
     const bytes = this.serializeCommands().toBytes();
 
     const varint = encodeVarInt(bytes.length);
     const result = new Uint8Array([...varint, ...bytes]); // prepend varint to the bytes.
 
-    return bytesToHex(result);
+    return result;
   }
 
   static fromStream(stream: ByteStream) {
