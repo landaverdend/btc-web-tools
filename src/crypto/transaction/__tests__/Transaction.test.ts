@@ -28,6 +28,22 @@ describe('Transaction', () => {
     expect(parsed.inputs[0].sequence).toBe(0xfffffffe);
   });
 
-  test('test parse outputs', () => {});
-  test('test locktime', () => {});
+  test('test parse outputs', () => {
+    const parsed = Tx.fromHex(tx);
+
+    expect(parsed.outputs.length).toBe(2);
+    const amount1 = 32454049;
+    expect(parsed.outputs[0].value).toBe(amount1);
+    expect(parsed.outputs[0].scriptPubkey.toHex()).toBe('1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac');
+
+    const amount2 = 10011545;
+    expect(parsed.outputs[1].value).toBe(amount2);
+    expect(parsed.outputs[1].scriptPubkey.toHex()).toBe('1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac');
+  });
+
+  test('test locktime', () => {
+    const parsed = Tx.fromHex(tx);
+
+    expect(parsed.locktime).toBe(410393);
+  });
 });

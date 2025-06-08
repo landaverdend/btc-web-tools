@@ -92,18 +92,16 @@ export class TxIn {
 
 export class TxOut {
   value: number;
-  scriptPubkey: string;
+  scriptPubkey: Script;
 
-  constructor(value: number, scriptPubkey: string) {
+  constructor(value: number, scriptPubkey?: Script) {
     this.value = value;
-    this.scriptPubkey = scriptPubkey;
+    this.scriptPubkey = scriptPubkey ?? new Script();
   }
 
   static fromStream(stream: ByteStream) {
-    // const value = Number(littleEndianToInteger());
     const amount = Number(littleEndianToInteger(stream.read(8)));
-    // TODO: add script parsing...
-    const scriptPubkey = '';
+    const scriptPubkey = Script.fromStream(stream);
 
     return new TxOut(amount, scriptPubkey);
   }
