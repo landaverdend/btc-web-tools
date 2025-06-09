@@ -1,6 +1,7 @@
 import { ByteStream } from '@/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
 import { Script } from '../script/Script';
+import { Tooltip } from 'react-tooltip';
 
 export default class Tx {
   version: number;

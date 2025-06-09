@@ -3,12 +3,21 @@
   align-items: center;
 
   width: 50%;
-  p {
+  .tx-bytes {
+
+    font-size: 1.1rem;
+
     max-width: 95%;
     word-wrap: break-word;
     white-space: pre-wrap;
     font-family: monospace;
     padding: 1rem;
     overflow-wrap: break-word;
+
+    a {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
   }
 }

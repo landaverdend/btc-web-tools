@@ -14,7 +14,8 @@
     "ace-builds": "^1.42.0",
     "react": "^18.2.0",
     "react-ace": "^14.0.1",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-tooltip": "^5.28.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
