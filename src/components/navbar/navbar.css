@@ -1,10 +1,30 @@
 .navbar-container {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+
   width: 100vw;
-  height: 5vh;
+  height: 90px;
   background-color: darkorange;
   color: white;
+
+  .navbar-logo {
+    margin-left: 10px;
+
+    img {
+      border-radius: 10px;
+      width: 79px;
+      height: 79px;
+      border: 1px solid rgb(168, 93, 3);
+    }
+  }
+
+  .navbar-list {
+    margin-right: 10px;
+  }
 }

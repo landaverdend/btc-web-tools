@@ -15,6 +15,7 @@ export default defineConfig({
       '@views': path.resolve(__dirname, './src/views'),
       '@state': path.resolve(__dirname, './src/state'),
       '@service': path.resolve(__dirname, './src/service'),
+      '@assets': path.resolve(__dirname, './public/'),
     },
   },
 });

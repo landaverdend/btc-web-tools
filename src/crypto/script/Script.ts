@@ -36,6 +36,14 @@ export class Script {
     return res;
   }
 
+  format() {
+    const serialized = this.serializeCommands().toBytes();
+
+    return {
+      cmds: bytesToHex(serialized),
+    };
+  }
+
   toHex() {
     return bytesToHex(this.toBytes());
   }

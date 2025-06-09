@@ -6,9 +6,18 @@ type TXHVProps = {
 };
 
 export default function TxHexView({ tx }: TXHVProps) {
+  const transformed = tx.format();
+
+  console.log(transformed);
+
   return (
     <div className="flex-column tx-hex-view-container">
-      <p> {tx.toHex()}</p>
+      <p>
+        <span style={{ color: 'red' }}>{transformed.version}</span>
+        {/* <span style={{ color: 'blue' }}>{transformed.inputs}</span> */}
+        {/* <span style={{ color: 'green' }}>{transformed.outputs}</span> */}
+        <span style={{ color: 'purple' }}>{transformed.locktime}</span>
+      </p>
     </div>
   );
 }

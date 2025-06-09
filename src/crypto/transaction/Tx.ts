@@ -81,6 +81,15 @@ export default class Tx {
 
     return stream.toBytes();
   }
+
+  format() {
+    return {
+      version: bytesToHex(integerToLittleEndian(this.version, 4)),
+      inputs: this.inputs.map((input) => input.format()),
+      outputs: this.outputs.map((output) => output.format()),
+      locktime: bytesToHex(integerToLittleEndian(this.locktime, 4)),
+    };
+  }
 }
 
 export class TxIn {
@@ -104,6 +113,15 @@ export class TxIn {
     const sequence = Number(littleEndianToInteger(stream.read(4)));
 
     return new TxIn(prevTx, prevIndex, sequence, scriptSig);
+  }
+
+  format() {
+    return {
+      prevTx: bytesToHex(this.prevTx.reverse()),
+      prevIndex: bytesToHex(integerToLittleEndian(this.prevIndex, 4)),
+      sequence: bytesToHex(integerToLittleEndian(this.sequence, 4)),
+      scriptSig: this.scriptSig.format(),
+    };
   }
 
   toBytes() {
@@ -140,6 +158,13 @@ export class TxOut {
     stream.write(this.scriptPubkey.toBytes());
 
     return stream.toBytes();
+  }
+
+  format() {
+    return {
+      amount: bytesToHex(integerToLittleEndian(this.amount, 8)),
+      scriptPubkey: this.scriptPubkey.format(),
+    };
   }
 
   static fromStream(stream: ByteStream) {
