@@ -1,5 +1,6 @@
 import { ByteStream } from '@/util/ByteStream';
 import { bytesToHex, encodeVarInt, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
+import { OP_CODE_NAMES } from '../op/op';
 
 // A script is just a list of bigint commands.
 export class Script {
@@ -36,11 +37,26 @@ export class Script {
     return res;
   }
 
-  format() {
+  formatLE() {
     const serialized = this.serializeCommands().toBytes();
 
     return {
       cmds: bytesToHex(serialized),
+    };
+  }
+
+  format() {
+    return {
+      cmds: this.cmds.map((cmd) => {
+        // OP_Code
+        if (typeof cmd === 'number') {
+          return OP_CODE_NAMES[cmd];
+        }
+        // Pushdata
+        else {
+          return bytesToHex(cmd);
+        }
+      }),
     };
   }
 

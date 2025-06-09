@@ -2,10 +2,6 @@ import Tx from '@/crypto/transaction/Tx';
 import './tx-hex-view.css';
 import { PlacesType, Tooltip } from 'react-tooltip';
 
-type TXHVProps = {
-  tx: Tx;
-};
-
 type TBProps = {
   bytes: string;
   content: string;
@@ -22,10 +18,12 @@ function Bytefield({ bytes, content, color, place }: TBProps) {
   );
 }
 
+type TXHVProps = {
+  tx: Tx;
+  setTx: (tx: Tx) => void;
+};
 export default function TxHexView({ tx }: TXHVProps) {
-  const transformed = tx.format();
-
-  console.log(transformed);
+  const transformed = tx.formatLE();
 
   return (
     <div className="flex-column tx-hex-view-container">

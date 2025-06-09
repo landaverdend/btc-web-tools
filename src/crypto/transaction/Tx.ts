@@ -1,7 +1,6 @@
 import { ByteStream } from '@/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
 import { Script } from '../script/Script';
-import { Tooltip } from 'react-tooltip';
 
 export default class Tx {
   version: number;
@@ -43,17 +42,29 @@ export default class Tx {
     return new Tx(version, inputs, outputs, locktime);
   }
 
-  toString() {
-    let out = `Tx(\nversion: ${this.version},\n inputs: [`;
-    for (const input of this.inputs) {
-      out += `\n\t ${input.toString()}`;
-    }
-    out += `\n],\n outputs: [`;
-    for (const output of this.outputs) {
-      out += `\n ${output.toString()}`;
-    }
-    out += `\n]\n, locktime: ${this.locktime}`;
-    return out;
+  /**
+   * Format the tx in hex and little endian format.
+   **/
+  formatLE() {
+    return {
+      version: bytesToHex(integerToLittleEndian(this.version, 4)),
+      inputs: this.inputs.map((input) => input.formatLE()),
+      outputs: this.outputs.map((output) => output.formatLE()),
+      locktime: bytesToHex(integerToLittleEndian(this.locktime, 4)),
+    };
+  }
+
+  /**
+   * Format the tx in a json-friendly readable format
+   * @returns
+   */
+  format() {
+    return {
+      version: this.version,
+      inputs: this.inputs.map((i) => i.format()),
+      outputs: this.outputs.map((o) => o.format()),
+      locktime: this.locktime,
+    };
   }
 
   toHex() {
@@ -82,15 +93,6 @@ export default class Tx {
 
     return stream.toBytes();
   }
-
-  format() {
-    return {
-      version: bytesToHex(integerToLittleEndian(this.version, 4)),
-      inputs: this.inputs.map((input) => input.format()),
-      outputs: this.outputs.map((output) => output.format()),
-      locktime: bytesToHex(integerToLittleEndian(this.locktime, 4)),
-    };
-  }
 }
 
 export class TxIn {
@@ -116,11 +118,20 @@ export class TxIn {
     return new TxIn(prevTx, prevIndex, sequence, scriptSig);
   }
 
-  format() {
+  formatLE() {
     return {
       prevTx: bytesToHex(this.prevTx.reverse()),
       prevIndex: bytesToHex(integerToLittleEndian(this.prevIndex, 4)),
       sequence: bytesToHex(integerToLittleEndian(this.sequence, 4)),
+      scriptSig: this.scriptSig.formatLE(),
+    };
+  }
+
+  format() {
+    return {
+      prevTx: bytesToHex(this.prevTx.reverse()),
+      prevIndex: this.prevIndex,
+      sequence: this.sequence,
       scriptSig: this.scriptSig.format(),
     };
   }
@@ -134,12 +145,6 @@ export class TxIn {
     stream.write(integerToLittleEndian(this.sequence, 4));
 
     return stream.toBytes();
-  }
-
-  toString() {
-    return `TxIn {\n\tprevTx: ${this.prevTx.join('')},\n\t prevIndex: ${this.prevIndex},\n\tsequence: ${
-      this.sequence
-    },\n\tscriptSig: ${this.scriptSig}`;
   }
 }
 
@@ -161,9 +166,16 @@ export class TxOut {
     return stream.toBytes();
   }
 
-  format() {
+  formatLE() {
     return {
       amount: bytesToHex(integerToLittleEndian(this.amount, 8)),
+      scriptPubkey: this.scriptPubkey.formatLE(),
+    };
+  }
+
+  format() {
+    return {
+      amount: this.amount,
       scriptPubkey: this.scriptPubkey.format(),
     };
   }
