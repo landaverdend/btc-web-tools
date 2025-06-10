@@ -1,4 +1,3 @@
-import Tx from '@/crypto/transaction/Tx';
 import './text-editor.css';
 import AceEditor from 'react-ace';
 
@@ -6,20 +5,27 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/theme-twilight';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
+import { TxViewState } from '../TxView';
+import { FormattedTx } from '@/types/tx';
+import { validateFormattedTx } from './validation';
 
 type TEProps = {
-  tx: Tx;
-  setTx: (tx: Tx) => void;
+  txViewState: TxViewState;
+  setTxViewState: (txViewState: TxViewState) => void;
 };
 
-export default function TextEditor({ tx }: TEProps) {
-  console.log(tx);
+export default function TextEditor({ txViewState, setTxViewState }: TEProps) {
   const handleChange = (value: string) => {
     try {
       const obj = JSON.parse(value);
-      console.log(obj);
+
+      if (validateFormattedTx(obj)) {
+        setTxViewState({ ...txViewState, txJson: value, jsonError: false });
+      }
+
     } catch (error) {
-      console.error(error);
+      console.error('JSON parse error:', error);
+      setTxViewState({ ...txViewState, txJson: value, jsonError: true });
     }
   };
 
@@ -29,7 +35,7 @@ export default function TextEditor({ tx }: TEProps) {
       <AceEditor
         mode="json"
         theme="twilight"
-        value={JSON.stringify(tx.format(), null, 2)}
+        value={txViewState.txJson}
         height="100%"
         width="100%"
         onChange={handleChange}
@@ -38,6 +44,7 @@ export default function TextEditor({ tx }: TEProps) {
           showGutter: true,
           highlightActiveLine: true,
         }}
+        style={{ border: txViewState.jsonError ? 'red solid 1px' : 'none' }}
       />
     </div>
   );

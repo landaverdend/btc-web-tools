@@ -1,6 +1,7 @@
 import Tx from '@/crypto/transaction/Tx';
 import './tx-hex-view.css';
 import { PlacesType, Tooltip } from 'react-tooltip';
+import { TxViewState } from '../TxView';
 
 type TBProps = {
   bytes: string;
@@ -19,38 +20,46 @@ function Bytefield({ bytes, content, color, place }: TBProps) {
 }
 
 type TXHVProps = {
-  tx: Tx;
-  setTx: (tx: Tx) => void;
+  txViewState: TxViewState;
+  setTxViewState: (txViewState: TxViewState) => void;
 };
-export default function TxHexView({ tx }: TXHVProps) {
-  const transformed = tx.formatLE();
+export default function TxHexView({ txViewState }: TXHVProps) {
+  const { txHex } = txViewState;
+
+  const tx = txHex ? Tx.fromHex(txHex)?.formatLE() : undefined;
 
   return (
     <div className="flex-column tx-hex-view-container">
       <p className="tx-bytes">
-        <Bytefield bytes={transformed.version} content={'Transaction Version'} color={'red'} place="top" />
-        {transformed.inputs.map(({ prevIndex, prevTx, scriptSig, sequence }) => (
-          <>
-            <Bytefield key={prevTx} bytes={prevTx} content={'Input: Previous Transaction Hash'} color={'rgb(146 190 222)'} />
-            <Bytefield key={prevIndex} bytes={prevIndex} content={'Input: Previous Output Index'} color={'rgb(56 141 209)'} />
-            <Bytefield key={scriptSig.cmds} bytes={scriptSig.cmds} content={'Input: Script Signature'} color={'#42A5F5'} />
-            <Bytefield key={sequence} bytes={sequence} content={'Input: Sequence Number'} color={'rgb(0 92 174)'} />
-          </>
-        ))}
+        {!tx && txHex}
 
-        {transformed.outputs.map(({ amount, scriptPubkey }, i) => (
+        {/* If TX exists, spit it out.*/}
+        {tx && (
           <>
-            <Bytefield key={amount} bytes={amount} content={`Output #${i + 1}: Amount`} color={'rgb(255 152 0)'} />
-            <Bytefield
-              key={scriptPubkey.cmds}
-              bytes={scriptPubkey.cmds}
-              content={`Output #${i + 1}: Script Public Key`}
-              color={'rgb(255 204 0)'}
-            />
-          </>
-        ))}
+            <Bytefield bytes={tx.version} content={'Transaction Version'} color={'red'} place="top" />
+            {tx.inputs.map(({ prevIndex, prevTx, scriptSig, sequence }) => (
+              <>
+                <Bytefield key={prevTx} bytes={prevTx} content={'Input: Previous Transaction Hash'} color={'rgb(146 190 222)'} />
+                <Bytefield key={prevIndex} bytes={prevIndex} content={'Input: Previous Output Index'} color={'rgb(56 141 209)'} />
+                <Bytefield key={scriptSig.cmds} bytes={scriptSig.cmds} content={'Input: Script Signature'} color={'#42A5F5'} />
+                <Bytefield key={sequence} bytes={sequence} content={'Input: Sequence Number'} color={'rgb(0 92 174)'} />
+              </>
+            ))}
 
-        <Bytefield bytes={transformed.locktime} content={'Transaction Locktime'} color="purple" />
+            {tx.outputs.map(({ amount, scriptPubkey }, i) => (
+              <>
+                <Bytefield key={amount} bytes={amount} content={`Output #${i + 1}: Amount`} color={'rgb(255 152 0)'} />
+                <Bytefield
+                  key={scriptPubkey.cmds}
+                  bytes={scriptPubkey.cmds}
+                  content={`Output #${i + 1}: Script Public Key`}
+                  color={'rgb(255 204 0)'}
+                />
+              </>
+            ))}
+            <Bytefield bytes={tx.locktime} content={'Transaction Locktime'} color="purple" />
+          </>
+        )}
       </p>
 
       <Tooltip anchorSelect=".tooltip" style={{ zIndex: 1001 }} />

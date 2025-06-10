@@ -1,7 +1,7 @@
 import { ByteStream } from '@/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
 import { Script } from '../script/Script';
-
+import { FormattedTx } from '@/types/tx';
 export default class Tx {
   version: number;
   inputs: TxIn[];
@@ -58,7 +58,7 @@ export default class Tx {
    * Format the tx in a json-friendly readable format
    * @returns
    */
-  format() {
+  format(): FormattedTx {
     return {
       version: this.version,
       inputs: this.inputs.map((i) => i.format()),
