@@ -91,3 +91,7 @@ export const OP_CODE_NAMES: Record<number, string> = {
   184: 'OP_NOP9',
   185: 'OP_NOP10',
 };
+
+export const OP_CODES: Record<string, number> = Object.fromEntries(
+  Object.entries(OP_CODE_NAMES).map(([key, value]) => [value, Number(key)])
+);

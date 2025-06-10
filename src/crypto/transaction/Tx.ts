@@ -1,7 +1,7 @@
 import { ByteStream } from '@/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
 import { Script } from '../script/Script';
-import { FormattedTx } from '@/types/tx';
+import { FormattedTx, FormattedTxIn, FormattedTxOut } from '@/types/tx';
 export default class Tx {
   version: number;
   inputs: TxIn[];
@@ -40,6 +40,16 @@ export default class Tx {
     const locktime = Number(littleEndianToInteger(stream.read(4)));
 
     return new Tx(version, inputs, outputs, locktime);
+  }
+
+  static fromJson(json: FormattedTx) {
+    const tx = new Tx(
+      json.version,
+      json.inputs.map((i) => TxIn.fromJson(i)),
+      json.outputs.map((o) => TxOut.fromJson(o)),
+      json.locktime
+    );
+    return tx;
   }
 
   /**
@@ -146,6 +156,15 @@ export class TxIn {
 
     return stream.toBytes();
   }
+
+  static fromJson(json: FormattedTxIn) {
+    const prevTx = hexToBytes(json.prevTx);
+    const prevIndex = json.prevIndex;
+    const sequence = json.sequence;
+    const scriptSig = Script.fromJson(json.scriptSig);
+
+    return new TxIn(prevTx, prevIndex, sequence, scriptSig);
+  }
 }
 
 export class TxOut {
@@ -178,6 +197,13 @@ export class TxOut {
       amount: this.amount,
       scriptPubkey: this.scriptPubkey.format(),
     };
+  }
+
+  static fromJson(json: FormattedTxOut) {
+    const amount = json.amount;
+    const scriptPubkey = Script.fromJson(json.scriptPubkey);
+
+    return new TxOut(amount, scriptPubkey);
   }
 
   static fromStream(stream: ByteStream) {

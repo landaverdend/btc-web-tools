@@ -1,6 +1,7 @@
 import { ByteStream } from '@/util/ByteStream';
-import { bytesToHex, encodeVarInt, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
-import { OP_CODE_NAMES } from '../op/op';
+import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
+import { OP_CODE_NAMES, OP_CODES } from '../op/op';
+import { FormattedScript } from '@/types/tx';
 
 // A script is just a list of bigint commands.
 export class Script {
@@ -71,6 +72,18 @@ export class Script {
     const result = new Uint8Array([...varint, ...bytes]); // prepend varint to the bytes.
 
     return result;
+  }
+
+  static fromJson(json: FormattedScript) {
+    const cmds = json.cmds.map((cmd) => {
+      if (OP_CODES[cmd]) {
+        return OP_CODES[cmd] as number;
+      } else {
+        return hexToBytes(cmd);
+      }
+    });
+
+    return new Script(cmds);
   }
 
   static fromStream(stream: ByteStream) {

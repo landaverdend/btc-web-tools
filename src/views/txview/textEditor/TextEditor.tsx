@@ -6,8 +6,8 @@ import 'ace-builds/src-noconflict/theme-twilight';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
 import { TxViewState } from '../TxView';
-import { FormattedTx } from '@/types/tx';
 import { validateFormattedTx } from './validation';
+import Tx from '@/crypto/transaction/Tx';
 
 type TEProps = {
   txViewState: TxViewState;
@@ -15,23 +15,26 @@ type TEProps = {
 };
 
 export default function TextEditor({ txViewState, setTxViewState }: TEProps) {
+  const { jsonError } = txViewState;
+
   const handleChange = (value: string) => {
     try {
       const obj = JSON.parse(value);
 
       if (validateFormattedTx(obj)) {
-        setTxViewState({ ...txViewState, txJson: value, jsonError: false });
-      }
+        const tx = Tx.fromJson(obj);
 
+        setTxViewState({ ...txViewState, txJson: value, jsonError: null, txHex: tx.toHex(), hexError: null });
+      }
     } catch (error) {
-      console.error('JSON parse error:', error);
-      setTxViewState({ ...txViewState, txJson: value, jsonError: true });
+      setTxViewState({ ...txViewState, txJson: value, jsonError: error instanceof Error ? error.message : 'Invalid JSON' });
     }
   };
 
   return (
     <div className="flex-column text-editor-container">
-      <div className="flex-row header-panel">Header Panel</div>
+      <div className="flex-row header-panel">Header Panel{jsonError && <div className="error-message">{jsonError}</div>}</div>
+
       <AceEditor
         mode="json"
         theme="twilight"
@@ -44,7 +47,7 @@ export default function TextEditor({ txViewState, setTxViewState }: TEProps) {
           showGutter: true,
           highlightActiveLine: true,
         }}
-        style={{ border: txViewState.jsonError ? 'red solid 1px' : 'none' }}
+        style={{ border: jsonError ? 'red solid 1px' : 'none' }}
       />
     </div>
   );
