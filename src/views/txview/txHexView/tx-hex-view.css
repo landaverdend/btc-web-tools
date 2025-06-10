@@ -21,4 +21,18 @@
       cursor: pointer;
     }
   }
+
+  textarea {
+    font-size: 1.1rem;
+    width: 90%;
+    height: 200px;
+    resize: none;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 0.5rem;
+    outline: none;
+  }
 }

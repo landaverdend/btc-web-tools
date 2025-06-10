@@ -23,10 +23,34 @@ type TXHVProps = {
   txViewState: TxViewState;
   setTxViewState: (txViewState: TxViewState) => void;
 };
-export default function TxHexView({ txViewState }: TXHVProps) {
-  const { txHex } = txViewState;
+export default function TxHexView({ txViewState, setTxViewState }: TXHVProps) {
+  const { txHex, hexError } = txViewState;
 
-  const tx = txHex ? Tx.fromHex(txHex)?.formatLE() : undefined;
+  // Only build the tx if we don't have an active error on that string..
+  const tx = !hexError ? Tx.fromHex(txHex)?.formatLE() : undefined;
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    try {
+      if (!/^[0-9a-fA-F]+$/.test(e.target.value)) {
+        throw new Error('Please enter only hexadecimal characters (0-9, a-f, A-F)');
+      }
+
+      let validTx = Tx.fromHex(e.target.value);
+
+      setTxViewState({
+        txJson: JSON.stringify(validTx.format(), null, 2),
+        txHex: e.target.value,
+        jsonError: null,
+        hexError: null,
+      });
+    } catch (error) {
+      setTxViewState({
+        ...txViewState,
+        txHex: e.target.value,
+        hexError: error instanceof Error ? error.message : 'Invalid transaction hex',
+      });
+    }
+  };
 
   return (
     <div className="flex-column tx-hex-view-container">
@@ -36,7 +60,7 @@ export default function TxHexView({ txViewState }: TXHVProps) {
         {/* If TX exists, spit it out.*/}
         {tx && (
           <>
-            <Bytefield bytes={tx.version} content={'Transaction Version'} color={'red'} place="top" />
+            <Bytefield bytes={tx.version} content={'Transaction Version'} color={'orange'} place="top" />
             {tx.inputs.map(({ prevIndex, prevTx, scriptSig, sequence }) => (
               <>
                 <Bytefield key={prevTx} bytes={prevTx} content={'Input: Previous Transaction Hash'} color={'rgb(146 190 222)'} />
@@ -61,6 +85,15 @@ export default function TxHexView({ txViewState }: TXHVProps) {
           </>
         )}
       </p>
+
+      {!hexError && <label style={{ color: 'white' }}>Encoded Transaction</label>}
+      {hexError && <label style={{ color: 'red' }}>Error: {hexError}</label>}
+      <textarea
+        value={txHex}
+        onChange={handleChange}
+        placeholder="Enter encoded transaction hex..."
+        style={{ border: hexError ? '1px solid red' : 'none' }}
+      />
 
       <Tooltip anchorSelect=".tooltip" style={{ zIndex: 1001 }} />
     </div>
