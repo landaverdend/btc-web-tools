@@ -4,6 +4,10 @@
 
   background-color: #222;
 
+  
+  /* Match font to ace editor */
+  font: 12px / normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Source Code Pro', 'source-code-pro', monospace;
+
   width: 50%;
   .tx-bytes {
     font-size: 1.1rem;

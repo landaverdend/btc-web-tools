@@ -10,6 +10,7 @@ export default class Tx {
 
   constructor(version: number, inputs: TxIn[], outputs: TxOut[], locktime: number) {
     this.version = version;
+
     this.inputs = inputs;
     this.outputs = outputs;
     this.locktime = locktime;
