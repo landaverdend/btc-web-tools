@@ -9,6 +9,9 @@ export class Script {
 
   constructor(cmds?: (number | Uint8Array)[]) {
     this.cmds = cmds ?? [];
+
+    // Serialize the commands to get the length of the script. Throw out an error if the script is too long.
+    this.serializeCommands();
   }
 
   private serializeCommands() {

@@ -1,19 +1,29 @@
 import { ByteStream } from '@/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
-import { Script } from '../script/Script';
-import { FormattedTx, FormattedTxIn, FormattedTxOut } from '@/types/tx';
+import { FormattedTx } from '@/types/tx';
+import TxIn from './TxIn';
+import TxOut from './TxOut';
 export default class Tx {
   version: number;
+
+  // https://bitcoincore.org/en/segwit_wallet_dev/
+  isSegwit: boolean;
+  witnesses?: TxWitness[];
+
   inputs: TxIn[];
   outputs: TxOut[];
   locktime: number;
 
-  constructor(version: number, inputs: TxIn[], outputs: TxOut[], locktime: number) {
+  constructor(version: number, inputs: TxIn[], outputs: TxOut[], locktime: number, isSegwit = false, witnesses?: TxWitness[]) {
     this.version = version;
-
     this.inputs = inputs;
     this.outputs = outputs;
     this.locktime = locktime;
+
+    this.isSegwit = isSegwit;
+    if (isSegwit) {
+      this.witnesses = witnesses;
+    }
   }
 
   /**
@@ -24,6 +34,9 @@ export default class Tx {
     const stream = new ByteStream(hexToBytes(hex));
 
     const version = Number(littleEndianToInteger(stream.read(4))); // First 4 bytes are the version
+
+    // TODO: check if segwit
+
     const inputCount = stream.readVarInt(); // Var int can take up to 9 bytes
 
     const inputs: TxIn[] = [];
@@ -37,6 +50,8 @@ export default class Tx {
     for (let i = 0; i < outputCount; i++) {
       outputs.push(TxOut.fromStream(stream));
     }
+
+    // TODO: add witness support
 
     const locktime = Number(littleEndianToInteger(stream.read(4)));
 
@@ -106,111 +121,15 @@ export default class Tx {
   }
 }
 
-export class TxIn {
-  prevTx: Uint8Array;
-  prevIndex: number; // index of the output in the previous transaction...
-  scriptSig: Script;
-  sequence: number;
+// TODO: add witness support/parsing
+export class TxWitness {
+  stack: Uint8Array[]; // stack of witness data.
 
-  constructor(prevTx: Uint8Array, prevIndex: number, sequence: number, scriptSig?: Script) {
-    this.prevTx = prevTx;
-    this.prevIndex = prevIndex;
-    this.sequence = sequence;
-    this.scriptSig = scriptSig ?? new Script();
+  constructor(stack: Uint8Array[]) {
+    this.stack = stack;
   }
 
-  static fromStream(stream: ByteStream) {
-    const prevTx = stream.read(32).reverse(); // Reverse the bytes to get the hash
-    const prevIndex = Number(littleEndianToInteger(stream.read(4)));
+  // https://bitcoincore.org/en/segwit_wallet_dev/
 
-    const scriptSig = Script.fromStream(stream);
-    const sequence = Number(littleEndianToInteger(stream.read(4)));
-
-    return new TxIn(prevTx, prevIndex, sequence, scriptSig);
-  }
-
-  formatLE() {
-    return {
-      prevTx: bytesToHex(this.prevTx.reverse()),
-      prevIndex: bytesToHex(integerToLittleEndian(this.prevIndex, 4)),
-      sequence: bytesToHex(integerToLittleEndian(this.sequence, 4)),
-      scriptSig: this.scriptSig.formatLE(),
-    };
-  }
-
-  format() {
-    return {
-      prevTx: bytesToHex(this.prevTx.reverse()),
-      prevIndex: this.prevIndex,
-      sequence: this.sequence,
-      scriptSig: this.scriptSig.format(),
-    };
-  }
-
-  toBytes() {
-    const stream = new ByteStream();
-
-    stream.write(this.prevTx.reverse());
-    stream.write(integerToLittleEndian(this.prevIndex, 4));
-    stream.write(this.scriptSig.toBytes());
-    stream.write(integerToLittleEndian(this.sequence, 4));
-
-    return stream.toBytes();
-  }
-
-  static fromJson(json: FormattedTxIn) {
-    const prevTx = hexToBytes(json.prevTx);
-    const prevIndex = json.prevIndex;
-    const sequence = json.sequence;
-    const scriptSig = Script.fromJson(json.scriptSig);
-
-    return new TxIn(prevTx, prevIndex, sequence, scriptSig);
-  }
-}
-
-export class TxOut {
-  amount: number;
-  scriptPubkey: Script;
-
-  constructor(value: number, scriptPubkey?: Script) {
-    this.amount = value;
-    this.scriptPubkey = scriptPubkey ?? new Script();
-  }
-
-  toBytes() {
-    const stream = new ByteStream();
-
-    stream.write(integerToLittleEndian(this.amount, 8));
-    stream.write(this.scriptPubkey.toBytes());
-
-    return stream.toBytes();
-  }
-
-  formatLE() {
-    return {
-      amount: bytesToHex(integerToLittleEndian(this.amount, 8)),
-      scriptPubkey: this.scriptPubkey.formatLE(),
-    };
-  }
-
-  format() {
-    return {
-      amount: this.amount,
-      scriptPubkey: this.scriptPubkey.format(),
-    };
-  }
-
-  static fromJson(json: FormattedTxOut) {
-    const amount = json.amount;
-    const scriptPubkey = Script.fromJson(json.scriptPubkey);
-
-    return new TxOut(amount, scriptPubkey);
-  }
-
-  static fromStream(stream: ByteStream) {
-    const amount = Number(littleEndianToInteger(stream.read(8)));
-    const scriptPubkey = Script.fromStream(stream);
-
-    return new TxOut(amount, scriptPubkey);
-  }
+  static fromStream(stream: ByteStream) {}
 }

@@ -1,7 +1,7 @@
 import Tx from '@/crypto/transaction/Tx';
 import './tx-hex-view.css';
 import { PlacesType, Tooltip } from 'react-tooltip';
-import { TxViewState } from '../TxView';
+import { useState } from 'react';
 
 type TBProps = {
   bytes: string;
@@ -20,48 +20,43 @@ function Bytefield({ bytes, content, color, place }: TBProps) {
 }
 
 type TXHVProps = {
-  txViewState: TxViewState;
-  setTxViewState: (txViewState: TxViewState) => void;
+  tx: Tx;
+  setTx: (tx: Tx) => void;
 };
-export default function TxHexView({ txViewState, setTxViewState }: TXHVProps) {
-  const { txHex, hexError } = txViewState;
+export default function TxHexView({ tx, setTx }: TXHVProps) {
+  const [txHex, setTxHex] = useState<string>(tx.toHex());
+  const [hexError, setHexError] = useState<string | null>(null);
 
-  // Only build the tx if we don't have an active error on that string..
-  const tx = !hexError ? Tx.fromHex(txHex)?.formatLE() : undefined;
+  // Only build the tx if we don't have an active error on that string
+  const txLE = tx.formatLE();
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTxHex(e.target.value);
+
     try {
       if (!/^[0-9a-fA-F]+$/.test(e.target.value)) {
         throw new Error('Please enter only hexadecimal characters (0-9, a-f, A-F)');
       }
 
       let validTx = Tx.fromHex(e.target.value);
-
-      setTxViewState({
-        txJson: JSON.stringify(validTx.format(), null, 2),
-        txHex: e.target.value,
-        jsonError: null,
-        hexError: null,
-      });
+      setTx(validTx);
+      setHexError(null);
     } catch (error) {
-      setTxViewState({
-        ...txViewState,
-        txHex: e.target.value,
-        hexError: error instanceof Error ? error.message : 'Invalid transaction hex',
-      });
+      console.error(error);
+      setHexError(error instanceof Error ? error.message : 'Invalid hex string');
     }
   };
 
   return (
     <div className="flex-column tx-hex-view-container">
       <p className="tx-bytes">
-        {!tx && txHex}
+        {!txLE && txHex}
 
         {/* If TX exists, spit it out.*/}
-        {tx && (
+        {txLE && (
           <>
-            <Bytefield bytes={tx.version} content={'Transaction Version'} color={'orange'} place="top" />
-            {tx.inputs.map(({ prevIndex, prevTx, scriptSig, sequence }) => (
+            <Bytefield bytes={txLE.version} content={'Transaction Version'} color={'orange'} place="top" />
+            {txLE.inputs.map(({ prevIndex, prevTx, scriptSig, sequence }) => (
               <>
                 <Bytefield key={prevTx} bytes={prevTx} content={'Input: Previous Transaction Hash'} color={'rgb(146 190 222)'} />
                 <Bytefield key={prevIndex} bytes={prevIndex} content={'Input: Previous Output Index'} color={'rgb(56 141 209)'} />
@@ -70,7 +65,7 @@ export default function TxHexView({ txViewState, setTxViewState }: TXHVProps) {
               </>
             ))}
 
-            {tx.outputs.map(({ amount, scriptPubkey }, i) => (
+            {txLE.outputs.map(({ amount, scriptPubkey }, i) => (
               <>
                 <Bytefield key={amount} bytes={amount} content={`Output #${i + 1}: Amount`} color={'rgb(255 152 0)'} />
                 <Bytefield
@@ -81,7 +76,7 @@ export default function TxHexView({ txViewState, setTxViewState }: TXHVProps) {
                 />
               </>
             ))}
-            <Bytefield bytes={tx.locktime} content={'Transaction Locktime'} color="purple" />
+            <Bytefield bytes={txLE.locktime} content={'Transaction Locktime'} color="purple" />
           </>
         )}
       </p>

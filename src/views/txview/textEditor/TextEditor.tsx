@@ -5,29 +5,33 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/theme-twilight';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
-import { TxViewState } from '../TxView';
 import { validateFormattedTx } from './validation';
 import Tx from '@/crypto/transaction/Tx';
+import { useState } from 'react';
 
 type TEProps = {
-  txViewState: TxViewState;
-  setTxViewState: (txViewState: TxViewState) => void;
+  tx: Tx;
+  setTx: (tx: Tx) => void;
 };
 
-export default function TextEditor({ txViewState, setTxViewState }: TEProps) {
-  const { jsonError } = txViewState;
+export default function TextEditor({ tx, setTx }: TEProps) {
+  const [txJson, setTxJson] = useState<string>(JSON.stringify(tx.format(), null, 2));
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
   const handleChange = (value: string) => {
+    setTxJson(value);
+
     try {
       const obj = JSON.parse(value);
 
       if (validateFormattedTx(obj)) {
         const tx = Tx.fromJson(obj);
 
-        setTxViewState({ ...txViewState, txJson: value, jsonError: null, txHex: tx.toHex(), hexError: null });
+        setTx(tx);
+        setJsonError(null);
       }
     } catch (error) {
-      setTxViewState({ ...txViewState, txJson: value, jsonError: error instanceof Error ? error.message : 'Invalid JSON' });
+      setJsonError(error instanceof Error ? error.message : 'JSON Error');
     }
   };
 
@@ -38,7 +42,7 @@ export default function TextEditor({ txViewState, setTxViewState }: TEProps) {
       <AceEditor
         mode="json"
         theme="twilight"
-        value={txViewState.txJson}
+        value={txJson}
         height="100%"
         width="100%"
         onChange={handleChange}
