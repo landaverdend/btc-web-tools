@@ -67,7 +67,7 @@ export default class Tx {
 
     let witnessData;
     if (isSegwit) {
-      witnessData = TxWitnessData.fromStream(stream);
+      witnessData = TxWitnessData.fromStream(stream, Number(inputCount));
     }
 
     const locktime = Number(littleEndianToInteger(stream.read(4)));
@@ -151,34 +151,42 @@ export default class Tx {
 }
 
 export class TxWitnessData {
-  stack: Uint8Array[]; // stack of witness data.
+  stack: Uint8Array[][]; // stack of witness data.
 
-  constructor(stack: Uint8Array[]) {
+  constructor(stack: Uint8Array[][]) {
     this.stack = stack;
   }
 
-  static fromStream(stream: ByteStream) {
-    const length = stream.readVarInt();
-    const stack: Uint8Array[] = [];
+  static fromStream(stream: ByteStream, inputCount: number) {
+    const witnessStacks: Uint8Array[][] = [];
 
-    for (let i = 0; i < length; i++) {
-      const itemLength = stream.readVarInt();
-      const stackItem = stream.read(Number(itemLength));
-      stack.push(stackItem);
+    // For each input in the tx
+    for (let i = 0; i < inputCount; i++) {
+      const witnessItemCount = stream.readVarInt();
+      const inputWitnessStack: Uint8Array[] = [];
+
+      for (let j = 0; j < witnessItemCount; j++) {
+        const itemLength = stream.readVarInt();
+        const witnessItem = stream.read(Number(itemLength));
+        inputWitnessStack.push(witnessItem);
+      }
+
+      witnessStacks.push(inputWitnessStack);
     }
 
-    return new TxWitnessData(stack);
+    return new TxWitnessData(witnessStacks);
   }
 
   toBytes() {
     const stream = new ByteStream();
 
-    const length = this.stack.length;
-    stream.write(encodeVarInt(length));
+    for (const inputWitnessStack of this.stack) {
+      stream.write(encodeVarInt(inputWitnessStack.length));
 
-    for (const item of this.stack) {
-      stream.write(encodeVarInt(item.length));
-      stream.write(item);
+      for (const witnessItem of inputWitnessStack) {
+        stream.write(encodeVarInt(witnessItem.length));
+        stream.write(witnessItem);
+      }
     }
 
     return stream.toBytes();
