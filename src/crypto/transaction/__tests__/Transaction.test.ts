@@ -7,15 +7,13 @@ const legacyTx =
   '0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600';
 
 describe('Legacy TX', () => {
-  test('test parse version', () => {
-    const parsed = Tx.fromHex(legacyTx);
+  const parsed = Tx.fromHex(legacyTx);
 
+  test('test parse version', () => {
     expect(parsed.version).toBe(1);
   });
 
   test('test parse inputs', () => {
-    const parsed = Tx.fromHex(legacyTx);
-
     expect(parsed.inputs.length).toBe(1);
     const expected = hexToBytes('d1c789a9c60383bf715f3f6ad9d14b91fe55f3deb369fe5d9280cb1a01793f81');
     expect(parsed.inputs[0].prevTx).toEqual(expected);
@@ -29,8 +27,6 @@ describe('Legacy TX', () => {
   });
 
   test('test parse outputs', () => {
-    const parsed = Tx.fromHex(legacyTx);
-
     expect(parsed.outputs.length).toBe(2);
     const amount1 = 32454049;
     expect(parsed.outputs[0].amount).toBe(amount1);
@@ -42,13 +38,10 @@ describe('Legacy TX', () => {
   });
 
   test('test locktime', () => {
-    const parsed = Tx.fromHex(legacyTx);
-
     expect(parsed.locktime).toBe(410393);
   });
 
   test('test toBytes', () => {
-    const parsed = Tx.fromHex(legacyTx);
     const actual = parsed.toBytes();
 
     const expected = hexToBytes(legacyTx);
@@ -57,8 +50,6 @@ describe('Legacy TX', () => {
   });
 
   test('test toHex', () => {
-    const parsed = Tx.fromHex(legacyTx);
-
     const actual = parsed.toHex();
     expect(actual).toBe(legacyTx);
   });
@@ -68,15 +59,13 @@ const segwitTx =
   '010000000001013c735f81c1a0115af2e735554fb271ace18c32a3faf443f9db40cb9a11ca63110000000000ffffffff02b113030000000000160014689a681c462536ad7d735b497511e527e9f59245cf120000000000001600148859f1e9ef3ba438e2ec317f8524ed41f8f06c6a024730440220424772d4ad659960d4f1b541fd853f7da62e8cf505c2f16585dc7c8cf643fe9a02207fbc63b9cf317fc41402b2e7f6fdc1b01f1b43c5456cf9b547fe9645a16dcb150121032533cb19cf37842556dd2168b1c7b6f3a70cff25a6ff4d4b76f2889d2c88a3f200000000';
 
 describe('Segwit TX', () => {
-  test('test parse version', () => {
-    const parsed = Tx.fromHex(segwitTx);
+  const parsed = Tx.fromHex(segwitTx);
 
+  test('test parse version', () => {
     expect(parsed.version).toBe(1);
   });
 
   test('test parse inputs', () => {
-    const parsed = Tx.fromHex(segwitTx);
-
     expect(parsed.inputs.length).toBe(1);
     const in1 = parsed.inputs[0];
     expect(in1.prevTx).toEqual(hexToBytes('3c735f81c1a0115af2e735554fb271ace18c32a3faf443f9db40cb9a11ca6311').reverse());
@@ -86,8 +75,6 @@ describe('Segwit TX', () => {
   });
 
   test('test parse outputs', () => {
-    const parsed = Tx.fromHex(segwitTx);
-
     expect(parsed.outputs.length).toBe(2);
     const out1 = parsed.outputs[0];
     expect(out1.amount).toBe(0x0313b1);
@@ -130,14 +117,10 @@ describe('Segwit TX', () => {
   });
 
   test('test locktime', () => {
-    const parsed = Tx.fromHex(segwitTx);
-
     expect(parsed.locktime).toBe(0x00000000);
   });
 
   test('test toBytes', () => {
-    const parsed = Tx.fromHex(segwitTx);
-
     const actual = parsed.toHex();
     expect(actual).toEqual(segwitTx);
   });
@@ -235,8 +218,6 @@ describe('Mixed Segwit and Legacy TX', () => {
   });
 
   test('test toHex', () => {
-    const hmmm = Tx.fromHex(mixedTx);
-
-    expect(hmmm.toHex()).toEqual(mixedTx);
+    expect(parsed.toHex()).toEqual(mixedTx);
   });
 });

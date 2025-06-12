@@ -46,9 +46,8 @@ export default class TxIn {
 
   toBytes() {
     const stream = new ByteStream();
-    // console.log('before reverse', bytesToHex(this.prevTx));
-    // console.log('after reverse', bytesToHex(this.prevTx.reverse()));
-    stream.write(this.prevTx.reverse());
+    const copy = new Uint8Array(this.prevTx);
+    stream.write(copy.reverse());
     stream.write(integerToLittleEndian(this.prevIndex, 4));
     stream.write(this.scriptSig.toBytes());
     stream.write(integerToLittleEndian(this.sequence, 4));
