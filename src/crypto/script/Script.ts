@@ -1,5 +1,5 @@
-import { ByteStream } from '@/util/ByteStream';
-import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
+import { ByteStream } from '@/crypto/util/ByteStream';
+import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
 import { OP_CODE_NAMES, OP_CODES } from '../op/op';
 import { FormattedScript } from '@/types/tx';
 
@@ -14,7 +14,7 @@ export class Script {
     this.serializeCommands();
   }
 
-  private serializeCommands() {
+  serializeCommands() {
     let res = new ByteStream();
 
     for (const cmd of this.cmds) {

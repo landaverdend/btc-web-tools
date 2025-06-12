@@ -50,10 +50,9 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
   return (
     <div className="flex-column tx-hex-view-container">
       <p className="tx-bytes">
-        {!txLE && txHex}
-
+        {hexError && txHex}
         {/* If TX exists, spit it out.*/}
-        {txLE && (
+        {!hexError && (
           <>
             <Bytefield bytes={txLE.version} content={'Transaction Version'} color={'orange'} place="top" />
             {txLE.inputs.map(({ prevIndex, prevTx, scriptSig, sequence }) => (

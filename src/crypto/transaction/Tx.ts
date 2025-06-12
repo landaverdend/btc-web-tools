@@ -1,5 +1,5 @@
-import { ByteStream } from '@/util/ByteStream';
-import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/util/helper';
+import { ByteStream } from '@/crypto/util/ByteStream';
+import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
 import { FormattedTx } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
@@ -8,13 +8,22 @@ export default class Tx {
 
   // https://bitcoincore.org/en/segwit_wallet_dev/
   isSegwit: boolean;
-  witnesses?: TxWitness[];
+  witnessMarker?: number;
+  witnessFlag?: number;
+  witnessData?: TxWitnessData;
 
   inputs: TxIn[];
   outputs: TxOut[];
   locktime: number;
 
-  constructor(version: number, inputs: TxIn[], outputs: TxOut[], locktime: number, isSegwit = false, witnesses?: TxWitness[]) {
+  constructor(
+    version: number,
+    inputs: TxIn[],
+    outputs: TxOut[],
+    locktime: number,
+    isSegwit = false,
+    witnessData?: TxWitnessData
+  ) {
     this.version = version;
     this.inputs = inputs;
     this.outputs = outputs;
@@ -22,7 +31,9 @@ export default class Tx {
 
     this.isSegwit = isSegwit;
     if (isSegwit) {
-      this.witnesses = witnesses;
+      this.witnessMarker = 0x00;
+      this.witnessFlag = 0x01;
+      this.witnessData = witnessData;
     }
   }
 
@@ -35,10 +46,13 @@ export default class Tx {
 
     const version = Number(littleEndianToInteger(stream.read(4))); // First 4 bytes are the version
 
-    // TODO: check if segwit
+    // Check if it's a segwit transaction.
+    const isSegwit = stream.peek(1)[0] === 0x00;
+    if (isSegwit) {
+      const [marker, flag] = stream.read(2);
+    }
 
     const inputCount = stream.readVarInt(); // Var int can take up to 9 bytes
-
     const inputs: TxIn[] = [];
     for (let i = 0; i < inputCount; i++) {
       inputs.push(TxIn.fromStream(stream));
@@ -51,11 +65,16 @@ export default class Tx {
       outputs.push(TxOut.fromStream(stream));
     }
 
-    // TODO: add witness support
+    let witnessData;
+    if (isSegwit) {
+      witnessData = TxWitnessData.fromStream(stream);
+    }
 
     const locktime = Number(littleEndianToInteger(stream.read(4)));
 
-    return new Tx(version, inputs, outputs, locktime);
+    return isSegwit
+      ? new Tx(version, inputs, outputs, locktime, isSegwit, witnessData)
+      : new Tx(version, inputs, outputs, locktime);
   }
 
   static fromJson(json: FormattedTx) {
@@ -101,6 +120,12 @@ export default class Tx {
     const stream = new ByteStream();
 
     stream.write(integerToLittleEndian(this.version, 4));
+
+    if (this.isSegwit) {
+      stream.write(integerToLittleEndian(this.witnessMarker!, 1));
+      stream.write(integerToLittleEndian(this.witnessFlag!, 1));
+    }
+
     const inputCount = this.inputs.length;
     stream.write(encodeVarInt(inputCount));
 
@@ -115,21 +140,47 @@ export default class Tx {
       stream.write(output.toBytes());
     }
 
+    if (this.isSegwit) {
+      stream.write(this.witnessData!.toBytes());
+    }
+
     stream.write(integerToLittleEndian(this.locktime, 4));
 
     return stream.toBytes();
   }
 }
 
-// TODO: add witness support/parsing
-export class TxWitness {
+export class TxWitnessData {
   stack: Uint8Array[]; // stack of witness data.
 
   constructor(stack: Uint8Array[]) {
     this.stack = stack;
   }
 
-  // https://bitcoincore.org/en/segwit_wallet_dev/
+  static fromStream(stream: ByteStream) {
+    const length = stream.readVarInt();
+    const stack: Uint8Array[] = [];
 
-  static fromStream(stream: ByteStream) {}
+    for (let i = 0; i < length; i++) {
+      const itemLength = stream.readVarInt();
+      const stackItem = stream.read(Number(itemLength));
+      stack.push(stackItem);
+    }
+
+    return new TxWitnessData(stack);
+  }
+
+  toBytes() {
+    const stream = new ByteStream();
+
+    const length = this.stack.length;
+    stream.write(encodeVarInt(length));
+
+    for (const item of this.stack) {
+      stream.write(encodeVarInt(item.length));
+      stream.write(item);
+    }
+
+    return stream.toBytes();
+  }
 }

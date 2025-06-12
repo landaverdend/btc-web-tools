@@ -29,6 +29,10 @@ export class ByteStream {
     }
   }
 
+  peek(amount: number) {
+    return this.bytes.slice(this.position, this.position + amount);
+  }
+
   // Concatenate bytes to the end of the stream.
   write(bytes: Uint8Array) {
     this.bytes = new Uint8Array([...this.bytes, ...bytes]);
