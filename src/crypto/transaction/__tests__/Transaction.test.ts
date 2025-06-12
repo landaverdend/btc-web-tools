@@ -233,4 +233,10 @@ describe('Mixed Segwit and Legacy TX', () => {
     const expected = hexToBytes(mixedTx);
     expect(actual).toEqual(expected);
   });
+
+  test('test toHex', () => {
+    const hmmm = Tx.fromHex(mixedTx);
+
+    expect(hmmm.toHex()).toEqual(mixedTx);
+  });
 });
