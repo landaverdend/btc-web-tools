@@ -1,6 +1,6 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
-import { FormattedTx } from '@/types/tx';
+import { FormattedTx, FormattedWitnessStack, TxLE, WitnessStackLE } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
 export default class Tx {
@@ -90,12 +90,18 @@ export default class Tx {
   /**
    * Format the tx in hex and little endian format.
    **/
-  formatLE() {
+  formatLE(): TxLE {
     return {
       version: bytesToHex(integerToLittleEndian(this.version, 4)),
+
+      marker: this.witnessMarker !== undefined ? bytesToHex(integerToLittleEndian(this.witnessMarker, 1)) : undefined,
+      flag: this.witnessFlag ? bytesToHex(integerToLittleEndian(this.witnessFlag, 1)) : undefined,
+
       inputs: this.inputs.map((input) => input.formatLE()),
       outputs: this.outputs.map((output) => output.formatLE()),
       locktime: bytesToHex(integerToLittleEndian(this.locktime, 4)),
+
+      witnesses: this.witnessData?.formatLE(),
     };
   }
 
@@ -106,9 +112,15 @@ export default class Tx {
   format(): FormattedTx {
     return {
       version: this.version,
+
+      marker: this.witnessMarker,
+      flag: this.witnessFlag,
+
       inputs: this.inputs.map((i) => i.format()),
       outputs: this.outputs.map((o) => o.format()),
       locktime: this.locktime,
+
+      witnesses: this.witnessData?.format(),
     };
   }
 
@@ -155,6 +167,20 @@ export class TxWitnessData {
 
   constructor(stack: Uint8Array[][]) {
     this.stack = stack;
+  }
+
+  formatLE(): WitnessStackLE[] {
+    return this.stack.map((witness) => ({
+      stackLength: bytesToHex(encodeVarInt(witness.length)),
+      stack: witness.map((item) => bytesToHex(item)),
+    }));
+  }
+
+  format(): FormattedWitnessStack[] {
+    return this.stack.map((witness) => ({
+      stackLength: witness.length,
+      stack: witness.map((item) => bytesToHex(item)),
+    }));
   }
 
   static fromStream(stream: ByteStream, inputCount: number) {

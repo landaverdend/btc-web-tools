@@ -1,7 +1,7 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
 import { OP_CODE_NAMES, OP_CODES } from '../op/op';
-import { FormattedScript } from '@/types/tx';
+import { FormattedScript, ScriptLE } from '@/types/tx';
 
 // A script is just a list of bigint commands.
 export class Script {
@@ -41,7 +41,7 @@ export class Script {
     return res;
   }
 
-  formatLE() {
+  formatLE(): ScriptLE {
     const serialized = this.serializeCommands().toBytes();
 
     return {

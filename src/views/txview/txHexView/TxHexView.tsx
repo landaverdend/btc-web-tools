@@ -39,6 +39,7 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
       }
 
       let validTx = Tx.fromHex(e.target.value);
+
       setTx(validTx);
       setHexError(null);
     } catch (error) {
@@ -46,6 +47,8 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
       setHexError(error instanceof Error ? error.message : 'Invalid hex string');
     }
   };
+  console.log(tx);
+  console.log(tx.formatLE());
 
   return (
     <div className="flex-column tx-hex-view-container">
@@ -55,10 +58,12 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
         {!hexError && (
           <>
             <Bytefield bytes={txLE.version} content={'Transaction Version'} color={'orange'} place="top" />
-            {txLE.inputs.map(({ prevIndex, prevTx, scriptSig, sequence }) => (
+            {txLE.marker && <Bytefield bytes={txLE.marker} content={'Witness Marker'} color={'rgb(146 190 222)'} place="top" />}
+            {txLE.flag && <Bytefield bytes={txLE.flag} content={'Witness Flag'} color={'rgb(56 141 209)'} place="top" />}
+            {txLE.inputs.map(({ txid, vout, scriptSig, sequence }) => (
               <>
-                <Bytefield key={prevTx} bytes={prevTx} content={'Input: Previous Transaction Hash'} color={'rgb(146 190 222)'} />
-                <Bytefield key={prevIndex} bytes={prevIndex} content={'Input: Previous Output Index'} color={'rgb(56 141 209)'} />
+                <Bytefield key={txid} bytes={txid} content={'Input: Previous Transaction Hash'} color={'rgb(146 190 222)'} />
+                <Bytefield key={vout} bytes={vout} content={'Input: Previous Output Index'} color={'rgb(56 141 209)'} />
                 <Bytefield key={scriptSig.cmds} bytes={scriptSig.cmds} content={'Input: Script Signature'} color={'#42A5F5'} />
                 <Bytefield key={sequence} bytes={sequence} content={'Input: Sequence Number'} color={'rgb(0 92 174)'} />
               </>
@@ -75,6 +80,15 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
                 />
               </>
             ))}
+            {txLE.witnesses &&
+              txLE.witnesses.map(({ stackLength, stack }) => (
+                <>
+                  <Bytefield bytes={stackLength} content={'Witness Stack Size'} color={'rgb(0 92 174)'} />
+                  {stack.map((item, i) => (
+                    <Bytefield key={item} bytes={item} content={`Witness Stack Item #${i + 1}`} color={'rgb(0 92 174)'} />
+                  ))}
+                </>
+              ))}
             <Bytefield bytes={txLE.locktime} content={'Transaction Locktime'} color="purple" />
           </>
         )}

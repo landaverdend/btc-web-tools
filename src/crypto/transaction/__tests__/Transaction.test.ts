@@ -1,4 +1,4 @@
-import { bytesToHex, hexToBytes } from '@/crypto/util/helper';
+import { hexToBytes } from '@/crypto/util/helper';
 import Tx from '../Tx';
 
 // Transactions can be decoded here: https://www.blockchain.com/explorer/assets/btc/decode-transaction
@@ -16,8 +16,8 @@ describe('Legacy TX', () => {
   test('test parse inputs', () => {
     expect(parsed.inputs.length).toBe(1);
     const expected = hexToBytes('d1c789a9c60383bf715f3f6ad9d14b91fe55f3deb369fe5d9280cb1a01793f81');
-    expect(parsed.inputs[0].prevTx).toEqual(expected);
-    expect(parsed.inputs[0].prevIndex).toBe(0);
+    expect(parsed.inputs[0].txid).toEqual(expected);
+    expect(parsed.inputs[0].vout).toBe(0);
 
     const scriptsighex = parsed.inputs[0].scriptSig.toHex();
     expect(scriptsighex).toBe(
@@ -68,8 +68,8 @@ describe('Segwit TX', () => {
   test('test parse inputs', () => {
     expect(parsed.inputs.length).toBe(1);
     const in1 = parsed.inputs[0];
-    expect(in1.prevTx).toEqual(hexToBytes('3c735f81c1a0115af2e735554fb271ace18c32a3faf443f9db40cb9a11ca6311').reverse());
-    expect(in1.prevIndex).toBe(0);
+    expect(in1.txid).toEqual(hexToBytes('3c735f81c1a0115af2e735554fb271ace18c32a3faf443f9db40cb9a11ca6311').reverse());
+    expect(in1.vout).toBe(0);
     expect(in1.scriptSig.toHex()).toBe('00'); // Should just hold the 0 varint
     expect(in1.sequence).toBe(0xffffffff);
   });
@@ -144,8 +144,8 @@ describe('Mixed Segwit and Legacy TX', () => {
     expect(parsed.inputs.length).toBe(2);
 
     const in1 = parsed.inputs[0];
-    expect(in1.prevTx).toEqual(hexToBytes('f11271713fb911ebdb7daa111470853084c5b4f6ad73582517a73b1131839d71').reverse());
-    expect(in1.prevIndex).toBe(0);
+    expect(in1.txid).toEqual(hexToBytes('f11271713fb911ebdb7daa111470853084c5b4f6ad73582517a73b1131839d71').reverse());
+    expect(in1.vout).toBe(0);
 
     // Copy over the script sig without the length prefix
     const actual = in1.scriptSig.serializeCommands().toBytes();
@@ -156,8 +156,8 @@ describe('Mixed Segwit and Legacy TX', () => {
     );
 
     const in2 = parsed.inputs[1];
-    expect(in2.prevTx).toEqual(hexToBytes('f11271713fb911ebdb7daa111470853084c5b4f6ad73582517a73b1131839d71').reverse());
-    expect(in2.prevIndex).toBe(1); // This is a segwit input...
+    expect(in2.txid).toEqual(hexToBytes('f11271713fb911ebdb7daa111470853084c5b4f6ad73582517a73b1131839d71').reverse());
+    expect(in2.vout).toBe(1); // This is a segwit input...
     expect(in2.scriptSig.toHex()).toBe('00');
 
     expect(in1.sequence).toBe(0xffffffff);

@@ -1,17 +1,17 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { Script } from '../script/Script';
 import { bytesToHex, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
-import { FormattedTxIn } from '@/types/tx';
+import { FormattedTxIn, TxInLE } from '@/types/tx';
 
 export default class TxIn {
-  prevTx: Uint8Array;
-  prevIndex: number; // index of the output in the previous transaction...
+  txid: Uint8Array;
+  vout: number; // index of the output in the previous transaction...
   scriptSig: Script;
   sequence: number;
 
   constructor(prevTx: Uint8Array, prevIndex: number, sequence: number, scriptSig?: Script) {
-    this.prevTx = prevTx;
-    this.prevIndex = prevIndex;
+    this.txid = prevTx;
+    this.vout = prevIndex;
     this.sequence = sequence;
     this.scriptSig = scriptSig ?? new Script();
   }
@@ -26,19 +26,20 @@ export default class TxIn {
     return new TxIn(prevTx, prevIndex, sequence, scriptSig);
   }
 
-  formatLE() {
+  formatLE(): TxInLE {
     return {
-      prevTx: bytesToHex(this.prevTx.reverse()),
-      prevIndex: bytesToHex(integerToLittleEndian(this.prevIndex, 4)),
+      txid: bytesToHex(this.txid.reverse()),
+      vout: bytesToHex(integerToLittleEndian(this.vout, 4)),
       sequence: bytesToHex(integerToLittleEndian(this.sequence, 4)),
       scriptSig: this.scriptSig.formatLE(),
     };
   }
 
-  format() {
+  format(): FormattedTxIn {
+    const copy = new Uint8Array(this.txid);
     return {
-      prevTx: bytesToHex(this.prevTx.reverse()),
-      prevIndex: this.prevIndex,
+      txid: bytesToHex(copy.reverse()),
+      vout: this.vout,
       sequence: this.sequence,
       scriptSig: this.scriptSig.format(),
     };
@@ -46,9 +47,10 @@ export default class TxIn {
 
   toBytes() {
     const stream = new ByteStream();
-    const copy = new Uint8Array(this.prevTx);
+    const copy = new Uint8Array(this.txid);
+
     stream.write(copy.reverse());
-    stream.write(integerToLittleEndian(this.prevIndex, 4));
+    stream.write(integerToLittleEndian(this.vout, 4));
     stream.write(this.scriptSig.toBytes());
     stream.write(integerToLittleEndian(this.sequence, 4));
 
@@ -56,11 +58,11 @@ export default class TxIn {
   }
 
   static fromJson(json: FormattedTxIn) {
-    const prevTx = hexToBytes(json.prevTx);
-    const prevIndex = json.prevIndex;
+    const txid = hexToBytes(json.txid);
+    const vout = json.vout;
     const sequence = json.sequence;
     const scriptSig = Script.fromJson(json.scriptSig);
 
-    return new TxIn(prevTx, prevIndex, sequence, scriptSig);
+    return new TxIn(txid, vout, sequence, scriptSig);
   }
 }
