@@ -47,8 +47,6 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
       setHexError(error instanceof Error ? error.message : 'Invalid hex string');
     }
   };
-  console.log(tx);
-  console.log(tx.formatLE());
 
   return (
     <div className="flex-column tx-hex-view-container">

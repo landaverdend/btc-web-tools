@@ -1,6 +1,6 @@
 // src/crypto/transaction/validation.ts
 
-import { FormattedTx } from '@/types/tx';
+import { FormattedTx, FormattedTxIn, FormattedTxOut } from '@/types/tx';
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -18,6 +18,10 @@ const hasDuplicateKeys = (obj: any): boolean => {
   return false;
 };
 
+const expectedTXKeys: (keyof FormattedTx)[] = ['version', 'inputs', 'outputs', 'locktime', 'witnesses', 'marker', 'flag'];
+const requiredTXKeys: (keyof FormattedTx)[] = ['version', 'inputs', 'outputs', 'locktime'];
+const expectedInputKeys: (keyof FormattedTxIn)[] = ['txid', 'vout', 'scriptSig', 'sequence'];
+
 export const validateFormattedTx = (tx: any): tx is FormattedTx => {
   // First check if it's an object
   if (typeof tx !== 'object' || tx === null) {
@@ -33,9 +37,8 @@ export const validateFormattedTx = (tx: any): tx is FormattedTx => {
   const keys = Object.keys(tx);
 
   // Check if it has exactly the expected keys
-  const expectedKeys = ['version', 'inputs', 'outputs', 'locktime'];
-  if (keys.length !== expectedKeys.length || !expectedKeys.every((key) => keys.includes(key))) {
-    throw new ValidationError('Transaction must have exactly: version, inputs, outputs, and locktime');
+  if (keys.length < requiredTXKeys.length || !requiredTXKeys.every((key) => keys.includes(key))) {
+    throw new ValidationError('Transaction must contain: version, inputs, outputs, and locktime');
   }
 
   // Validate the main structure
@@ -48,12 +51,14 @@ export const validateFormattedTx = (tx: any): tx is FormattedTx => {
     throw new ValidationError('Invalid transaction structure');
   }
 
-  return tx.inputs.every(isValidInput) && tx.outputs.every(isValidOutput);
+  const validInputs = tx.inputs.every(isValidInput);
+  const validOutputs = tx.outputs.every(isValidOutput);
+
+  return validInputs && validOutputs;
 };
 // Validate inputs
 const isValidInput = (input: any): boolean => {
   const inputKeys = Object.keys(input);
-  const expectedInputKeys = ['prevTx', 'prevIndex', 'scriptSig', 'sequence'];
 
   if (hasDuplicateKeys(input)) {
     throw new ValidationError('Input contains duplicate keys');
@@ -61,12 +66,16 @@ const isValidInput = (input: any): boolean => {
 
   // Check for exact keys in input
   if (inputKeys.length !== expectedInputKeys.length || !expectedInputKeys.every((key) => inputKeys.includes(key))) {
-    throw new ValidationError('Input must have exactly: prevTx, prevIndex, scriptSig, and sequence');
+    throw new ValidationError('Input must have exactly: txid, vout, scriptSig, and sequence');
+  }
+
+  if (input.txid.length !== 64) {
+    throw new ValidationError('Input txid must be 32 bytes');
   }
 
   return (
-    typeof input.prevTx === 'string' &&
-    typeof input.prevIndex === 'number' &&
+    typeof input.txid === 'string' &&
+    typeof input.vout === 'number' &&
     typeof input.sequence === 'number' &&
     typeof input.scriptSig === 'object' &&
     input.scriptSig !== null &&
@@ -76,10 +85,11 @@ const isValidInput = (input: any): boolean => {
   );
 };
 
+const expectedOutputKeys: (keyof FormattedTxOut)[] = ['amount', 'scriptPubkey'];
+
 // Validate outputs
 const isValidOutput = (output: any): boolean => {
   const outputKeys = Object.keys(output);
-  const expectedOutputKeys = ['amount', 'scriptPubkey'];
 
   if (hasDuplicateKeys(output)) {
     throw new ValidationError('Input contains duplicate keys');

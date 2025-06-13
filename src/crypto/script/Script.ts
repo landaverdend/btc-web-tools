@@ -79,7 +79,7 @@ export class Script {
 
   static fromJson(json: FormattedScript) {
     const cmds = json.cmds.map((cmd) => {
-      if (OP_CODES[cmd]) {
+      if (OP_CODES[cmd] !== undefined) {
         return OP_CODES[cmd] as number;
       } else {
         return hexToBytes(cmd);

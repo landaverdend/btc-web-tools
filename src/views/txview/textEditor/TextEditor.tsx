@@ -23,11 +23,10 @@ export default function TextEditor({ tx, setTx }: TEProps) {
 
     try {
       const obj = JSON.parse(value);
-
       if (validateFormattedTx(obj)) {
         const tx = Tx.fromJson(obj);
-
         setTx(tx);
+
         setJsonError(null);
       }
     } catch (error) {

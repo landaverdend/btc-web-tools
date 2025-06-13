@@ -82,7 +82,9 @@ export default class Tx {
       json.version,
       json.inputs.map((i) => TxIn.fromJson(i)),
       json.outputs.map((o) => TxOut.fromJson(o)),
-      json.locktime
+      json.locktime,
+      json.witnesses ? true : false,
+      json.witnesses ? TxWitnessData.fromJson(json.witnesses) : undefined
     );
     return tx;
   }
@@ -201,6 +203,10 @@ export class TxWitnessData {
     }
 
     return new TxWitnessData(witnessStacks);
+  }
+
+  static fromJson(json: FormattedWitnessStack[]) {
+    return new TxWitnessData(json.map((item) => item.stack.map((item) => hexToBytes(item))));
   }
 
   toBytes() {
