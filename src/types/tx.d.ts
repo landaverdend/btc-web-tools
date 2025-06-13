@@ -16,6 +16,7 @@ export type FormattedTxIn = {
 export type TxInLE = {
   txid: string;
   vout: string;
+
   sequence: string;
   scriptSig: ScriptLE;
 };
@@ -54,7 +55,11 @@ export type FormattedTx = {
 
 export type TxLE = {
   version: string;
+
+  inputCount: string;
   inputs: TxInLE[];
+
+  outputCount: string;
   outputs: TxOutLE[];
   locktime: string;
 

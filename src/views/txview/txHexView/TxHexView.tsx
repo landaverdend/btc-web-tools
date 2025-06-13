@@ -3,6 +3,17 @@ import './tx-hex-view.css';
 import { PlacesType, Tooltip } from 'react-tooltip';
 import { useState } from 'react';
 
+const COLORS = {
+  version: '#c084fc',
+  varInts: '#a3e635',
+  witnessMarker: '#38bdf8',
+  witnessFlag: '#38bdf8',
+  inputs: '#d4d4d8',
+  outputs: '#fb923c',
+  witnesses: '#ef4444',
+  locktime: '#38bdf8',
+};
+
 type TBProps = {
   bytes: string;
   content: string;
@@ -55,39 +66,46 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
         {/* If TX exists, spit it out.*/}
         {!hexError && (
           <>
-            <Bytefield bytes={txLE.version} content={'Transaction Version'} color={'#c084fc'} place="top" />
-            {txLE.marker && <Bytefield bytes={txLE.marker} content={'Witness Marker'} color={'#38bdf8'} place="top" />}
-            {txLE.flag && <Bytefield bytes={txLE.flag} content={'Witness Flag'} color={'#38bdf8'} place="top" />}
+            <Bytefield bytes={txLE.version} content={'Transaction Version'} color={COLORS.version} place="top" />
+            {txLE.marker && <Bytefield bytes={txLE.marker} content={'Witness Marker'} color={COLORS.witnessMarker} place="top" />}
+            {txLE.flag && <Bytefield bytes={txLE.flag} content={'Witness Flag'} color={COLORS.witnessFlag} place="top" />}
+            <Bytefield bytes={txLE.inputCount} content={'Input Count'} color={COLORS.varInts} />
             {txLE.inputs.map(({ txid, vout, scriptSig, sequence }) => (
               <>
-                <Bytefield key={txid} bytes={txid} content={'Input: Previous Transaction Hash'} color={'#d4d4d8'} />
-                <Bytefield key={vout} bytes={vout} content={'Input: Previous Output Index'} color={'#d4d4d8'} />
-                <Bytefield key={scriptSig.cmds} bytes={scriptSig.cmds} content={'Input: Script Signature'} color={'#d4d4d8'} />
-                <Bytefield key={sequence} bytes={sequence} content={'Input: Sequence Number'} color={'#d4d4d8'} />
+                <Bytefield key={txid} bytes={txid} content={'Input Transaction ID'} color={COLORS.inputs} />
+                <Bytefield key={vout} bytes={vout} content={'Input: Previous Output Index'} color={COLORS.inputs} />
+                <Bytefield
+                  key={scriptSig.cmds}
+                  bytes={scriptSig.cmds}
+                  content={'Input: Script Signature'}
+                  color={COLORS.inputs}
+                />
+                <Bytefield key={sequence} bytes={sequence} content={'Input: Sequence Number'} color={COLORS.inputs} />
               </>
             ))}
 
+            <Bytefield bytes={txLE.outputCount} content={'Output Count'} color={COLORS.varInts} />
             {txLE.outputs.map(({ amount, scriptPubkey }, i) => (
               <>
-                <Bytefield key={amount} bytes={amount} content={`Output #${i + 1}: Amount`} color={'#fb923c'} />
+                <Bytefield key={amount} bytes={amount} content={`Output #${i + 1}: Amount`} color={COLORS.outputs} />
                 <Bytefield
                   key={scriptPubkey.cmds}
                   bytes={scriptPubkey.cmds}
                   content={`Output #${i + 1}: Script Public Key`}
-                  color={'#fb923c'}
+                  color={COLORS.outputs}
                 />
               </>
             ))}
             {txLE.witnesses &&
               txLE.witnesses.map(({ stackLength, stack }) => (
                 <>
-                  <Bytefield bytes={stackLength} content={'Witness Stack Size'} color={'#ef4444'} />
+                  <Bytefield bytes={stackLength} content={'Witness Stack Size'} color={COLORS.witnesses} />
                   {stack.map((item, i) => (
-                    <Bytefield key={item} bytes={item} content={`Witness Stack Item #${i + 1}`} color={'#ef4444'} />
+                    <Bytefield key={item} bytes={item} content={`Witness Stack Item #${i + 1}`} color={COLORS.witnesses} />
                   ))}
                 </>
               ))}
-            <Bytefield bytes={txLE.locktime} content={'Transaction Locktime'} color="purple" />
+            <Bytefield bytes={txLE.locktime} content={'Transaction Locktime'} color={COLORS.locktime} />
           </>
         )}
       </p>

@@ -108,7 +108,10 @@ export default class Tx {
       marker: this.witnessMarker !== undefined ? bytesToHex(integerToLittleEndian(this.witnessMarker, 1)) : undefined,
       flag: this.witnessFlag ? bytesToHex(integerToLittleEndian(this.witnessFlag, 1)) : undefined,
 
+      inputCount: bytesToHex(encodeVarInt(this.inputs.length)),
       inputs: this.inputs.map((input) => input.formatLE()),
+
+      outputCount: bytesToHex(encodeVarInt(this.outputs.length)),
       outputs: this.outputs.map((output) => output.formatLE()),
       locktime: bytesToHex(integerToLittleEndian(this.locktime, 4)),
 
