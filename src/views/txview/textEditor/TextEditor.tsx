@@ -7,7 +7,7 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
 import { validateFormattedTx } from './validation';
 import Tx from '@/crypto/transaction/Tx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type TEProps = {
   tx: Tx;
@@ -17,6 +17,11 @@ type TEProps = {
 export default function TextEditor({ tx, setTx }: TEProps) {
   const [txJson, setTxJson] = useState<string>(JSON.stringify(tx.format(), null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // console.log('new tx in text editor', tx);
+    setTxJson(JSON.stringify(tx.format(), null, 2));
+  }, [tx]);
 
   const handleChange = (value: string) => {
     setTxJson(value);

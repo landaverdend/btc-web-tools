@@ -22,7 +22,7 @@ export default class Tx {
     outputs: TxOut[],
     locktime: number,
     isSegwit = false,
-    witnessData?: TxWitnessData
+    segwitData?: { marker: number; flag: number; witnessData: TxWitnessData }
   ) {
     this.version = version;
     this.inputs = inputs;
@@ -31,9 +31,9 @@ export default class Tx {
 
     this.isSegwit = isSegwit;
     if (isSegwit) {
-      this.witnessMarker = 0x00;
-      this.witnessFlag = 0x01;
-      this.witnessData = witnessData;
+      this.witnessMarker = segwitData?.marker;
+      this.witnessFlag = segwitData?.flag;
+      this.witnessData = segwitData?.witnessData;
     }
   }
 
@@ -48,8 +48,10 @@ export default class Tx {
 
     // Check if it's a segwit transaction.
     const isSegwit = stream.peek(1)[0] === 0x00;
+    let marker, flag;
     if (isSegwit) {
-      const [marker, flag] = stream.read(2);
+      marker = stream.read(1)[0];
+      flag = stream.read(1)[0];
     }
 
     const inputCount = stream.readVarInt(); // Var int can take up to 9 bytes
@@ -73,7 +75,14 @@ export default class Tx {
     const locktime = Number(littleEndianToInteger(stream.read(4)));
 
     return isSegwit
-      ? new Tx(version, inputs, outputs, locktime, isSegwit, witnessData)
+      ? new Tx(
+          version,
+          inputs,
+          outputs,
+          locktime,
+          isSegwit,
+          isSegwit ? { marker: marker!, flag: flag!, witnessData: witnessData! } : undefined
+        )
       : new Tx(version, inputs, outputs, locktime);
   }
 
@@ -84,7 +93,7 @@ export default class Tx {
       json.outputs.map((o) => TxOut.fromJson(o)),
       json.locktime,
       json.witnesses ? true : false,
-      json.witnesses ? TxWitnessData.fromJson(json.witnesses) : undefined
+      json.witnesses ? { marker: json.marker!, flag: json.flag!, witnessData: TxWitnessData.fromJson(json.witnesses) } : undefined
     );
     return tx;
   }

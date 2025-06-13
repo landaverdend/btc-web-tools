@@ -32,15 +32,15 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTxHex(e.target.value);
-
+    console.log(e.target.value);
     try {
       if (!/^[0-9a-fA-F]+$/.test(e.target.value)) {
         throw new Error('Please enter only hexadecimal characters (0-9, a-f, A-F)');
       }
 
       let validTx = Tx.fromHex(e.target.value);
-
       setTx(validTx);
+      console.log(validTx);
       setHexError(null);
     } catch (error) {
       console.error(error);

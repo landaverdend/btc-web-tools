@@ -18,7 +18,7 @@ const mixedStr =
 const mixedObj = Tx.fromHex(mixedStr);
 
 export default function TxView() {
-  const [tx, setTx] = useState<Tx>(mixedObj);
+  const [tx, setTx] = useState<Tx>(segwitObj);
 
   return (
     <div className="txview-container">
