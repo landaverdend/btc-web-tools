@@ -24,6 +24,11 @@
       color: inherit;
       cursor: pointer;
     }
+
+    a:hover {
+      background-color: #333333f7;
+    }
+
   }
 
   textarea {

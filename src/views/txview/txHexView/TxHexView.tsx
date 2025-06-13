@@ -55,35 +55,35 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
         {/* If TX exists, spit it out.*/}
         {!hexError && (
           <>
-            <Bytefield bytes={txLE.version} content={'Transaction Version'} color={'orange'} place="top" />
-            {txLE.marker && <Bytefield bytes={txLE.marker} content={'Witness Marker'} color={'rgb(146 190 222)'} place="top" />}
-            {txLE.flag && <Bytefield bytes={txLE.flag} content={'Witness Flag'} color={'rgb(56 141 209)'} place="top" />}
+            <Bytefield bytes={txLE.version} content={'Transaction Version'} color={'#c084fc'} place="top" />
+            {txLE.marker && <Bytefield bytes={txLE.marker} content={'Witness Marker'} color={'#38bdf8'} place="top" />}
+            {txLE.flag && <Bytefield bytes={txLE.flag} content={'Witness Flag'} color={'#38bdf8'} place="top" />}
             {txLE.inputs.map(({ txid, vout, scriptSig, sequence }) => (
               <>
-                <Bytefield key={txid} bytes={txid} content={'Input: Previous Transaction Hash'} color={'rgb(146 190 222)'} />
-                <Bytefield key={vout} bytes={vout} content={'Input: Previous Output Index'} color={'rgb(56 141 209)'} />
-                <Bytefield key={scriptSig.cmds} bytes={scriptSig.cmds} content={'Input: Script Signature'} color={'#42A5F5'} />
-                <Bytefield key={sequence} bytes={sequence} content={'Input: Sequence Number'} color={'rgb(0 92 174)'} />
+                <Bytefield key={txid} bytes={txid} content={'Input: Previous Transaction Hash'} color={'#d4d4d8'} />
+                <Bytefield key={vout} bytes={vout} content={'Input: Previous Output Index'} color={'#d4d4d8'} />
+                <Bytefield key={scriptSig.cmds} bytes={scriptSig.cmds} content={'Input: Script Signature'} color={'#d4d4d8'} />
+                <Bytefield key={sequence} bytes={sequence} content={'Input: Sequence Number'} color={'#d4d4d8'} />
               </>
             ))}
 
             {txLE.outputs.map(({ amount, scriptPubkey }, i) => (
               <>
-                <Bytefield key={amount} bytes={amount} content={`Output #${i + 1}: Amount`} color={'rgb(255 152 0)'} />
+                <Bytefield key={amount} bytes={amount} content={`Output #${i + 1}: Amount`} color={'#fb923c'} />
                 <Bytefield
                   key={scriptPubkey.cmds}
                   bytes={scriptPubkey.cmds}
                   content={`Output #${i + 1}: Script Public Key`}
-                  color={'rgb(255 204 0)'}
+                  color={'#fb923c'}
                 />
               </>
             ))}
             {txLE.witnesses &&
               txLE.witnesses.map(({ stackLength, stack }) => (
                 <>
-                  <Bytefield bytes={stackLength} content={'Witness Stack Size'} color={'rgb(0 92 174)'} />
+                  <Bytefield bytes={stackLength} content={'Witness Stack Size'} color={'#ef4444'} />
                   {stack.map((item, i) => (
-                    <Bytefield key={item} bytes={item} content={`Witness Stack Item #${i + 1}`} color={'rgb(0 92 174)'} />
+                    <Bytefield key={item} bytes={item} content={`Witness Stack Item #${i + 1}`} color={'#ef4444'} />
                   ))}
                 </>
               ))}
