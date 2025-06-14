@@ -3,6 +3,7 @@ import './tx-hex-view.css';
 import { useState } from 'react';
 import { PlacesType, Tooltip } from 'react-tooltip';
 import { createPortal } from 'react-dom';
+import { TxInLE, TxOutLE } from '@/types/tx';
 
 const COLORS = {
   version: '#c084fc',
@@ -91,47 +92,11 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
               <Bytefield bytes={txLE.flag} color={COLORS.witnessFlag} toolTips={[{ content: 'Witness Flag', place: 'top' }]} />
             )}
             <Bytefield bytes={txLE.inputCount} color={COLORS.varInts} toolTips={[{ content: 'Input Count', place: 'top' }]} />
-            {txLE.inputs.map(({ txid, vout, scriptSig, sequence }) => (
-              <>
-                <Bytefield key={txid} bytes={txid} color={COLORS.inputs} toolTips={[{ content: 'Input Transaction ID' }]} />
-                <Bytefield
-                  key={vout}
-                  bytes={vout}
-                  color={COLORS.inputs}
-                  toolTips={[{ content: 'Input: Previous Output Index' }]}
-                />
-                <Bytefield
-                  key={scriptSig.cmds}
-                  bytes={scriptSig.cmds}
-                  color={COLORS.inputs}
-                  toolTips={[{ content: 'Input: Script Signature' }]}
-                />
-                <Bytefield
-                  key={sequence}
-                  bytes={sequence}
-                  color={COLORS.inputs}
-                  toolTips={[{ content: 'Input: Sequence Number' }]}
-                />
-              </>
-            ))}
+            <InputBytes inputs={txLE.inputs} />
 
             <Bytefield bytes={txLE.outputCount} color={COLORS.varInts} toolTips={[{ content: 'Output Count', place: 'top' }]} />
-            {txLE.outputs.map(({ amount, scriptPubkey }, i) => (
-              <>
-                <Bytefield
-                  key={amount}
-                  bytes={amount}
-                  color={COLORS.outputs}
-                  toolTips={[{ content: `Output #${i + 1}: Amount` }]}
-                />
-                <Bytefield
-                  key={scriptPubkey.cmds}
-                  bytes={scriptPubkey.cmds}
-                  color={COLORS.outputs}
-                  toolTips={[{ content: `Output #${i + 1}: Script Public Key` }]}
-                />
-              </>
-            ))}
+            <OutputBytes outputs={txLE.outputs} />
+
             {txLE.witnesses &&
               txLE.witnesses.map(({ stackLength, stack }) => (
                 <>
@@ -160,5 +125,72 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
         style={{ border: hexError ? '1px solid red' : 'none' }}
       />
     </div>
+  );
+}
+
+function InputBytes({ inputs }: { inputs: TxInLE[] }) {
+  return (
+    <>
+      {inputs.map(({ txid, vout, scriptSig, sequence }, i) => {
+        const txnum = { content: `Input ${i}` };
+        return (
+          <>
+            <Bytefield
+              key={txid}
+              bytes={txid}
+              color={COLORS.inputs}
+              toolTips={[txnum, { content: 'Transaction ID', place: 'top' }]}
+            />
+            <Bytefield
+              key={vout}
+              bytes={vout}
+              color={COLORS.inputs}
+              toolTips={[txnum, { content: 'Previous Output Index', place: 'top' }]}
+            />
+            <Bytefield
+              key={scriptSig.cmds}
+              bytes={scriptSig.cmds}
+              color={COLORS.inputs}
+              toolTips={[txnum, { content: 'Script Signature', place: 'top' }]}
+            />
+            <Bytefield
+              key={sequence}
+              bytes={sequence}
+              color={COLORS.inputs}
+              toolTips={[txnum, { content: 'Sequence Number', place: 'top' }]}
+            />
+          </>
+        );
+      })}
+    </>
+  );
+}
+
+function OutputBytes({ outputs }: { outputs: TxOutLE[] }) {
+  return (
+    <>
+      {outputs.map(({ amount, scriptPubkey }, i) => (
+        <>
+          <Bytefield
+            key={amount}
+            bytes={amount}
+            color={COLORS.outputs}
+            toolTips={[
+              { content: `Output: ${i}`, place: 'top' },
+              { content: `Amount`, place: 'bottom' },
+            ]}
+          />
+          <Bytefield
+            key={scriptPubkey.cmds}
+            bytes={scriptPubkey.cmds}
+            color={COLORS.outputs}
+            toolTips={[
+              { content: `Output ${i}`, place: 'top' },
+              { content: `Script Pubkey`, place: 'bottom' },
+            ]}
+          />
+        </>
+      ))}
+    </>
   );
 }
