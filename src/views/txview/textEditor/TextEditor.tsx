@@ -41,7 +41,7 @@ export default function TextEditor({ tx, setTx }: TEProps) {
 
   return (
     <div className="flex-column text-editor-container">
-      <div className="flex-row header-panel">Header Panel{jsonError && <div className="error-message">{jsonError}</div>}</div>
+      <div className="flex-row header-panel">Parsed JSON{jsonError && <div className="error-message">{jsonError}</div>}</div>
 
       <AceEditor
         mode="json"

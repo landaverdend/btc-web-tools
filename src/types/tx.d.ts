@@ -3,6 +3,7 @@ export type FormattedScript = {
 };
 
 export type ScriptLE = {
+  length: string;
   cmds: string;
 };
 
@@ -35,9 +36,14 @@ export type FormattedWitnessStack = {
   stack: string[];
 };
 
-export type WitnessStackLE = {
-  stackLength: string;
-  stack: string[];
+export type WitnessDataLE = {
+  stackLength: string; // varint
+  stack: WitnessItemLE[];
+};
+
+export type WitnessItemLE = {
+  itemLength: string; // varint
+  item: string; // bytes
 };
 
 export type FormattedTx = {

@@ -1,6 +1,6 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
-import { FormattedTx, FormattedWitnessStack, TxLE, WitnessStackLE } from '@/types/tx';
+import { FormattedTx, FormattedWitnessStack, TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
 export default class Tx {
@@ -183,11 +183,24 @@ export class TxWitnessData {
     this.stack = stack;
   }
 
-  formatLE(): WitnessStackLE[] {
-    return this.stack.map((witness) => ({
-      stackLength: bytesToHex(encodeVarInt(witness.length)),
-      stack: witness.map((item) => bytesToHex(item)),
-    }));
+  formatLE(): WitnessDataLE[] {
+    const toRet: WitnessDataLE[] = [];
+
+    console.log(this.stack);
+    for (const witness of this.stack) {
+      const stackLength = bytesToHex(encodeVarInt(witness.length));
+
+      const stackItems: WitnessItemLE[] = [];
+      for (const item of witness) {
+        const itemLength = bytesToHex(encodeVarInt(item.length));
+        const itemBytes = bytesToHex(item);
+        stackItems.push({ itemLength, item: itemBytes });
+      }
+
+      toRet.push({ stackLength, stack: stackItems });
+    }
+
+    return toRet;
   }
 
   format(): FormattedWitnessStack[] {

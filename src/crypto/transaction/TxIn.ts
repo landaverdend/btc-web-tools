@@ -1,6 +1,6 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { Script } from '../script/Script';
-import { bytesToHex, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
+import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
 import { FormattedTxIn, TxInLE } from '@/types/tx';
 
 export default class TxIn {

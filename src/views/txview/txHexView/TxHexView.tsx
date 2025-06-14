@@ -3,7 +3,7 @@ import './tx-hex-view.css';
 import { useState } from 'react';
 import { PlacesType, Tooltip } from 'react-tooltip';
 import { createPortal } from 'react-dom';
-import { TxInLE, TxOutLE } from '@/types/tx';
+import { TxInLE, TxOutLE, WitnessDataLE } from '@/types/tx';
 
 const COLORS = {
   version: '#c084fc',
@@ -50,10 +50,10 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
 
   // Only build the tx if we don't have an active error on that string
   const txLE = tx.formatLE();
+  console.log(txLE);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTxHex(e.target.value);
-    console.log(e.target.value);
     try {
       if (!/^[0-9a-fA-F]+$/.test(e.target.value)) {
         throw new Error('Please enter only hexadecimal characters (0-9, a-f, A-F)');
@@ -97,20 +97,7 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
             <Bytefield bytes={txLE.outputCount} color={COLORS.varInts} toolTips={[{ content: 'Output Count', place: 'top' }]} />
             <OutputBytes outputs={txLE.outputs} />
 
-            {txLE.witnesses &&
-              txLE.witnesses.map(({ stackLength, stack }) => (
-                <>
-                  <Bytefield bytes={stackLength} color={COLORS.witnesses} toolTips={[{ content: 'Witness Stack Size' }]} />
-                  {stack.map((item, i) => (
-                    <Bytefield
-                      key={item}
-                      bytes={item}
-                      color={COLORS.witnesses}
-                      toolTips={[{ content: `Witness Stack Item #${i + 1}` }]}
-                    />
-                  ))}
-                </>
-              ))}
+            <WitnessBytes witnesses={txLE.witnesses} />
             <Bytefield bytes={txLE.locktime} color={COLORS.locktime} toolTips={[{ content: 'Transaction Locktime' }]} />
           </>
         )}
@@ -148,6 +135,11 @@ function InputBytes({ inputs }: { inputs: TxInLE[] }) {
               toolTips={[txnum, { content: 'Previous Output Index', place: 'top' }]}
             />
             <Bytefield
+              bytes={scriptSig.length}
+              color={COLORS.inputs}
+              toolTips={[txnum, { content: 'Script Signature Length', place: 'top' }]}
+            />
+            <Bytefield
               key={scriptSig.cmds}
               bytes={scriptSig.cmds}
               color={COLORS.inputs}
@@ -181,6 +173,15 @@ function OutputBytes({ outputs }: { outputs: TxOutLE[] }) {
             ]}
           />
           <Bytefield
+            key={scriptPubkey.length}
+            bytes={scriptPubkey.length}
+            color={COLORS.outputs}
+            toolTips={[
+              { content: `Output ${i}`, place: 'top' },
+              { content: `Script Pubkey Length`, place: 'bottom' },
+            ]}
+          />
+          <Bytefield
             key={scriptPubkey.cmds}
             bytes={scriptPubkey.cmds}
             color={COLORS.outputs}
@@ -191,6 +192,46 @@ function OutputBytes({ outputs }: { outputs: TxOutLE[] }) {
           />
         </>
       ))}
+    </>
+  );
+}
+
+function WitnessBytes({ witnesses }: { witnesses?: WitnessDataLE[] }) {
+  return (
+    <>
+      {witnesses && (
+        <>
+          {witnesses.map((witness, i) => {
+            const witnessNum = { content: `Witness ${i}` };
+
+            return (
+              <>
+                <Bytefield
+                  bytes={witness.stackLength}
+                  color={COLORS.witnesses}
+                  toolTips={[witnessNum, { content: 'Witness Total Stack Size', place: 'top' }]}
+                />
+                {witness.stack.map((item, j) => {
+                  return (
+                    <>
+                      <Bytefield
+                        bytes={item.itemLength}
+                        color={COLORS.witnesses}
+                        toolTips={[witnessNum, { content: `Witness Stack Item #${j} Length`, place: 'top' }]}
+                      />
+                      <Bytefield
+                        bytes={item.item}
+                        color={COLORS.witnesses}
+                        toolTips={[witnessNum, { content: `Witness Stack Item #${j}`, place: 'top' }]}
+                      />
+                    </>
+                  );
+                })}
+              </>
+            );
+          })}
+        </>
+      )}
     </>
   );
 }

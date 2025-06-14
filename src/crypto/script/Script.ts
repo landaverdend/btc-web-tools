@@ -45,6 +45,7 @@ export class Script {
     const serialized = this.serializeCommands().toBytes();
 
     return {
+      length: bytesToHex(encodeVarInt(serialized.length)),
       cmds: bytesToHex(serialized),
     };
   }

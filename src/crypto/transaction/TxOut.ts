@@ -1,7 +1,7 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { Script } from '../script/Script';
 import { bytesToHex, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
-import { FormattedTxOut } from '@/types/tx';
+import { FormattedTxOut, TxOutLE } from '@/types/tx';
 
 export default class TxOut {
   amount: number;
@@ -21,7 +21,7 @@ export default class TxOut {
     return stream.toBytes();
   }
 
-  formatLE() {
+  formatLE(): TxOutLE {
     return {
       amount: bytesToHex(integerToLittleEndian(this.amount, 8)),
       scriptPubkey: this.scriptPubkey.formatLE(),
@@ -37,6 +37,7 @@ export default class TxOut {
 
   static fromJson(json: FormattedTxOut) {
     const amount = json.amount;
+    console.log('amount: ', amount.toString(16));
     const scriptPubkey = Script.fromJson(json.scriptPubkey);
 
     return new TxOut(amount, scriptPubkey);
