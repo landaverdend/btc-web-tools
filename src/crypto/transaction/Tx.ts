@@ -186,7 +186,6 @@ export class TxWitnessData {
   formatLE(): WitnessDataLE[] {
     const toRet: WitnessDataLE[] = [];
 
-    console.log(this.stack);
     for (const witness of this.stack) {
       const stackLength = bytesToHex(encodeVarInt(witness.length));
 

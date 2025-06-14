@@ -9,7 +9,7 @@ export default function Navbar() {
       </div>
 
       <div className="flex-row navbar-list">
-        <span>TX Parser</span>
+        <span className="navbar-list-item">TX Parser</span>
       </div>
     </div>
   );

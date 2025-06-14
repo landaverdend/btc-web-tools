@@ -109,3 +109,8 @@ const isValidOutput = (output: any): boolean => {
     Array.isArray(output.scriptPubkey.cmds)
   );
 };
+
+
+function validWitnessData() {
+  
+}

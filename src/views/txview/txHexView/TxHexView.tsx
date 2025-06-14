@@ -50,7 +50,6 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
 
   // Only build the tx if we don't have an active error on that string
   const txLE = tx.formatLE();
-  console.log(txLE);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTxHex(e.target.value);
@@ -61,7 +60,6 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
 
       let validTx = Tx.fromHex(e.target.value);
       setTx(validTx);
-      console.log(validTx);
       setHexError(null);
     } catch (error) {
       console.error(error);

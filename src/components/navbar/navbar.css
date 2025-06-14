@@ -27,4 +27,12 @@
   .navbar-list {
     margin-right: 10px;
   }
+
+  .navbar-list-item {
+    cursor: pointer;
+  }
+
+  .navbar-list-item:hover {
+    color: #faba72;
+  }
 }

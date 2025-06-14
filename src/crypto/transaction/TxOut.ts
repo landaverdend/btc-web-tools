@@ -37,7 +37,6 @@ export default class TxOut {
 
   static fromJson(json: FormattedTxOut) {
     const amount = json.amount;
-    console.log('amount: ', amount.toString(16));
     const scriptPubkey = Script.fromJson(json.scriptPubkey);
 
     return new TxOut(amount, scriptPubkey);

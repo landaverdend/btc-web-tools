@@ -7,7 +7,7 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
 import { validateFormattedTx } from './validation';
 import Tx from '@/crypto/transaction/Tx';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type TEProps = {
   tx: Tx;
@@ -18,22 +18,30 @@ export default function TextEditor({ tx, setTx }: TEProps) {
   const [txJson, setTxJson] = useState<string>(JSON.stringify(tx.format(), null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
 
+  const isInternalUpdate = useRef(false);
+
   useEffect(() => {
-    // console.log('new tx in text editor', tx);
-    setTxJson(JSON.stringify(tx.format(), null, 2));
+    // Only update if the change came from outside this component
+    if (!isInternalUpdate.current) {
+      setTxJson(JSON.stringify(tx.format(), null, 2));
+    }
+    // Reset the flag after the update
+    isInternalUpdate.current = false;
   }, [tx]);
 
   const handleChange = (value: string) => {
     setTxJson(value);
-
     try {
       const obj = JSON.parse(value);
       if (validateFormattedTx(obj)) {
+        isInternalUpdate.current = true;
+        console.log(value);
         const tx = Tx.fromJson(obj);
         setTx(tx);
 
         setJsonError(null);
-      }
+      } 
+
     } catch (error) {
       setJsonError(error instanceof Error ? error.message : 'JSON Error');
     }
