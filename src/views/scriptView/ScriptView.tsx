@@ -1,4 +1,9 @@
-export default function ScriptView() {
+import { ScriptEditor } from './scriptEditor/ScriptEditor';
 
-  return <div> Script View</div>;
+export default function ScriptView() {
+  return (
+    <div>
+      <ScriptEditor />
+    </div>
+  );
 }

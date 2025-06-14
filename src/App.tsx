@@ -6,7 +6,7 @@ import ScriptView from '@views/scriptView/ScriptView';
 export type ViewType = 'tx' | 'script';
 
 export default function App() {
-  const [view, setView] = useState<ViewType>('tx');
+  const [view, setView] = useState<ViewType>('script');
 
   const renderView = () => {
     switch (view) {
