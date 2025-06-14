@@ -5,20 +5,3 @@
   height: 100vh;
 }
 
-.header-panel {
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  height: 25px;
-  padding: 10px 0 10px 0;
-
-  background-color: #232323;
-  color: white;
-  width: 100%;
-
-  .error-message {
-    color: red;
-    font-size: 12px;
-    font-weight: bold;
-  }
-}

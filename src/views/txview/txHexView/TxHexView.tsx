@@ -71,6 +71,8 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
 
   return (
     <div id="test" className="flex-column tx-hex-view-container">
+      <div className="flex-row header-panel">Byte Encoding</div>
+
       <p className="tx-bytes">
         {hexError && txHex}
         {/* If TX exists, spit it out.*/}
