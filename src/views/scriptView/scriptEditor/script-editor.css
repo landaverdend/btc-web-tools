@@ -1,0 +1,6 @@
+.script-editor-container {
+  flex: 1;
+  align-items: center;
+
+  height: 100vh;
+}

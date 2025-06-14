@@ -8,6 +8,7 @@ import 'ace-builds/src-noconflict/mode-json';
 import { validateFormattedTx } from './validation';
 import Tx from '@/crypto/transaction/Tx';
 import { useEffect, useRef, useState } from 'react';
+import 'ace-builds/src-min-noconflict/ext-searchbox';
 
 type TEProps = {
   tx: Tx;
@@ -40,8 +41,7 @@ export default function TextEditor({ tx, setTx }: TEProps) {
         setTx(tx);
 
         setJsonError(null);
-      } 
-
+      }
     } catch (error) {
       setJsonError(error instanceof Error ? error.message : 'JSON Error');
     }
@@ -62,6 +62,7 @@ export default function TextEditor({ tx, setTx }: TEProps) {
           showPrintMargin: false,
           showGutter: true,
           highlightActiveLine: true,
+          enableSearch: true,
         }}
         style={{ border: jsonError ? 'red solid 1px' : 'none' }}
       />
