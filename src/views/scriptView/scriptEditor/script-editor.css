@@ -4,3 +4,7 @@
 
   height: 100vh;
 }
+
+.debug-active {
+  background-color: rgba(55, 98, 255, 0.261) !important;
+}
