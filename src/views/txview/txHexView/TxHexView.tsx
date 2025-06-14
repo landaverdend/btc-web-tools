@@ -1,7 +1,8 @@
 import Tx from '@/crypto/transaction/Tx';
 import './tx-hex-view.css';
-import { PlacesType, Tooltip } from 'react-tooltip';
 import { useState } from 'react';
+import { PlacesType, Tooltip } from 'react-tooltip';
+import { createPortal } from 'react-dom';
 
 const COLORS = {
   version: '#c084fc',
@@ -16,17 +17,25 @@ const COLORS = {
 
 type TBProps = {
   bytes: string;
-  content: string;
   color: string;
-  place?: PlacesType;
+
+  toolTips: { content: string; place?: PlacesType }[];
 };
-function Bytefield({ bytes, content, color, place }: TBProps) {
-  place = place ?? 'left';
+function Bytefield({ bytes, color, toolTips }: TBProps) {
+  const id = crypto.randomUUID();
+
+  const tooltips = toolTips.map(({ content, place }, i) => {
+    return <Tooltip key={i} id={id} style={{ zIndex: 1000 }} place={place ? place : 'left'} content={content} />;
+  });
 
   return (
-    <a className="tooltip" data-tooltip-content={content} data-tooltip-place={place} style={{ color }}>
-      {bytes}
-    </a>
+    <>
+      <a id={id} data-tooltip-id={id} style={{ color }}>
+        {bytes}
+      </a>
+      {/* Stupid fucking hack */}
+      {createPortal(tooltips, document.body)}
+    </>
   );
 }
 
@@ -60,52 +69,84 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
   };
 
   return (
-    <div className="flex-column tx-hex-view-container">
+    <div id="test" className="flex-column tx-hex-view-container">
       <p className="tx-bytes">
         {hexError && txHex}
         {/* If TX exists, spit it out.*/}
         {!hexError && (
           <>
-            <Bytefield bytes={txLE.version} content={'Transaction Version'} color={COLORS.version} place="top" />
-            {txLE.marker && <Bytefield bytes={txLE.marker} content={'Witness Marker'} color={COLORS.witnessMarker} place="top" />}
-            {txLE.flag && <Bytefield bytes={txLE.flag} content={'Witness Flag'} color={COLORS.witnessFlag} place="top" />}
-            <Bytefield bytes={txLE.inputCount} content={'Input Count'} color={COLORS.varInts} />
+            <Bytefield
+              bytes={txLE.version}
+              color={COLORS.version}
+              toolTips={[{ content: 'Transaction Version', place: 'top' }]}
+            />
+            {txLE.marker && (
+              <Bytefield
+                bytes={txLE.marker}
+                color={COLORS.witnessMarker}
+                toolTips={[{ content: 'Witness Marker', place: 'top' }]}
+              />
+            )}
+            {txLE.flag && (
+              <Bytefield bytes={txLE.flag} color={COLORS.witnessFlag} toolTips={[{ content: 'Witness Flag', place: 'top' }]} />
+            )}
+            <Bytefield bytes={txLE.inputCount} color={COLORS.varInts} toolTips={[{ content: 'Input Count', place: 'top' }]} />
             {txLE.inputs.map(({ txid, vout, scriptSig, sequence }) => (
               <>
-                <Bytefield key={txid} bytes={txid} content={'Input Transaction ID'} color={COLORS.inputs} />
-                <Bytefield key={vout} bytes={vout} content={'Input: Previous Output Index'} color={COLORS.inputs} />
+                <Bytefield key={txid} bytes={txid} color={COLORS.inputs} toolTips={[{ content: 'Input Transaction ID' }]} />
+                <Bytefield
+                  key={vout}
+                  bytes={vout}
+                  color={COLORS.inputs}
+                  toolTips={[{ content: 'Input: Previous Output Index' }]}
+                />
                 <Bytefield
                   key={scriptSig.cmds}
                   bytes={scriptSig.cmds}
-                  content={'Input: Script Signature'}
                   color={COLORS.inputs}
+                  toolTips={[{ content: 'Input: Script Signature' }]}
                 />
-                <Bytefield key={sequence} bytes={sequence} content={'Input: Sequence Number'} color={COLORS.inputs} />
+                <Bytefield
+                  key={sequence}
+                  bytes={sequence}
+                  color={COLORS.inputs}
+                  toolTips={[{ content: 'Input: Sequence Number' }]}
+                />
               </>
             ))}
 
-            <Bytefield bytes={txLE.outputCount} content={'Output Count'} color={COLORS.varInts} />
+            <Bytefield bytes={txLE.outputCount} color={COLORS.varInts} toolTips={[{ content: 'Output Count', place: 'top' }]} />
             {txLE.outputs.map(({ amount, scriptPubkey }, i) => (
               <>
-                <Bytefield key={amount} bytes={amount} content={`Output #${i + 1}: Amount`} color={COLORS.outputs} />
+                <Bytefield
+                  key={amount}
+                  bytes={amount}
+                  color={COLORS.outputs}
+                  toolTips={[{ content: `Output #${i + 1}: Amount` }]}
+                />
                 <Bytefield
                   key={scriptPubkey.cmds}
                   bytes={scriptPubkey.cmds}
-                  content={`Output #${i + 1}: Script Public Key`}
                   color={COLORS.outputs}
+                  toolTips={[{ content: `Output #${i + 1}: Script Public Key` }]}
                 />
               </>
             ))}
             {txLE.witnesses &&
               txLE.witnesses.map(({ stackLength, stack }) => (
                 <>
-                  <Bytefield bytes={stackLength} content={'Witness Stack Size'} color={COLORS.witnesses} />
+                  <Bytefield bytes={stackLength} color={COLORS.witnesses} toolTips={[{ content: 'Witness Stack Size' }]} />
                   {stack.map((item, i) => (
-                    <Bytefield key={item} bytes={item} content={`Witness Stack Item #${i + 1}`} color={COLORS.witnesses} />
+                    <Bytefield
+                      key={item}
+                      bytes={item}
+                      color={COLORS.witnesses}
+                      toolTips={[{ content: `Witness Stack Item #${i + 1}` }]}
+                    />
                   ))}
                 </>
               ))}
-            <Bytefield bytes={txLE.locktime} content={'Transaction Locktime'} color={COLORS.locktime} />
+            <Bytefield bytes={txLE.locktime} color={COLORS.locktime} toolTips={[{ content: 'Transaction Locktime' }]} />
           </>
         )}
       </p>
@@ -118,8 +159,6 @@ export default function TxHexView({ tx, setTx }: TXHVProps) {
         placeholder="Enter encoded transaction hex..."
         style={{ border: hexError ? '1px solid red' : 'none' }}
       />
-
-      <Tooltip anchorSelect=".tooltip" style={{ zIndex: 1001 }} />
     </div>
   );
 }
