@@ -25,7 +25,8 @@
   }
 
   .navbar-list {
-    margin-right: 10px;
+    gap: 10px;
+    margin-right: 25px;
   }
 
   .navbar-list-item {
@@ -33,6 +34,10 @@
   }
 
   .navbar-list-item:hover {
+    color: #ffa946;
+  }
+
+  .navbar-list-item.active {
     color: #faba72;
   }
 }

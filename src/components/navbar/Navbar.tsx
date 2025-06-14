@@ -1,7 +1,12 @@
+import { ViewType } from '@/App';
 import './navbar.css';
 import logo from '@assets/btc.png';
 
-export default function Navbar() {
+type NavbarProps = {
+  view: ViewType;
+  setView: (view: ViewType) => void;
+};
+export default function Navbar({ view, setView }: NavbarProps) {
   return (
     <div className="navbar-container">
       <div className="navbar-logo">
@@ -9,7 +14,16 @@ export default function Navbar() {
       </div>
 
       <div className="flex-row navbar-list">
-        <span className="navbar-list-item">TX Parser</span>
+        <span
+          className={`navbar-list-item ${view === 'tx' ? 'active' : ''}`}
+          onClick={() => {
+            setView('tx');
+          }}>
+          TX Parser
+        </span>
+        <span className={`navbar-list-item ${view === 'script' ? 'active' : ''}`} onClick={() => setView('script')}>
+          Script Debugger
+        </span>
       </div>
     </div>
   );
