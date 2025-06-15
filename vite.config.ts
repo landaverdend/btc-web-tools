@@ -16,6 +16,8 @@ export default defineConfig({
       '@state': path.resolve(__dirname, './src/state'),
       '@service': path.resolve(__dirname, './src/service'),
       '@assets': path.resolve(__dirname, './public/'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@crypto': path.resolve(__dirname, './src/crypto'),
     },
   },
 });

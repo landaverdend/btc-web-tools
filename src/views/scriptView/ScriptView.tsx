@@ -3,15 +3,33 @@ import { ScriptEditor } from './scriptEditor/ScriptEditor';
 import './script-view.css';
 import { useDebugStore } from '@/state/debugStore';
 import { Stack } from './stack/Stack';
+import { useScriptDebugger } from '@hooks/useScriptDebugger';
+import { bytesToHex } from '@/crypto/util/helper';
+import { OP_CODE_NAMES } from '@/crypto/op/op';
+
+
+
+function OpCodeWidget() {
+  const { getCurrentCmd } = useDebugStore();
+
+  const cmd = getCurrentCmd();
+
+  if (typeof cmd === 'number') {
+    return <div>{OP_CODE_NAMES[cmd]}</div>;
+  }
+
+  return <div>{bytesToHex(cmd)}</div>;
+}
 
 export default function ScriptView() {
-  const { getCurrentCmd, step, reset } = useDebugStore();
+  const { reset } = useDebugStore();
+  const { step } = useScriptDebugger();
 
   return (
     <div>
       <div>
         <div className="flex-column">
-          <h1>Debug Controls (WIP)</h1> <span>{getCurrentCmd()}</span>
+          <h1>Debug Controls (WIP)</h1> <OpCodeWidget />
         </div>
 
         <div className="flex-row">

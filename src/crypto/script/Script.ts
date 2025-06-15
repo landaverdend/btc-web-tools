@@ -17,16 +17,10 @@ export class Script {
   // Mostly for the debugger. If used by others then maybe move this.
   getCmd(index: number) {
     if (index >= this.cmds.length) {
-      return 'End of Script';
+      return -1;
     }
 
-    const cmd = this.cmds[index];
-
-    if (typeof cmd === 'number') {
-      return OP_CODE_NAMES[cmd];
-    }
-
-    return bytesToHex(cmd);
+    return this.cmds[index];
   }
 
   serializeCommands() {

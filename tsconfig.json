@@ -28,7 +28,9 @@
       "@game/*": ["src/game/*"],
       "@views/*": ["src/views/*"],
       "@state/*": ["src/state/*"],
-      "@service/*": ["src/service/*"]
+      "@service/*": ["src/service/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@crypto/*": ["src/crypto/*"]
     }
   }
 }

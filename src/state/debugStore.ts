@@ -13,10 +13,9 @@ interface DebugState {
   setAltStack: (altStack: string[]) => void;
   setCurrentCmd: (currentCmd: number) => void;
 
-  step: () => void;
   reset: () => void;
 
-  getCurrentCmd: () => string;
+  getCurrentCmd: () => number | Uint8Array;
 }
 
 export const useDebugStore = create<DebugState>((set, get) => ({
@@ -32,6 +31,5 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   setCurrentCmd: (currentCmd: number) => set({ currentCmd }),
   getCurrentCmd: () => get().script.getCmd(get().currentCmd),
 
-  step: () => set((state) => ({ ...state, currentCmd: state.currentCmd + 1 })),
   reset: () => set({ currentCmd: 0, stack: [], altStack: [] }),
 }));
