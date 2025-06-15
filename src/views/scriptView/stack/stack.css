@@ -1,0 +1,12 @@
+.stack-container {
+  flex: 1;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  background-color: #141414;
+
+  .stack-items {
+    font: 12px / normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Source Code Pro', 'source-code-pro', monospace;
+    color: white;
+  }
+}

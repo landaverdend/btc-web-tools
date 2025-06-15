@@ -2,6 +2,7 @@ import { ScriptEditor } from './scriptEditor/ScriptEditor';
 
 import './script-view.css';
 import { useDebugStore } from '@/state/debugStore';
+import { Stack } from './stack/Stack';
 
 export default function ScriptView() {
   const { getCurrentCmd, step, reset } = useDebugStore();
@@ -33,9 +34,7 @@ export default function ScriptView() {
       <div className="flex-row script-view-container">
         <ScriptEditor />
 
-        <div className="flex-column" style={{ flex: 1 }}>
-          Stack Placeholder
-        </div>
+        <Stack />
       </div>
     </div>
   );

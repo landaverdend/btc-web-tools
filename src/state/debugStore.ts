@@ -34,5 +34,4 @@ export const useDebugStore = create<DebugState>((set, get) => ({
 
   step: () => set((state) => ({ ...state, currentCmd: state.currentCmd + 1 })),
   reset: () => set({ currentCmd: 0, stack: [], altStack: [] }),
-
 }));
