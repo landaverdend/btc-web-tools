@@ -30,6 +30,21 @@ export function encodeNumber(num: number) {
   return new Uint8Array(bytes);
 }
 
+export function decodeNumber(bytes: Uint8Array) {
+  if (bytes.length === 0) {
+    return 0;
+  }
+
+  const bigEndian = bytes.reverse();
+  const isNegative = (bigEndian[0] & 0x80) !== 0;
+
+  let result = isNegative ? bigEndian[0] & 0x7f : bigEndian[0];
+  for (let i = 1; i < bigEndian.length; i++) {
+    result = result * 256 + bigEndian[i];
+  }
+  return isNegative ? -result : result;
+}
+
 function op_0(stack: string[]) {
   stack.push(bytesToHex(encodeNumber(0)));
   return true;

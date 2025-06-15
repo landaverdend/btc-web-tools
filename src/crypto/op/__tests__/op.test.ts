@@ -1,5 +1,5 @@
 import { hexToBytes } from '@/crypto/util/helper';
-import { encodeNumber } from '../op';
+import { decodeNumber, encodeNumber } from '../op';
 
 describe('encode_number works', () => {
   test('encode_number works for 0', () => {
@@ -38,5 +38,37 @@ describe('encode_number works', () => {
     const actual = encodeNumber(-100);
     const expected = hexToBytes('e4');
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('decode_number works', () => {
+  test('decode_number works for 0', () => {
+    const actual = decodeNumber(new Uint8Array(0));
+    expect(actual).toEqual(0);
+  });
+
+  test('1', () => {
+    const actual = decodeNumber(hexToBytes('01'));
+    expect(actual).toEqual(1);
+  });
+
+  test('-1', () => {
+    const actual = decodeNumber(hexToBytes('81'));
+    expect(actual).toEqual(-1);
+  });
+
+  test('-5', () => {
+    const actual = decodeNumber(hexToBytes('85'));
+    expect(actual).toEqual(-5);
+  });
+
+  test('0xffffffffff', () => {
+    const actual = decodeNumber(hexToBytes('ffffffffff00'));
+    expect(actual).toEqual(0xffffffffff);
+  });
+
+  test('-0xffffffffff', () => {
+    const actual = decodeNumber(hexToBytes('ffffffffff80'));
+    expect(actual).toEqual(-0xffffffffff);
   });
 });
