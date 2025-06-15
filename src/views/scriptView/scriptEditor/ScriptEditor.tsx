@@ -2,49 +2,47 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/theme-twilight';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ScriptMode } from '../ace-modes/ScriptMode';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import './script-editor.css';
 import { compileScript } from '../scriptCompiler';
 import { Range } from 'ace-builds';
+import { useDebugStore } from '@/state/debugStore';
 
 const SCRIPT_MODE = new ScriptMode();
 
-export function ScriptEditor() {
-  const [script, setScript] = useState<string>('');
+interface ScriptEditorProps {}
+export function ScriptEditor({}: ScriptEditorProps) {
+  const { setScript } = useDebugStore();
+
+  const [userText, setUserText] = useState<string>('');
 
   const [compileError, setCompileError] = useState<string | null>(null);
-  const [currentLine, setCurrentLine] = useState<number>(0);
 
   const editorRef = useRef<AceEditor>(null);
 
-  useEffect(() => {
-    highlightLine(currentLine);
-  }, []);
-
   const handleChange = (value: string) => {
     try {
-      compileScript(value);
+      const script = compileScript(value);
+      setScript(script);
       setCompileError(null);
     } catch (error) {
       console.error(error);
       setCompileError(error instanceof Error ? error.message : 'Unknown error');
     }
-    setScript(value);
+
+    setUserText(value);
   };
 
+  // TODO: Highlight current command in editor.
   const highlightLine = (lineNumber: number) => {
     if (!editorRef.current) return;
 
     const editor = editorRef.current.editor;
     const session = editor.getSession();
-    
+
     editor.session.addMarker(new Range(0, 0, 1, 5), 'debug-active', 'fullLine');
-
-    setCurrentLine(lineNumber);
-
-    console.log(session.getMarkers());
   };
 
   return (
@@ -57,7 +55,7 @@ export function ScriptEditor() {
         ref={editorRef}
         mode={SCRIPT_MODE}
         theme="twilight"
-        value={script}
+        value={userText}
         height="100%"
         width="100%"
         onChange={handleChange}

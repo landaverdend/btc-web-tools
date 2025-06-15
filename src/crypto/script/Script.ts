@@ -5,13 +5,28 @@ import { FormattedScript, ScriptLE } from '@/types/tx';
 
 // A script is just a list of bigint commands.
 export class Script {
-  private cmds: (number | Uint8Array)[];
+  cmds: (number | Uint8Array)[];
 
   constructor(cmds?: (number | Uint8Array)[]) {
     this.cmds = cmds ?? [];
 
     // Serialize the commands to get the length of the script. Throw out an error if the script is too long.
     this.serializeCommands();
+  }
+
+  // Mostly for the debugger. If used by others then maybe move this.
+  getCmd(index: number) {
+    if (index >= this.cmds.length) {
+      return 'End of Script';
+    }
+
+    const cmd = this.cmds[index];
+
+    if (typeof cmd === 'number') {
+      return OP_CODE_NAMES[cmd];
+    }
+
+    return bytesToHex(cmd);
   }
 
   serializeCommands() {
