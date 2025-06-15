@@ -1,4 +1,3 @@
-import { bytesToHex } from '@crypto/util/helper';
 import { useDebugStore } from '@/state/debugStore';
 
 export function useScriptDebugger() {
@@ -18,7 +17,7 @@ export function useScriptDebugger() {
       console.log(cmd);
     } else {
       // if command is a bytearray, push it onto the stack.
-      stack.push(bytesToHex(cmd));
+      stack.push(cmd);
     }
     setCurrentCmd(currentCmd + 1);
   };

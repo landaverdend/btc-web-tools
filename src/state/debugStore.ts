@@ -3,14 +3,14 @@ import { create } from 'zustand/react';
 
 interface DebugState {
   script: Script;
-  stack: string[];
-  altStack: string[];
+  stack: Uint8Array[];
+  altStack: Uint8Array[];
 
   currentCmd: number;
 
   setScript: (script: Script) => void;
-  setStack: (stack: string[]) => void;
-  setAltStack: (altStack: string[]) => void;
+  setStack: (stack: Uint8Array[]) => void;
+  setAltStack: (altStack: Uint8Array[]) => void;
   setCurrentCmd: (currentCmd: number) => void;
 
   reset: () => void;
@@ -25,8 +25,8 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   currentCmd: 0,
 
   setScript: (script: Script) => set({ script }),
-  setStack: (stack: string[]) => set({ stack }),
-  setAltStack: (altStack: string[]) => set({ altStack }),
+  setStack: (stack: Uint8Array[]) => set({ stack }),
+  setAltStack: (altStack: Uint8Array[]) => set({ altStack }),
 
   setCurrentCmd: (currentCmd: number) => set({ currentCmd }),
   getCurrentCmd: () => get().script.getCmd(get().currentCmd),

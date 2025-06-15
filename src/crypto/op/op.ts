@@ -1,3 +1,50 @@
+import { bytesToHex } from '../util/helper';
+
+export function encodeNumber(num: number) {
+  if (num === 0) {
+    return new Uint8Array(0);
+  }
+
+  const absNum = Math.abs(num);
+  const negative = num < 0;
+
+  const bytes: number[] = [];
+  let remaining = absNum;
+
+  while (remaining > 0) {
+    bytes.push(remaining & 0xff);
+    remaining = Math.floor(remaining / 256);
+  }
+
+  // Handle sign bit: highest bit is 1 if negative
+  if (bytes[bytes.length - 1] & 0x80) {
+    if (negative) {
+      bytes.push(0x80);
+    } else {
+      bytes.push(0);
+    }
+  } else if (negative) {
+    bytes[bytes.length - 1] |= 0x80;
+  }
+
+  return new Uint8Array(bytes);
+}
+
+function op_0(stack: string[]) {
+  stack.push(bytesToHex(encodeNumber(0)));
+  return true;
+}
+
+function op_1(stack: string[]) {
+  stack.push('1');
+  return true;
+}
+
+export const OP_CODE_FUNCTIONS: Record<number, (stack: string[]) => boolean> = {
+  0: op_0,
+  80: op_1,
+};
+
 export const OP_CODE_NAMES: Record<number, string> = {
   0: 'OP_0',
   76: 'OP_PUSHDATA1',
