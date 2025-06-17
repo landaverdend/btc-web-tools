@@ -4,21 +4,6 @@ import './script-view.css';
 import { useDebugStore } from '@/state/debugStore';
 import { Stack } from './stack/Stack';
 import { useScriptDebugger } from '@hooks/useScriptDebugger';
-import { bytesToHex } from '@/crypto/util/helper';
-import { OP_CODE_NAMES } from '@/crypto/op/op';
-
-function OpCodeWidget() {
-  const { getCurrentCmd, script } = useDebugStore();
-
-  const cmd = getCurrentCmd();
-  console.log(script);
-
-  if (typeof cmd === 'number') {
-    return <div>{OP_CODE_NAMES[cmd]}</div>;
-  }
-
-  return <div>{bytesToHex(cmd)}</div>;
-}
 
 export default function ScriptView() {
   const { reset } = useDebugStore();
@@ -28,7 +13,7 @@ export default function ScriptView() {
     <div>
       <div>
         <div className="flex-column">
-          <h1>Debug Controls (WIP)</h1> <OpCodeWidget />
+          <h1>Debug Controls (WIP)</h1>
         </div>
 
         <div className="flex-row">

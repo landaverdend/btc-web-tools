@@ -19,7 +19,12 @@ export class ScriptHighlightRules extends new TextMode.Mode().HighlightRules {
         },
         {
           token: 'constant.numeric', // For hex values
-          regex: '[0-9a-fA-F]+',
+          regex: '0x[0-9a-fA-F]+',
+          caseInsensitive: true,
+        },
+        {
+          token: 'constant.numeric', // For base 10 values
+          regex: '[0-9]+',
           caseInsensitive: true,
         },
         {

@@ -4,6 +4,10 @@ import { bytesToHex } from '@/crypto/util/helper';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 
 function NextArg({ nextArg }: { nextArg: string }) {
+  if (nextArg === undefined || nextArg === '') {
+    return <span style={{ color: 'black' }}>None</span>;
+  }
+
   const nextArgColor = nextArg.startsWith('0x') ? 'var(--sky-blue)' : 'var(--soft-orange)';
 
   return <span style={{ color: nextArgColor }}>{nextArg} </span>;
