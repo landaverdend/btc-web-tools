@@ -1,5 +1,3 @@
-import { bytesToHex } from '../util/helper';
-
 export function encodeNumber(num: number) {
   if (num === 0) {
     return new Uint8Array(0);

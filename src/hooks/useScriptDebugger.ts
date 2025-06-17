@@ -1,21 +1,24 @@
 import { decodeNumber, OP_CODE_FUNCTIONS, OP_CODE_NAMES } from '@/crypto/op/op';
 import { bytesToHex } from '@/crypto/util/helper';
-import { useDebugStore } from '@/state/debugStore';
-
-export type ScriptDebuggerResult = 'success' | 'failure' | 'incomplete';
+import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
 
 export function useScriptDebugger() {
-  const { script, currentCmd, setCurrentCmd, stack } = useDebugStore();
+  const { script, currentCmd, setCurrentCmd, stack, status } = useDebugStore();
 
-  const step = () => {
-    // Script end check.
+  function step(): ScriptDebuggerResult {
+    // Program is already done....
+    if (status === 'Success' || status === 'Failure') return status;
+
     if (currentCmd >= script.cmds.length) {
+      // Script end check.
       // if stack is empty, or the last item is 0, then the script failed.
       if (stack.length === 0 || decodeNumber(stack.pop()!) === 0) {
-        return 'failure';
+        return 'Failure';
+        // setStatus('Failure');
       }
 
-      return 'success';
+      return 'Success';
+      // setStatus('Success');
     }
 
     // Get command to run.
@@ -26,7 +29,8 @@ export function useScriptDebugger() {
       const result = OP_CODE_FUNCTIONS[cmd](stack);
 
       if (!result) {
-        return 'failure';
+        return 'Failure';
+        // setStatus('Failure');
       }
     } else {
       // if command is a bytearray, push it onto the stack.
@@ -35,9 +39,9 @@ export function useScriptDebugger() {
 
     // Increment command counter
     setCurrentCmd(currentCmd + 1);
-
-    return 'incomplete';
-  };
+    return 'Running';
+    // setStatus('Running');
+  }
 
   const getNextArgument = () => {
     const cmd = script.getCmd(currentCmd);

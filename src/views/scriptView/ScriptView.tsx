@@ -6,7 +6,7 @@ import { Stack } from './stack/Stack';
 import { useScriptDebugger } from '@hooks/useScriptDebugger';
 
 export default function ScriptView() {
-  const { reset } = useDebugStore();
+  const { reset, setStatus } = useDebugStore();
   const { step } = useScriptDebugger();
 
   return (
@@ -19,7 +19,8 @@ export default function ScriptView() {
         <div className="flex-row">
           <button
             onClick={() => {
-              step();
+              const result = step();
+              setStatus(result);
             }}>
             Step
           </button>

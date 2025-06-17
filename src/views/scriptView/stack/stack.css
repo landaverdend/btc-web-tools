@@ -12,9 +12,14 @@
   }
 }
 
-.next-arg-container {
+.stack-details-container {
   gap: 10px;
-  padding: 5px;
-  background-color: var(--input-gray);
-  border-radius: 5px;
+  color: white;
+
+  .details-item {
+    background-color: var(--input-gray);
+    border-radius: 5px;
+
+    padding: 5px;
+  }
 }

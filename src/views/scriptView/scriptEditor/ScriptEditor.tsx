@@ -14,7 +14,7 @@ const SCRIPT_MODE = new ScriptMode();
 
 interface ScriptEditorProps {}
 export function ScriptEditor({}: ScriptEditorProps) {
-  const { setScript } = useDebugStore();
+  const { setScript, reset } = useDebugStore();
 
   const [userText, setUserText] = useState<string>(initialTemplate);
 

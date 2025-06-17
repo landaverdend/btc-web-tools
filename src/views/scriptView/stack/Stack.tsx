@@ -15,14 +15,22 @@ function NextArg({ nextArg }: { nextArg: string }) {
 
 interface StackProps {}
 export function Stack({}: StackProps) {
-  const { stack, altStack } = useDebugStore();
+  const { stack, altStack, status } = useDebugStore();
   const { getNextArgument } = useScriptDebugger();
 
   return (
     <div className="flex-column stack-container">
       <div className="flex-row header-panel">Stack</div>
-      <div className="flex-row next-arg-container">
-        <span style={{ color: 'white' }}>Next Argument: </span> <NextArg nextArg={getNextArgument()} />
+
+      <div className="flex-row stack-details-container">
+        <span className="details-item">
+          <span>Next Argument: </span>
+          <NextArg nextArg={getNextArgument()} />
+        </span>
+
+        <span className="details-item" style={{}}>
+          Script Status: {status}
+        </span>
       </div>
 
       <div className="flex-column stack-items">
