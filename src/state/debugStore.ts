@@ -1,5 +1,5 @@
 import { Script } from '@/crypto/script/Script';
-import { compileScript } from '@/views/scriptView/scriptCompiler';
+import { compileScript } from '@/crypto/script/scriptCompiler';
 import { create } from 'zustand/react';
 
 export const initialTemplate = '1\n1\nOP_DUP';

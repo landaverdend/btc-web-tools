@@ -6,9 +6,9 @@ import { useRef, useState } from 'react';
 import { ScriptMode } from '../ace-modes/ScriptMode';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import './script-editor.css';
-import { compileScript } from '../scriptCompiler';
 import { Range } from 'ace-builds';
 import { initialTemplate, useDebugStore } from '@/state/debugStore';
+import { compileScript } from '@/crypto/script/scriptCompiler';
 
 const SCRIPT_MODE = new ScriptMode();
 
