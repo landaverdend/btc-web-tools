@@ -16,6 +16,8 @@ body {
 :root {
   --sky-blue: rgb(56, 189, 248);
   --soft-orange: rgb(251, 146, 60);
-
+  --soft-green: rgb(163, 230, 53);
+  --soft-red: #ef4444;
+  --soft-purple: rgb(192, 132, 252);
   --input-gray: #333;
 }

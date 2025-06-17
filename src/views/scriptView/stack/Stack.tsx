@@ -1,4 +1,4 @@
-import { useDebugStore } from '@/state/debugStore';
+import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
 import './stack.css';
 import { bytesToHex } from '@/crypto/util/helper';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
@@ -11,6 +11,11 @@ function NextArg({ nextArg }: { nextArg: string }) {
   const nextArgColor = nextArg.startsWith('0x') ? 'var(--sky-blue)' : 'var(--soft-orange)';
 
   return <span style={{ color: nextArgColor }}>{nextArg} </span>;
+}
+function getStatusColor(status: ScriptDebuggerResult) {
+  if (status === 'Success') return 'var(--soft-green)';
+  if (status === 'Failure') return 'var(--soft-red)';
+  return 'var(--soft-purple)';
 }
 
 interface StackProps {}
@@ -28,8 +33,8 @@ export function Stack({}: StackProps) {
           <NextArg nextArg={getNextArgument()} />
         </span>
 
-        <span className="details-item" style={{}}>
-          Script Status: {status}
+        <span className="details-item" style={{ border: `1px solid ${getStatusColor(status)}` }}>
+          Script Status: <span style={{ color: getStatusColor(status) }}>{status}</span>
         </span>
       </div>
 

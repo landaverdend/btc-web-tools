@@ -6,13 +6,13 @@ import { createPortal } from 'react-dom';
 import { TxInLE, TxOutLE, WitnessDataLE } from '@/types/tx';
 
 const COLORS = {
-  version: '#c084fc',
-  varInts: '#a3e635',
+  version: 'var(--soft-purple)',
+  varInts: 'var(--soft-green)',
   witnessMarker: '#38bdf8',
   witnessFlag: '#38bdf8',
   inputs: '#d4d4d8',
   outputs: 'var(--soft-orange)',
-  witnesses: '#ef4444',
+  witnesses: 'var(--soft-red)',
   locktime: 'var(--sky-blue)',
 };
 
