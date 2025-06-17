@@ -45,19 +45,482 @@ export function decodeNumber(bytes: Uint8Array) {
   return isNegative ? -result : result;
 }
 
-function op_0(stack: string[]) {
-  stack.push(bytesToHex(encodeNumber(0)));
+function op_nop(stack: Uint8Array[]) {
   return true;
 }
 
-function op_1(stack: string[]) {
-  stack.push('1');
+function op_0(stack: Uint8Array[]) {
+  stack.push(encodeNumber(0));
+  return true;
+}
+function op_1negate(stack: Uint8Array[]) {
+  stack.push(encodeNumber(-1));
   return true;
 }
 
-export const OP_CODE_FUNCTIONS: Record<number, (stack: string[]) => boolean> = {
+function op_1(stack: Uint8Array[]) {
+  stack.push(encodeNumber(1));
+  return true;
+}
+
+function op_2(stack: Uint8Array[]) {
+  stack.push(encodeNumber(2));
+  return true;
+}
+
+function op_3(stack: Uint8Array[]) {
+  stack.push(encodeNumber(3));
+  return true;
+}
+
+function op_4(stack: Uint8Array[]) {
+  stack.push(encodeNumber(4));
+  return true;
+}
+
+function op_5(stack: Uint8Array[]) {
+  stack.push(encodeNumber(5));
+  return true;
+}
+
+function op_6(stack: Uint8Array[]) {
+  stack.push(encodeNumber(6));
+  return true;
+}
+
+function op_7(stack: Uint8Array[]) {
+  stack.push(encodeNumber(7));
+  return true;
+}
+
+function op_8(stack: Uint8Array[]) {
+  stack.push(encodeNumber(8));
+  return true;
+}
+
+function op_9(stack: Uint8Array[]) {
+  stack.push(encodeNumber(9));
+  return true;
+}
+
+function op_10(stack: Uint8Array[]) {
+  stack.push(encodeNumber(10));
+  return true;
+}
+
+function op_11(stack: Uint8Array[]) {
+  stack.push(encodeNumber(11));
+  return true;
+}
+
+function op_12(stack: Uint8Array[]) {
+  stack.push(encodeNumber(12));
+  return true;
+}
+
+function op_13(stack: Uint8Array[]) {
+  stack.push(encodeNumber(13));
+  return true;
+}
+
+function op_14(stack: Uint8Array[]) {
+  stack.push(encodeNumber(14));
+  return true;
+}
+
+function op_15(stack: Uint8Array[]) {
+  stack.push(encodeNumber(15));
+  return true;
+}
+
+function op_16(stack: Uint8Array[]) {
+  stack.push(encodeNumber(16));
+  return true;
+}
+
+function op_if(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_notif(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_verify(stack: Uint8Array[]) {
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const el = decodeNumber(stack.pop() as Uint8Array);
+  if (el === 0) {
+    return false;
+  }
+
+  return true;
+}
+
+function op_return() {
+  return false;
+}
+
+function op_toaltstack(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_fromaltstack(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_2drop(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_2dup(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_3dup(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_2over(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_2rot(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_2swap(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_ifdup(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_depth(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_drop(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_dup(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_nip(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_over(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_pick(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_roll(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_rot(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_swap(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_tuck(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_size(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_equal(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_equalverify(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_1add(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_1sub(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_negate(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_abs(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_not(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_0notequal(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_add(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_sub(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_mul(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_booland(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_boolor(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_numequal(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_numequalverify(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_numnotequal(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_lessthan(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_greaterthan(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_lessthanorequal(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_greaterthanorequal(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_min(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_max(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_within(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_ripemd160(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_sha1(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_sha256(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_hash160(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_hash256(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_checksig(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_checksigverify(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_checkmultisig(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_checkmultisigverify(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_checklocktimeverify(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+function op_checksequenceverify(stack: Uint8Array[]) {
+  throw new Error('Not Implemented');
+  return false;
+}
+
+export const OP_CODE_FUNCTIONS: Record<number, (stack: Uint8Array[]) => boolean> = {
   0: op_0,
-  80: op_1,
+  79: op_1negate,
+  81: op_1,
+  82: op_2,
+  83: op_3,
+  84: op_4,
+  85: op_5,
+  86: op_6,
+  87: op_7,
+  88: op_8,
+  89: op_9,
+  90: op_10,
+  91: op_11,
+  92: op_12,
+  93: op_13,
+  94: op_14,
+  95: op_15,
+  96: op_16,
+  97: op_nop,
+  99: op_if,
+  100: op_notif,
+  105: op_verify,
+  106: op_return,
+  107: op_toaltstack,
+  108: op_fromaltstack,
+  109: op_2drop,
+  110: op_2dup,
+  111: op_3dup,
+  112: op_2over,
+  113: op_2rot,
+  114: op_2swap,
+  115: op_ifdup,
+  116: op_depth,
+  117: op_drop,
+  118: op_dup,
+  119: op_nip,
+  120: op_over,
+  121: op_pick,
+  122: op_roll,
+  123: op_rot,
+  124: op_swap,
+  125: op_tuck,
+  130: op_size,
+  135: op_equal,
+  136: op_equalverify,
+  139: op_1add,
+  140: op_1sub,
+  143: op_negate,
+  144: op_abs,
+  145: op_not,
+  146: op_0notequal,
+  147: op_add,
+  148: op_sub,
+  149: op_mul,
+  154: op_booland,
+  155: op_boolor,
+  156: op_numequal,
+  157: op_numequalverify,
+  158: op_numnotequal,
+  159: op_lessthan,
+  160: op_greaterthan,
+  161: op_lessthanorequal,
+  162: op_greaterthanorequal,
+  163: op_min,
+  164: op_max,
+  165: op_within,
+  166: op_ripemd160,
+  167: op_sha1,
+  168: op_sha256,
+  169: op_hash160,
+  170: op_hash256,
+  172: op_checksig,
+  173: op_checksigverify,
+  174: op_checkmultisig,
+  175: op_checkmultisigverify,
+  176: op_nop,
+  177: op_checklocktimeverify,
+  178: op_checksequenceverify,
+  179: op_nop,
+  180: op_nop,
+  181: op_nop,
+  182: op_nop,
+  183: op_nop,
+  184: op_nop,
+  185: op_nop,
 };
 
 export const OP_CODE_NAMES: Record<number, string> = {
