@@ -11,9 +11,9 @@ const COLORS = {
   witnessMarker: '#38bdf8',
   witnessFlag: '#38bdf8',
   inputs: '#d4d4d8',
-  outputs: '#fb923c',
+  outputs: 'var(--soft-orange)',
   witnesses: '#ef4444',
-  locktime: '#38bdf8',
+  locktime: 'var(--sky-blue)',
 };
 
 type TBProps = {

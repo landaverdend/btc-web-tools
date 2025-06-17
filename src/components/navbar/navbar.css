@@ -10,7 +10,7 @@
 
   width: 100vw;
   height: 90px;
-  background-color: #43413d;
+  background-color: var(--input-gray);
   color: white;
 
   .navbar-logo {

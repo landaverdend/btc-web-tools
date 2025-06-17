@@ -1,12 +1,20 @@
 .stack-container {
   flex: 1;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
+  gap: 10px;
 
   background-color: #141414;
 
   .stack-items {
     font: 12px / normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Source Code Pro', 'source-code-pro', monospace;
-    color: white;
+    color: var(--sky-blue);
   }
+}
+
+.next-arg-container {
+  gap: 10px;
+  padding: 5px;
+  background-color: var(--input-gray);
+  border-radius: 5px;
 }

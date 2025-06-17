@@ -617,6 +617,7 @@ export const OP_CODE_NAMES: Record<number, string> = {
   185: 'OP_NOP10',
 };
 
+// Reverse lookup of OP_CODE_NAMES
 export const OP_CODES: Record<string, number> = Object.fromEntries(
   Object.entries(OP_CODE_NAMES).map(([key, value]) => [value, Number(key)])
 );

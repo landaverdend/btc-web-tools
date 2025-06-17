@@ -7,12 +7,11 @@ import { useScriptDebugger } from '@hooks/useScriptDebugger';
 import { bytesToHex } from '@/crypto/util/helper';
 import { OP_CODE_NAMES } from '@/crypto/op/op';
 
-
-
 function OpCodeWidget() {
-  const { getCurrentCmd } = useDebugStore();
+  const { getCurrentCmd, script } = useDebugStore();
 
   const cmd = getCurrentCmd();
+  console.log(script);
 
   if (typeof cmd === 'number') {
     return <div>{OP_CODE_NAMES[cmd]}</div>;

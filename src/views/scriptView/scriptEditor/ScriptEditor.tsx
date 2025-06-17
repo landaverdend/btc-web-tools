@@ -8,7 +8,7 @@ import 'ace-builds/src-min-noconflict/ext-searchbox';
 import './script-editor.css';
 import { compileScript } from '../scriptCompiler';
 import { Range } from 'ace-builds';
-import { useDebugStore } from '@/state/debugStore';
+import { initialTemplate, useDebugStore } from '@/state/debugStore';
 
 const SCRIPT_MODE = new ScriptMode();
 
@@ -16,7 +16,7 @@ interface ScriptEditorProps {}
 export function ScriptEditor({}: ScriptEditorProps) {
   const { setScript } = useDebugStore();
 
-  const [userText, setUserText] = useState<string>('');
+  const [userText, setUserText] = useState<string>(initialTemplate);
 
   const [compileError, setCompileError] = useState<string | null>(null);
 

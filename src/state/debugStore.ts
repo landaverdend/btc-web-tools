@@ -1,5 +1,8 @@
 import { Script } from '@/crypto/script/Script';
+import { compileScript } from '@/views/scriptView/scriptCompiler';
 import { create } from 'zustand/react';
+
+export const initialTemplate = '1\n1\nOP_DUP';
 
 interface DebugState {
   script: Script;
@@ -19,7 +22,7 @@ interface DebugState {
 }
 
 export const useDebugStore = create<DebugState>((set, get) => ({
-  script: new Script(),
+  script: compileScript(initialTemplate),
   stack: [],
   altStack: [],
   currentCmd: 0,

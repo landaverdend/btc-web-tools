@@ -34,7 +34,7 @@
     width: 90%;
     height: 200px;
     resize: none;
-    background-color: #333;
+    background-color: var(--input-gray);
     color: #fff;
     border: none;
     padding: 1rem;

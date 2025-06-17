@@ -66,6 +66,10 @@ export function encodeVarInt(value: number | bigint) {
 export function hexToBytes(hex: string) {
   hex = hex.replace('0x', '');
 
+  if (hex.length % 2 !== 0) {
+    hex = '0' + hex;
+  }
+
   const bytes = new Uint8Array(hex.length / 2);
 
   if (hex.length % 2 !== 0) {

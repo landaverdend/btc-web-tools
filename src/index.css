@@ -12,3 +12,10 @@ body {
   display: flex;
   flex-direction: row;
 }
+
+:root {
+  --sky-blue: rgb(56, 189, 248);
+  --soft-orange: rgb(251, 146, 60);
+
+  --input-gray: #333;
+}
