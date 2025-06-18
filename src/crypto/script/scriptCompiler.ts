@@ -1,5 +1,5 @@
 import { OP_CODES } from '@/crypto/op/op';
-import { Script } from '@/crypto/script/Script';
+import { Script, ScriptCommand } from '@/crypto/script/Script';
 import { hexToBytes } from '@/crypto/util/helper';
 
 export function compileScript(scriptText: string) {
@@ -10,7 +10,7 @@ export function compileScript(scriptText: string) {
     .filter((cmd) => cmd.length > 0)
     .map((cmd) => (cmd.startsWith('OP') ? cmd.toUpperCase() : cmd));
 
-  const formattedCmds = commands.map((cmd) => {
+  const parsedCommands = commands.map((cmd) => {
     // Validate command and throw any errors if invalid.
     validateCommand(cmd);
 
@@ -33,7 +33,9 @@ export function compileScript(scriptText: string) {
     return bytes;
   });
 
-  return new Script(formattedCmds);
+  validateScript(parsedCommands);
+
+  return new Script(parsedCommands);
 }
 
 function validateCommand(cmd: string) {
@@ -57,4 +59,60 @@ export function isValidHex(hex: string) {
 
 export function isValidBase10(num: string) {
   return /^[0-9]+$/.test(num);
+}
+
+function isConditional(cmd: ScriptCommand) {
+  return cmd === 99 || cmd === 100;
+}
+
+function validateScript(script: ScriptCommand[]) {
+  validateIf(script);
+}
+
+// Go through the whole script and validate that the if statements are well formed.
+function validateIf(script: ScriptCommand[]) {
+  const ifStack = [];
+
+  // commands to parse through
+  let depth = 0;
+
+  const elseSet = new Set<number>([]); // set of depths where OP_ELSE has been seen.
+
+  for (let i = 0; i < script.length; i++) {
+    const cmd = script[i];
+
+    if (isConditional(cmd)) {
+      ifStack.push(cmd);
+      depth++;
+    }
+
+    // OP_ENDIF
+    if (cmd === 104) {
+      if (ifStack.length === 0) {
+        throw new Error('Unbalanced OP_IF/OP_ENDIF');
+      }
+      ifStack.pop();
+      elseSet.delete(depth);
+      depth--; 
+    }
+
+    // OP_ELSE
+    if (cmd === 103) {
+      if (elseSet.has(depth)) {
+        throw new Error('Multiple OP_ELSE statements');
+      }
+      if (ifStack.length === 0) {
+        throw new Error('OP_ELSE without OP_IF');
+      }
+      elseSet.add(depth);
+    }
+
+    if (depth < 0) {
+      throw new Error('Unbalanced OP_IF/OP_ENDIF');
+    }
+  }
+
+  if (ifStack.length > 0 || depth !== 0) {
+    throw new Error('Unbalanced OP_IF/OP_ENDIF');
+  }
 }

@@ -1,3 +1,5 @@
+import { ScriptCommand } from '../script/Script';
+
 export function encodeNumber(num: number) {
   if (num === 0) {
     return new Uint8Array(0);
@@ -43,110 +45,124 @@ export function decodeNumber(bytes: Uint8Array) {
   return isNegative ? -result : result;
 }
 
-function op_nop(stack: Uint8Array[]) {
+function op_nop({ stack }: OpContext) {
   return true;
 }
 
-function op_0(stack: Uint8Array[]) {
+function op_0({ stack }: OpContext) {
   stack.push(encodeNumber(0));
   return true;
 }
-function op_1negate(stack: Uint8Array[]) {
+function op_1negate({ stack }: OpContext) {
   stack.push(encodeNumber(-1));
   return true;
 }
 
-function op_1(stack: Uint8Array[]) {
+function op_1({ stack }: OpContext) {
   stack.push(encodeNumber(1));
   return true;
 }
 
-function op_2(stack: Uint8Array[]) {
+function op_2({ stack }: OpContext) {
   stack.push(encodeNumber(2));
   return true;
 }
 
-function op_3(stack: Uint8Array[]) {
+function op_3({ stack }: OpContext) {
   stack.push(encodeNumber(3));
   return true;
 }
 
-function op_4(stack: Uint8Array[]) {
+function op_4({ stack }: OpContext) {
   stack.push(encodeNumber(4));
   return true;
 }
 
-function op_5(stack: Uint8Array[]) {
+function op_5({ stack }: OpContext) {
   stack.push(encodeNumber(5));
   return true;
 }
 
-function op_6(stack: Uint8Array[]) {
+function op_6({ stack }: OpContext) {
   stack.push(encodeNumber(6));
   return true;
 }
 
-function op_7(stack: Uint8Array[]) {
+function op_7({ stack }: OpContext) {
   stack.push(encodeNumber(7));
   return true;
 }
 
-function op_8(stack: Uint8Array[]) {
+function op_8({ stack }: OpContext) {
   stack.push(encodeNumber(8));
   return true;
 }
 
-function op_9(stack: Uint8Array[]) {
+function op_9({ stack }: OpContext) {
   stack.push(encodeNumber(9));
   return true;
 }
 
-function op_10(stack: Uint8Array[]) {
+function op_10({ stack }: OpContext) {
   stack.push(encodeNumber(10));
   return true;
 }
 
-function op_11(stack: Uint8Array[]) {
+function op_11({ stack }: OpContext) {
   stack.push(encodeNumber(11));
   return true;
 }
 
-function op_12(stack: Uint8Array[]) {
+function op_12({ stack }: OpContext) {
   stack.push(encodeNumber(12));
   return true;
 }
 
-function op_13(stack: Uint8Array[]) {
+function op_13({ stack }: OpContext) {
   stack.push(encodeNumber(13));
   return true;
 }
 
-function op_14(stack: Uint8Array[]) {
+function op_14({ stack }: OpContext) {
   stack.push(encodeNumber(14));
   return true;
 }
 
-function op_15(stack: Uint8Array[]) {
+function op_15({ stack }: OpContext) {
   stack.push(encodeNumber(15));
   return true;
 }
 
-function op_16(stack: Uint8Array[]) {
+function op_16({ stack }: OpContext) {
   stack.push(encodeNumber(16));
   return true;
 }
 
-function op_if(stack: Uint8Array[]) {
+// We need to parse ahead of the instruction stream to see if the next instruction is an OP_ELSE or OP_ENDIF
+function op_if({ stack, cmds, setCurrentCmd }: OpContext) {
+  if (stack.length < 1) return false;
+
+  // Grab top stack item to see if it's truthy or falsey
+  const top = stack.pop();
+
+  // easy case, if top is truth just back out and proceed to next command in the block.
+  if (top && top.length !== 0) {
+    return true;
+  }
+
+  return false;
+}
+
+function op_endif({}: OpContext) {
+  return true;
+}
+
+function op_notif({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_notif(stack: Uint8Array[]) {
-  throw new Error('Not Implemented');
-  return false;
-}
-
-function op_verify(stack: Uint8Array[]) {
+function op_verify({ stack }: OpContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -163,277 +179,286 @@ function op_return() {
   return false;
 }
 
-function op_toaltstack(stack: Uint8Array[]) {
+function op_toaltstack({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_fromaltstack(stack: Uint8Array[]) {
+function op_fromaltstack({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_2drop(stack: Uint8Array[]) {
+function op_2drop({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_2dup(stack: Uint8Array[]) {
+function op_2dup({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_3dup(stack: Uint8Array[]) {
+function op_3dup({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_2over(stack: Uint8Array[]) {
+function op_2over({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_2rot(stack: Uint8Array[]) {
+function op_2rot({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_2swap(stack: Uint8Array[]) {
+function op_2swap({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_ifdup(stack: Uint8Array[]) {
+function op_ifdup({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_depth(stack: Uint8Array[]) {
+function op_depth({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_drop(stack: Uint8Array[]) {
+function op_drop({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_dup(stack: Uint8Array[]) {
+function op_dup({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_nip(stack: Uint8Array[]) {
+function op_nip({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_over(stack: Uint8Array[]) {
+function op_over({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_pick(stack: Uint8Array[]) {
+function op_pick({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_roll(stack: Uint8Array[]) {
+function op_roll({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_rot(stack: Uint8Array[]) {
+function op_rot({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_swap(stack: Uint8Array[]) {
+function op_swap({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_tuck(stack: Uint8Array[]) {
+function op_tuck({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_size(stack: Uint8Array[]) {
+function op_size({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_equal(stack: Uint8Array[]) {
+function op_equal({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_equalverify(stack: Uint8Array[]) {
+function op_equalverify({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_1add(stack: Uint8Array[]) {
+function op_1add({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_1sub(stack: Uint8Array[]) {
+function op_1sub({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_negate(stack: Uint8Array[]) {
+function op_negate({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_abs(stack: Uint8Array[]) {
+function op_abs({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_not(stack: Uint8Array[]) {
+function op_not({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_0notequal(stack: Uint8Array[]) {
+function op_0notequal({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_add(stack: Uint8Array[]) {
+function op_add({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_sub(stack: Uint8Array[]) {
+function op_sub({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_mul(stack: Uint8Array[]) {
+function op_mul({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_booland(stack: Uint8Array[]) {
+function op_booland({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_boolor(stack: Uint8Array[]) {
+function op_boolor({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_numequal(stack: Uint8Array[]) {
+function op_numequal({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_numequalverify(stack: Uint8Array[]) {
+function op_numequalverify({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_numnotequal(stack: Uint8Array[]) {
+function op_numnotequal({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_lessthan(stack: Uint8Array[]) {
+function op_lessthan({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_greaterthan(stack: Uint8Array[]) {
+function op_greaterthan({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_lessthanorequal(stack: Uint8Array[]) {
+function op_lessthanorequal({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_greaterthanorequal(stack: Uint8Array[]) {
+function op_greaterthanorequal({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_min(stack: Uint8Array[]) {
+function op_min({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_max(stack: Uint8Array[]) {
+function op_max({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_within(stack: Uint8Array[]) {
+function op_within({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_ripemd160(stack: Uint8Array[]) {
+function op_ripemd160({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_sha1(stack: Uint8Array[]) {
+function op_sha1({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_sha256(stack: Uint8Array[]) {
+function op_sha256({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_hash160(stack: Uint8Array[]) {
+function op_hash160({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_hash256(stack: Uint8Array[]) {
+function op_hash256({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_checksig(stack: Uint8Array[]) {
+function op_checksig({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_checksigverify(stack: Uint8Array[]) {
+function op_checksigverify({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_checkmultisig(stack: Uint8Array[]) {
+function op_checkmultisig({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_checkmultisigverify(stack: Uint8Array[]) {
+function op_checkmultisigverify({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_checklocktimeverify(stack: Uint8Array[]) {
+function op_checklocktimeverify({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_checksequenceverify(stack: Uint8Array[]) {
+function op_checksequenceverify({ stack }: OpContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-export const OP_CODE_FUNCTIONS: Record<number, (stack: Uint8Array[]) => boolean> = {
+// Multiple types of functions are possible...
+type OpContext = {
+  stack: Uint8Array[];
+  cmds?: ScriptCommand[];
+
+  currentCmd?: number;
+  setCurrentCmd?: (num: number) => void;
+};
+
+export const OP_CODE_FUNCTIONS: Record<number, (context: OpContext) => boolean> = {
   0: op_0,
   79: op_1negate,
   81: op_1,
@@ -455,6 +480,7 @@ export const OP_CODE_FUNCTIONS: Record<number, (stack: Uint8Array[]) => boolean>
   97: op_nop,
   99: op_if,
   100: op_notif,
+  104: op_endif,
   105: op_verify,
   106: op_return,
   107: op_toaltstack,

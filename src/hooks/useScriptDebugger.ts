@@ -26,11 +26,18 @@ export function useScriptDebugger() {
 
     // Check whether we push data or do an operation
     if (typeof cmd === 'number') {
-      const result = OP_CODE_FUNCTIONS[cmd](stack);
+      const func = OP_CODE_FUNCTIONS[cmd];
+
+      let result = false;
+      // OP_IF and OP_NOTIF
+      if ([99, 100].includes(cmd)) {
+        result = func({ stack, cmds: script.cmds.slice(currentCmd + 1), setCurrentCmd, currentCmd });
+      } else {
+        result = func({ stack });
+      }
 
       if (!result) {
         return 'Failure';
-        // setStatus('Failure');
       }
     } else {
       // if command is a bytearray, push it onto the stack.

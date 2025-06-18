@@ -2,7 +2,7 @@ import { Script } from '@/crypto/script/Script';
 import { compileScript } from '@/crypto/script/scriptCompiler';
 import { create } from 'zustand/react';
 
-export const initialTemplate = '1\n1\nOP_DUP';
+export const initialTemplate = 'OP_0 OP_IF OP_2 OP_ELSE OP_3 OP_ENDIF';
 
 export type ScriptDebuggerResult = 'Success' | 'Failure' | 'Running' | 'Not Started';
 
