@@ -66,16 +66,13 @@ function isConditional(cmd: ScriptCommand) {
 }
 
 function validateScript(script: ScriptCommand[]) {
-  validateIf(script);
+  validateConditionals(script);
 }
 
-// Go through the whole script and validate that the if statements are well formed.
-function validateIf(script: ScriptCommand[]) {
+// Go through the whole script and validate that the conditional statements are well formed.
+function validateConditionals(script: ScriptCommand[]) {
   const ifStack = [];
-
-  // commands to parse through
   let depth = 0;
-
   const elseSet = new Set<number>([]); // set of depths where OP_ELSE has been seen.
 
   for (let i = 0; i < script.length; i++) {
@@ -93,7 +90,7 @@ function validateIf(script: ScriptCommand[]) {
       }
       ifStack.pop();
       elseSet.delete(depth);
-      depth--; 
+      depth--;
     }
 
     // OP_ELSE
