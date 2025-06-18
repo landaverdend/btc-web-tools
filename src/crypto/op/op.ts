@@ -1,3 +1,4 @@
+import { ConditionFrame } from '@/state/debugStore';
 import { ScriptCommand } from '../script/Script';
 
 export function encodeNumber(num: number) {
@@ -43,6 +44,10 @@ export function decodeNumber(bytes: Uint8Array) {
     result = result * 256 + bigEndian[i];
   }
   return isNegative ? -result : result;
+}
+
+function isEncodedZero(bytes: Uint8Array) {
+  return bytes.length === 0 || (bytes.length === 1 && bytes[0] === 0);
 }
 
 function op_nop({ stack }: OpContext) {
@@ -139,18 +144,56 @@ function op_16({ stack }: OpContext) {
 }
 
 // We need to parse ahead of the instruction stream to see if the next instruction is an OP_ELSE or OP_ENDIF
-function op_if({ stack, cmds, setCurrentCmd }: OpContext) {
+function op_if({ stack, cmds, programCounter, setProgramCounter, pushConditionFrame }: OpContext) {
   if (stack.length < 1) return false;
 
-  // Grab top stack item to see if it's truthy or falsey
-  const top = stack.pop();
+  // We need to parse ahead of the instruction stream and grab the next control flow instruction (OP_ELSE or OP_ENDIF)
+  const frameStack: ConditionFrame[] = [{ elseIndex: undefined, endIndex: -1 }];
 
-  // easy case, if top is truth just back out and proceed to next command in the block.
-  if (top && top.length !== 0) {
-    return true;
+  let i = programCounter + 1; // grab the next instruction
+
+  while (i < cmds.length) {
+    const cmd = cmds[i];
+
+    if (cmd === OP_CODES.OP_IF) {
+      frameStack.push({ elseIndex: undefined, endIndex: -1 });
+    }
+
+    if (cmd === OP_CODES.OP_ELSE) {
+      frameStack[frameStack.length - 1].elseIndex = i;
+    }
+
+    if (cmd === OP_CODES.OP_ENDIF) {
+      frameStack[frameStack.length - 1].endIndex = i;
+
+      // we found our original guy.
+      if (frameStack.length === 1) {
+        break;
+      }
+
+      frameStack.pop();
+    }
+
+    i++;
   }
 
-  return false;
+  const conditionFrame = frameStack[frameStack.length - 1];
+  const top = stack.pop()!;
+
+  // If the top of the stack is 0, jump to the else index OR the end index.
+  if (isEncodedZero(top)) {
+    setProgramCounter(conditionFrame.elseIndex ?? conditionFrame.endIndex);
+    pushConditionFrame({ ...conditionFrame, elseIndex: undefined }); // we don't want the else index to be set because then the parent method will check it
+  } else {
+    setProgramCounter(programCounter + 1);
+    pushConditionFrame(conditionFrame);
+  }
+
+  return true;
+}
+
+function op_else({}: OpContext) {
+  return true;
 }
 
 function op_endif({}: OpContext) {
@@ -450,12 +493,14 @@ function op_checksequenceverify({ stack }: OpContext) {
 }
 
 // Multiple types of functions are possible...
-type OpContext = {
+export type OpContext = {
   stack: Uint8Array[];
-  cmds?: ScriptCommand[];
+  cmds: ScriptCommand[];
 
-  currentCmd?: number;
-  setCurrentCmd?: (num: number) => void;
+  programCounter: number;
+  setProgramCounter: (num: number) => void;
+
+  pushConditionFrame: (conditionFrame: ConditionFrame) => void;
 };
 
 export const OP_CODE_FUNCTIONS: Record<number, (context: OpContext) => boolean> = {
@@ -480,6 +525,7 @@ export const OP_CODE_FUNCTIONS: Record<number, (context: OpContext) => boolean> 
   97: op_nop,
   99: op_if,
   100: op_notif,
+  103: op_else,
   104: op_endif,
   105: op_verify,
   106: op_return,

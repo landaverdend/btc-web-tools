@@ -6,6 +6,12 @@ export const initialTemplate = 'OP_0 OP_IF OP_2 OP_ELSE OP_3 OP_ENDIF';
 
 export type ScriptDebuggerResult = 'Success' | 'Failure' | 'Running' | 'Not Started';
 
+// Data on the current branching path (if-else)
+export type ConditionFrame = {
+  elseIndex?: number; // index of the OP_ELSE instruction.
+  endIndex: number; // index of the OP_ENDIF instruction.
+};
+
 interface DebugState {
   script: Script;
   stack: Uint8Array[];
@@ -13,13 +19,18 @@ interface DebugState {
 
   status: ScriptDebuggerResult;
 
-  currentCmd: number;
+  programCounter: number;
+  conditionFrames: ConditionFrame[];
 
   setScript: (script: Script) => void;
   setStack: (stack: Uint8Array[]) => void;
   setAltStack: (altStack: Uint8Array[]) => void;
-  setCurrentCmd: (currentCmd: number) => void;
+  setProgramCounter: (currentCmd: number) => void;
   setStatus: (status: ScriptDebuggerResult) => void;
+
+  // Track data about the current branching path.
+  setConditionFrames: (conditionFrames: ConditionFrame[]) => void;
+  pushConditionFrame: (conditionFrame: ConditionFrame) => void;
 
   reset: () => void;
 
@@ -30,16 +41,20 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   script: compileScript(initialTemplate),
   stack: [],
   altStack: [],
-  currentCmd: 0,
+  programCounter: 0,
 
+  conditionFrames: [],
   status: 'Not Started',
+
+  setConditionFrames: (conditionFrames: ConditionFrame[]) => set({ conditionFrames }),
+  pushConditionFrame: (conditionFrame: ConditionFrame) => set({ conditionFrames: [...get().conditionFrames, conditionFrame] }),
 
   setScript: (script: Script) => set({ script }),
   setStack: (stack: Uint8Array[]) => set({ stack }),
   setAltStack: (altStack: Uint8Array[]) => set({ altStack }),
   setStatus: (status: ScriptDebuggerResult) => set({ status }),
-  setCurrentCmd: (currentCmd: number) => set({ currentCmd }),
-  getCurrentCmd: () => get().script.getCmd(get().currentCmd),
+  setProgramCounter: (currentCmd: number) => set({ programCounter: currentCmd }),
+  getCurrentCmd: () => get().script.getCmd(get().programCounter),
 
-  reset: () => set({ currentCmd: 0, stack: [], altStack: [], status: 'Not Started' }),
+  reset: () => set({ programCounter: 0, stack: [], altStack: [], status: 'Not Started', conditionFrames: [] }),
 }));

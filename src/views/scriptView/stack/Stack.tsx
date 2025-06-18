@@ -20,7 +20,7 @@ function getStatusColor(status: ScriptDebuggerResult) {
 
 interface StackProps {}
 export function Stack({}: StackProps) {
-  const { stack, altStack, status } = useDebugStore();
+  const { stack, altStack, status, programCounter } = useDebugStore();
   const { getNextArgument } = useScriptDebugger();
 
   return (
@@ -29,7 +29,11 @@ export function Stack({}: StackProps) {
 
       <div className="flex-row stack-details-container">
         <span className="details-item">
-          <span>Next Argument: </span>
+          Program Counter: <span style={{ color: 'var(--sky-blue)' }}>{programCounter}</span>
+        </span>
+
+        <span className="details-item">
+          <span>Current Argument: </span>
           <NextArg nextArg={getNextArgument()} />
         </span>
 
