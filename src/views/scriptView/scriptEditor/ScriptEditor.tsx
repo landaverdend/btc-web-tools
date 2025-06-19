@@ -17,8 +17,9 @@ const PC_MARKER_CLASS = 'debug-program-counter';
 interface ScriptEditorProps {}
 export function ScriptEditor({}: ScriptEditorProps) {
   const editorRef = useRef<AceEditor>(null);
+  const pcMarkerRef = useRef<number | null>(null);
 
-  const { setScript, programCounter } = useDebugStore();
+  const { setScript, programCounter, status } = useDebugStore();
 
   const [userText, setUserText] = useState<string>(initialTemplate);
   const [compileError, setCompileError] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export function ScriptEditor({}: ScriptEditorProps) {
     setUserText(value);
   };
 
+  // This is so dumb, but it works.
   const highlightCurrentToken = (editor: IAceEditor) => {
     const session = editor.session;
 
@@ -49,8 +51,11 @@ export function ScriptEditor({}: ScriptEditorProps) {
         let aceToken = tokens[token];
         if (aceToken.type === 'keyword' || aceToken.type === 'constant.numeric') {
           if (instruction === programCounter) {
-            console.log(colIndex, colIndex + aceToken.value.length);
-            editor.session.addMarker(new Range(row, colIndex, row, colIndex + aceToken.value.length), PC_MARKER_CLASS, 'text');
+            pcMarkerRef.current = editor.session.addMarker(
+              new Range(row, colIndex, row, colIndex + aceToken.value.length),
+              PC_MARKER_CLASS,
+              'text'
+            );
             return;
           }
 
@@ -62,24 +67,18 @@ export function ScriptEditor({}: ScriptEditorProps) {
     }
   };
 
-  const clearPCMarkers = (editor: IAceEditor) => {
-    const markers = editor.session.getMarkers();
-    Object.keys(markers).forEach((key) => {
-      const markerId = Number(key);
-      const marker = markers[markerId];
-
-      if (marker.clazz === PC_MARKER_CLASS) {
-        editor.session.removeMarker(markerId);
-      }
-    });
+  const clearPCMarker = (editor: IAceEditor) => {
+    if (pcMarkerRef.current) {
+      editor.session.removeMarker(pcMarkerRef.current);
+      pcMarkerRef.current = null;
+    }
   };
 
   useEffect(() => {
     if (editorRef.current) {
       const editor = editorRef.current.editor;
-      clearPCMarkers(editor);
+      clearPCMarker(editor);
       highlightCurrentToken(editor);
-      // editor.session.addMarker(new Range(0, 5, 0, 15), 'ace_selection', 'text');
     }
   }, [programCounter]);
 
