@@ -19,16 +19,26 @@ export function ScriptEditor({}: ScriptEditorProps) {
   const editorRef = useRef<AceEditor>(null);
   const pcMarkerRef = useRef<number | null>(null);
 
-  const { setScript, programCounter, status } = useDebugStore();
+  const { reset, setScript, programCounter, script } = useDebugStore();
 
   const [userText, setUserText] = useState<string>(initialTemplate);
   const [compileError, setCompileError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (editorRef.current) {
+      const editor = editorRef.current.editor;
+      clearPCMarker(editor);
+      highlightCurrentToken(editor);
+    }
+  }, [programCounter, script]);
+
   const handleChange = (value: string) => {
     try {
       const script = compileScript(value);
+      // If there are no compile errors, reset the debugger
       setScript(script);
       setCompileError(null);
+      reset();
     } catch (error) {
       console.error(error);
       setCompileError(error instanceof Error ? error.message : 'Unknown error');
@@ -73,14 +83,6 @@ export function ScriptEditor({}: ScriptEditorProps) {
       pcMarkerRef.current = null;
     }
   };
-
-  useEffect(() => {
-    if (editorRef.current) {
-      const editor = editorRef.current.editor;
-      clearPCMarker(editor);
-      highlightCurrentToken(editor);
-    }
-  }, [programCounter]);
 
   return (
     <div className="flex-column script-editor-container">
