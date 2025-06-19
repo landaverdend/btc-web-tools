@@ -2,25 +2,26 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/theme-twilight';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScriptMode } from '../ace-modes/ScriptMode';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import './script-editor.css';
 import { Range } from 'ace-builds';
 import { initialTemplate, useDebugStore } from '@/state/debugStore';
 import { compileScript } from '@/crypto/script/scriptCompiler';
+import { IAceEditor } from 'react-ace/lib/types';
 
 const SCRIPT_MODE = new ScriptMode();
+const PC_MARKER_CLASS = 'debug-program-counter';
 
 interface ScriptEditorProps {}
 export function ScriptEditor({}: ScriptEditorProps) {
-  const { setScript, reset } = useDebugStore();
+  const editorRef = useRef<AceEditor>(null);
+
+  const { setScript, programCounter } = useDebugStore();
 
   const [userText, setUserText] = useState<string>(initialTemplate);
-
   const [compileError, setCompileError] = useState<string | null>(null);
-
-  const editorRef = useRef<AceEditor>(null);
 
   const handleChange = (value: string) => {
     try {
@@ -35,15 +36,52 @@ export function ScriptEditor({}: ScriptEditorProps) {
     setUserText(value);
   };
 
-  // TODO: Highlight current command in editor.
-  const highlightLine = (lineNumber: number) => {
-    if (!editorRef.current) return;
+  const highlightCurrentToken = (editor: IAceEditor) => {
+    const session = editor.session;
 
-    const editor = editorRef.current.editor;
-    const session = editor.getSession();
+    let instruction = 0;
 
-    editor.session.addMarker(new Range(0, 0, 1, 5), 'debug-active', 'fullLine');
+    for (let row = 0; row < session.getLength(); row++) {
+      const tokens = session.getTokens(row);
+      let colIndex = 0;
+
+      for (let token = 0; token < tokens.length; token++) {
+        let aceToken = tokens[token];
+        if (aceToken.type === 'keyword' || aceToken.type === 'constant.numeric') {
+          if (instruction === programCounter) {
+            console.log(colIndex, colIndex + aceToken.value.length);
+            editor.session.addMarker(new Range(row, colIndex, row, colIndex + aceToken.value.length), PC_MARKER_CLASS, 'text');
+            return;
+          }
+
+          instruction++;
+        }
+
+        colIndex += tokens[token].value.length;
+      }
+    }
   };
+
+  const clearPCMarkers = (editor: IAceEditor) => {
+    const markers = editor.session.getMarkers();
+    Object.keys(markers).forEach((key) => {
+      const markerId = Number(key);
+      const marker = markers[markerId];
+
+      if (marker.clazz === PC_MARKER_CLASS) {
+        editor.session.removeMarker(markerId);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const editor = editorRef.current.editor;
+      clearPCMarkers(editor);
+      highlightCurrentToken(editor);
+      // editor.session.addMarker(new Range(0, 5, 0, 15), 'ace_selection', 'text');
+    }
+  }, [programCounter]);
 
   return (
     <div className="flex-column script-editor-container">

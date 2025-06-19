@@ -8,3 +8,8 @@
 .debug-active {
   background-color: rgba(55, 98, 255, 0.261) !important;
 }
+
+.debug-program-counter {
+  background-color: rgba(39, 102, 238, 0.488) !important;
+  position: absolute;
+}
