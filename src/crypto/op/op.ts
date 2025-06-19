@@ -243,9 +243,7 @@ function op_toaltstack({ stack, altStack }: OpContext) {
   if (stack.length < 1) {
     return false;
   }
-
   altStack.push(stack.pop()!);
-
   return true;
 }
 
@@ -258,32 +256,75 @@ function op_fromaltstack({ stack, altStack }: OpContext) {
 }
 
 function op_2drop({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  stack.pop();
+  stack.pop();
+
+  return true;
 }
 
 function op_2dup({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const first = stack[stack.length - 1];
+  const second = stack[stack.length - 2];
+
+  stack.push(second);
+  stack.push(first);
+
+  return true;
 }
 
 function op_3dup({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 3) {
+    return false;
+  }
+
+  const first = stack[stack.length - 1];
+  const second = stack[stack.length - 2];
+  const third = stack[stack.length - 3];
+
+  stack.push(third);
+  stack.push(second);
+  stack.push(first);
+
+  return true;
 }
 
 function op_2over({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 4) {
+    return false;
+  }
+
+  const third = stack[stack.length - 3];
+  const fourth = stack[stack.length - 4];
+
+  stack.push(fourth);
+  stack.push(third);
+
+  return true;
 }
 
 function op_2rot({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 6) {
+    return false;
+  }
+
+  const removed = stack.splice(stack.length - 6, 2);
+  stack.push(...removed);
+
+  return true;
 }
 
 function op_2swap({ stack }: OpContext) {
-  throw new Error('Not Implemented');
+
+  
+
   return false;
 }
 
