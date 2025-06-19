@@ -227,7 +227,7 @@ function op_verify({ stack }: OpContext) {
     return false;
   }
 
-  const el = decodeNumber(stack.pop() as Uint8Array);
+  const el = decodeNumber(stack.pop()!);
   if (el === 0) {
     return false;
   }
@@ -239,14 +239,22 @@ function op_return() {
   return false;
 }
 
-function op_toaltstack({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+function op_toaltstack({ stack, altStack }: OpContext) {
+  if (stack.length < 1) {
+    return false;
+  }
+
+  altStack.push(stack.pop()!);
+
+  return true;
 }
 
-function op_fromaltstack({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+function op_fromaltstack({ stack, altStack }: OpContext) {
+  if (altStack.length < 1) {
+    return false;
+  }
+  stack.push(altStack.pop()!);
+  return true;
 }
 
 function op_2drop({ stack }: OpContext) {
@@ -512,11 +520,11 @@ function op_checksequenceverify({ stack }: OpContext) {
 // Multiple types of functions are possible...
 export type OpContext = {
   stack: Uint8Array[];
+  altStack: Uint8Array[];
   cmds: ScriptCommand[];
 
   programCounter: number;
   setProgramCounter: (num: number) => void;
-
   pushConditionFrame: (conditionFrame: ConditionFrame) => void;
 };
 

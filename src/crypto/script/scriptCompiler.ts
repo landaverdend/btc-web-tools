@@ -84,7 +84,7 @@ function validateConditionals(script: ScriptCommand[]) {
     }
 
     // OP_ENDIF
-    if (cmd === 104) {
+    if (cmd === OP_CODES.OP_ENDIF) {
       if (ifStack.length === 0) {
         throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ENDIF');
       }
@@ -94,7 +94,7 @@ function validateConditionals(script: ScriptCommand[]) {
     }
 
     // OP_ELSE
-    if (cmd === 103) {
+    if (cmd === OP_CODES.OP_ELSE) {
       if (elseSet.has(depth)) {
         throw new Error('Multiple OP_ELSE statements');
       }

@@ -3,7 +3,8 @@ import { bytesToHex } from '@/crypto/util/helper';
 import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
 
 export function useScriptDebugger() {
-  const { script, programCounter, setProgramCounter, stack, status, conditionFrames, pushConditionFrame } = useDebugStore();
+  const { script, programCounter, setProgramCounter, stack, status, conditionFrames, pushConditionFrame, altStack } =
+    useDebugStore();
 
   function step(): ScriptDebuggerResult {
     // Program is already done....
@@ -27,6 +28,7 @@ export function useScriptDebugger() {
       // build the op context
       const opContext: OpContext = {
         stack,
+        altStack,
         cmds: script.cmds,
         setProgramCounter,
         programCounter,
@@ -38,6 +40,7 @@ export function useScriptDebugger() {
       switch (cmd) {
         // OP_IF and OP_NOTIF are control flow instructions that increment the program counter inside their own function
         case OP_CODES.OP_IF:
+        case OP_CODES.OP_NOTIF:
           break;
         case OP_CODES.OP_ENDIF:
           conditionFrames.pop();

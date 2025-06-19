@@ -1,7 +1,7 @@
 import { ScriptEditor } from './scriptEditor/ScriptEditor';
 
 import './script-view.css';
-import { Stack } from './stack/Stack';
+import { StackView } from './stack/StackView';
 
 import Stepover from '@assets/icons/stepover.svg?react';
 import Play from '@assets/icons/play.svg?react';
@@ -60,7 +60,7 @@ export default function ScriptView() {
             </DebugTooltip>
           </div>
         </div>
-        <Stack />
+        <StackView />
       </div>
       <Tooltip id="debug" />
     </div>
