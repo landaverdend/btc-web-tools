@@ -62,7 +62,7 @@ export function isValidBase10(num: string) {
 }
 
 function isConditional(cmd: ScriptCommand) {
-  return cmd === 99 || cmd === 100;
+  return cmd === OP_CODES.OP_IF || cmd === OP_CODES.OP_NOTIF;
 }
 
 function validateScript(script: ScriptCommand[]) {
@@ -86,7 +86,7 @@ function validateConditionals(script: ScriptCommand[]) {
     // OP_ENDIF
     if (cmd === 104) {
       if (ifStack.length === 0) {
-        throw new Error('Unbalanced OP_IF/OP_ENDIF');
+        throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ENDIF');
       }
       ifStack.pop();
       elseSet.delete(depth);
@@ -99,17 +99,17 @@ function validateConditionals(script: ScriptCommand[]) {
         throw new Error('Multiple OP_ELSE statements');
       }
       if (ifStack.length === 0) {
-        throw new Error('OP_ELSE without OP_IF');
+        throw new Error('OP_ELSE without OP_IF/OP_NOTIF');
       }
       elseSet.add(depth);
     }
 
     if (depth < 0) {
-      throw new Error('Unbalanced OP_IF/OP_ENDIF');
+      throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ENDIF');
     }
   }
 
   if (ifStack.length > 0 || depth !== 0) {
-    throw new Error('Unbalanced OP_IF/OP_ENDIF');
+    throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ENDIF');
   }
 }

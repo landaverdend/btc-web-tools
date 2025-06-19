@@ -36,7 +36,6 @@ export default function TextEditor({ tx, setTx }: TEProps) {
       const obj = JSON.parse(value);
       if (validateFormattedTx(obj)) {
         isInternalUpdate.current = true;
-        console.log(value);
         const tx = Tx.fromJson(obj);
         setTx(tx);
 

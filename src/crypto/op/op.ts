@@ -147,37 +147,7 @@ function op_16({ stack }: OpContext) {
 function op_if({ stack, cmds, programCounter, setProgramCounter, pushConditionFrame }: OpContext) {
   if (stack.length < 1) return false;
 
-  // We need to parse ahead of the instruction stream and grab the next control flow instruction (OP_ELSE or OP_ENDIF)
-  const frameStack: ConditionFrame[] = [{ elseIndex: undefined, endIndex: -1 }];
-
-  let i = programCounter + 1; // grab the next instruction
-
-  while (i < cmds.length) {
-    const cmd = cmds[i];
-
-    if (cmd === OP_CODES.OP_IF) {
-      frameStack.push({ elseIndex: undefined, endIndex: -1 });
-    }
-
-    if (cmd === OP_CODES.OP_ELSE) {
-      frameStack[frameStack.length - 1].elseIndex = i;
-    }
-
-    if (cmd === OP_CODES.OP_ENDIF) {
-      frameStack[frameStack.length - 1].endIndex = i;
-
-      // we found our original guy.
-      if (frameStack.length === 1) {
-        break;
-      }
-
-      frameStack.pop();
-    }
-
-    i++;
-  }
-
-  const conditionFrame = frameStack[frameStack.length - 1];
+  const conditionFrame = findBranchPoints(cmds, programCounter);
   const top = stack.pop()!;
 
   // If the top of the stack is 0, jump to the else index OR the end index.
@@ -192,17 +162,64 @@ function op_if({ stack, cmds, programCounter, setProgramCounter, pushConditionFr
   return true;
 }
 
+// Inverse of OP_IF
+function op_notif({ stack, cmds, programCounter, setProgramCounter, pushConditionFrame }: OpContext) {
+  if (stack.length < 1) return false;
+  const conditionFrame = findBranchPoints(cmds, programCounter);
+
+  const top = stack.pop()!;
+  // Inverse logic of OP_IF: go to next block if 0
+  if (isEncodedZero(top)) {
+    setProgramCounter(programCounter + 1);
+    pushConditionFrame(conditionFrame);
+  } else {
+    setProgramCounter(conditionFrame.elseIndex ?? conditionFrame.endIndex);
+    pushConditionFrame({ ...conditionFrame, elseIndex: undefined });
+  }
+
+  return true;
+}
+
+// Find the associated OP_ELSE or OP_ENDIF for a given condition opcode
+function findBranchPoints(cmds: ScriptCommand[], programCounter: number): ConditionFrame {
+  // We need to parse ahead of the instruction stream and grab the next control flow instruction (OP_ELSE or OP_ENDIF)
+  const frameStack: ConditionFrame[] = [{ elseIndex: undefined, endIndex: -1 }];
+
+  let i = programCounter + 1; // grab the next instruction
+
+  while (i < cmds.length) {
+    const cmd = cmds[i];
+
+    if (cmd === OP_CODES.OP_IF || cmd === OP_CODES.OP_NOTIF) {
+      frameStack.push({ elseIndex: undefined, endIndex: -1 });
+    }
+
+    if (cmd === OP_CODES.OP_ELSE) {
+      frameStack[frameStack.length - 1].elseIndex = i;
+    }
+
+    if (cmd === OP_CODES.OP_ENDIF) {
+      frameStack[frameStack.length - 1].endIndex = i;
+
+      // We found the original
+      if (frameStack.length === 1) {
+        return frameStack[0];
+      }
+
+      frameStack.pop();
+    }
+    i++;
+  }
+
+  throw new Error('No matching OP_ELSE or OP_ENDIF found');
+}
+
 function op_else({}: OpContext) {
   return true;
 }
 
 function op_endif({}: OpContext) {
   return true;
-}
-
-function op_notif({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
 }
 
 function op_verify({ stack }: OpContext) {
