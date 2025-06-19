@@ -322,44 +322,75 @@ function op_2rot({ stack }: OpContext) {
 }
 
 function op_2swap({ stack }: OpContext) {
+  if (stack.length < 4) {
+    return false;
+  }
 
-  
+  const removed = stack.splice(stack.length - 4, 2);
+  stack.push(...removed);
 
-  return false;
+  return true;
 }
 
 function op_ifdup({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const top = stack[stack.length - 1];
+  if (!isEncodedZero(top)) {
+    stack.push(top);
+  }
+  return true;
 }
 
 function op_depth({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  stack.push(encodeNumber(stack.length));
+  return true;
 }
 
 function op_drop({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+  stack.pop();
+
+  return true;
 }
 
 function op_dup({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const top = stack[stack.length - 1];
+  stack.push(top);
+
+  return true;
 }
 
 function op_nip({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  stack.splice(stack.length - 2, 1);
+
+  return true;
 }
 
 function op_over({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  stack.push(stack[stack.length - 2]);
+
+  return true;
 }
 
 function op_pick({ stack }: OpContext) {
-  throw new Error('Not Implemented');
+  throw new Error('Not implemented');
   return false;
 }
 
