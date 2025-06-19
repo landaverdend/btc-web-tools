@@ -16,7 +16,7 @@
 
   font-family: Arial, sans-serif !important;
   font-size: 1.1rem;
-  background-color: #232323;
+  background-color: var(--header-gray);
 
   color: white;
   width: 100%;
@@ -25,5 +25,32 @@
     color: red;
     font-size: 12px;
     font-weight: bold;
+  }
+}
+
+.debug-controls-container {
+  color: white;
+  justify-content: flex-start;
+  align-items: center;
+
+  .control-dock {
+    align-items: center;
+    justify-content: center;
+    gap: 7.5px;
+
+    padding: 5px;
+    border-radius: 5px;
+    background-color: var(--header-gray);
+
+    svg {
+      padding: 2px;
+    }
+
+    svg:hover {
+      cursor: pointer;
+      background-color: var(--input-gray);
+      border-radius: 5px;
+      padding: 2px;
+    }
   }
 }
