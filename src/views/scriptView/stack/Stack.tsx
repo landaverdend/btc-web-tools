@@ -15,6 +15,7 @@ function NextArg({ nextArg }: { nextArg: string }) {
 function getStatusColor(status: ScriptDebuggerResult) {
   if (status === 'Success') return 'var(--soft-green)';
   if (status === 'Failure') return 'var(--soft-red)';
+  if (status === 'Running') return 'var(--sky-blue)';
   return 'var(--soft-purple)';
 }
 
@@ -28,7 +29,7 @@ export function Stack({}: StackProps) {
       <div className="flex-row header-panel">Stack</div>
 
       <div className="flex-row stack-details-container">
-        <span className="details-item">
+        <span className="details-item" style={{ border: `1px solid var(--sky-blue)` }}>
           Program Counter: <span style={{ color: 'var(--sky-blue)' }}>{programCounter}</span>
         </span>
 

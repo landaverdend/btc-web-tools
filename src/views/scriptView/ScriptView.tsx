@@ -8,6 +8,19 @@ import Play from '@assets/icons/play.svg?react';
 import Reset from '@assets/icons/reset.svg?react';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { useDebugStore } from '@/state/debugStore';
+import { Tooltip } from 'react-tooltip';
+
+type DTProps = {
+  children: React.ReactNode;
+  tooltipContent: string;
+};
+const DebugTooltip = ({ children, tooltipContent }: DTProps) => {
+  return (
+    <a data-tooltip-id="debug" data-tooltip-place="bottom" data-tooltip-content={tooltipContent} data-tooltip-delay-show={100}>
+      {children}
+    </a>
+  );
+};
 
 export default function ScriptView() {
   const { reset, setStatus } = useDebugStore();
@@ -15,55 +28,41 @@ export default function ScriptView() {
 
   return (
     <div>
-      {/* <div>
-        <div className="flex-column">
-          <h1>Debug Controls (WIP)</h1>
-        </div>
-
-        <div className="flex-row">
-          <button
-            onClick={() => {
-              const result = step();
-              setStatus(result);
-            }}>
-            Step
-          </button>
-          <button onClick={() => {}}>Run</button>
-          <button>Pause</button>
-          <button
-            onClick={() => {
-              reset();
-            }}>
-            Reset
-          </button>
-        </div>
-      </div> */}
       <div className="flex-row script-view-container">
         <ScriptEditor />
         <div className="flex-column debug-controls-container">
           <h3>Controls</h3>
           <div className="flex-row control-dock">
-            <Play onClick={() => {}} height={24} width={24} style={{ fill: 'var(--soft-green)' }} />
-            <Stepover
-              onClick={() => {
-                const status = step();
-                setStatus(status);
-              }}
-              height={20}
-              width={20}
-              style={{ fill: 'var(--sky-blue)' }}
-            />
-            <Reset
-              onClick={() => {
-                reset();
-              }}
-              height={22}
-              width={22}
-            />
+            <DebugTooltip tooltipContent="Run">
+              <Play onClick={() => {}} height={24} width={24} style={{ fill: 'var(--soft-green)' }} />
+            </DebugTooltip>
+
+            <DebugTooltip tooltipContent="Step">
+              <Stepover
+                onClick={() => {
+                  const status = step();
+                  setStatus(status);
+                }}
+                height={20}
+                width={20}
+                style={{ fill: 'var(--sky-blue)' }}
+              />
+            </DebugTooltip>
+
+            <DebugTooltip tooltipContent="Reset">
+              <Reset
+                onClick={() => {
+                  reset();
+                }}
+                height={22}
+                width={22}
+              />
+            </DebugTooltip>
           </div>
         </div>
         <Stack />
       </div>
+      <Tooltip id="debug" />
     </div>
   );
 }
