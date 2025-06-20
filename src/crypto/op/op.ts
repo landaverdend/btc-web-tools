@@ -1,5 +1,8 @@
 import { ConditionFrame } from '@/state/debugStore';
 import { ScriptCommand } from '../script/Script';
+import { ripemd160, sha1 } from '@noble/hashes/legacy';
+import { sha256 } from '@noble/hashes/sha2';
+import { hash160, hash256 } from '../hash/hashUtil';
 
 export function encodeNumber(num: number) {
   if (num === 0) {
@@ -571,103 +574,314 @@ function op_0notequal({ stack }: OpContext) {
 }
 
 function op_add({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const el1 = decodeNumber(stack.pop()!);
+  const el2 = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(el1 + el2));
+
+  return true;
 }
 
 function op_sub({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const el1 = decodeNumber(stack.pop()!);
+  const el2 = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(el2 - el1));
+
+  return true;
 }
 
+// NOTE: OP_MUL is not normally used in BTC script and is generally disabled.
 function op_mul({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const el1 = decodeNumber(stack.pop()!);
+  const el2 = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(el1 * el2));
+
+  return true;
 }
 
 function op_booland({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const bytes1 = stack.pop()!;
+  const bytes2 = stack.pop()!;
+
+  // Must be 4 bytes or less..
+  if (bytes1.length > 4 || bytes2.length > 4) {
+    return false;
+  }
+
+  const num1 = decodeNumber(bytes1);
+  const num2 = decodeNumber(bytes2);
+
+  if (num1 !== 0 && num2 !== 0) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_boolor({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const num1 = decodeNumber(stack.pop()!);
+  const num2 = decodeNumber(stack.pop()!);
+
+  if (num1 || num2) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_numequal({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const num1 = decodeNumber(stack.pop()!);
+  const num2 = decodeNumber(stack.pop()!);
+
+  if (num1 === num2) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_numequalverify({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const num1 = decodeNumber(stack.pop()!);
+  const num2 = decodeNumber(stack.pop()!);
+
+  if (num1 !== num2) {
+    return false;
+  }
+
+  return true;
 }
 
 function op_numnotequal({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const num1 = decodeNumber(stack.pop()!);
+  const num2 = decodeNumber(stack.pop()!);
+
+  if (num1 !== num2) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_lessthan({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const a = decodeNumber(stack.pop()!);
+  const b = decodeNumber(stack.pop()!);
+
+  if (b < a) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_greaterthan({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const a = decodeNumber(stack.pop()!);
+  const b = decodeNumber(stack.pop()!);
+
+  if (b > a) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_lessthanorequal({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const a = decodeNumber(stack.pop()!);
+  const b = decodeNumber(stack.pop()!);
+
+  if (b <= a) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_greaterthanorequal({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const a = decodeNumber(stack.pop()!);
+  const b = decodeNumber(stack.pop()!);
+
+  if (b >= a) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_min({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const a = decodeNumber(stack.pop()!);
+  const b = decodeNumber(stack.pop()!);
+
+  if (a < b) {
+    stack.push(encodeNumber(a));
+  } else {
+    stack.push(encodeNumber(b));
+  }
+
+  return true;
 }
 
 function op_max({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const a = decodeNumber(stack.pop()!);
+  const b = decodeNumber(stack.pop()!);
+
+  if (a > b) {
+    stack.push(encodeNumber(a));
+  } else {
+    stack.push(encodeNumber(b));
+  }
+
+  return true;
 }
 
 function op_within({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 3) {
+    return false;
+  }
+
+  const max = decodeNumber(stack.pop()!);
+  const min = decodeNumber(stack.pop()!);
+  const x = decodeNumber(stack.pop()!);
+
+  if (x >= min && x < max) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_ripemd160({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const bytes = stack.pop()!;
+  const hash = ripemd160(bytes);
+
+  stack.push(hash);
+  return true;
 }
 
 function op_sha1({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const bytes = stack.pop()!;
+  const hash = sha1(bytes);
+
+  stack.push(hash);
+
+  return true;
 }
 
 function op_sha256({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const bytes = stack.pop()!;
+  const hash = sha256(bytes);
+
+  stack.push(hash);
+
+  return true;
 }
 
 function op_hash160({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const bytes = stack.pop()!;
+  const hash = hash160(bytes);
+
+  stack.push(hash);
+
+  return true;
 }
 
 function op_hash256({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const bytes = stack.pop()!;
+  const hash = hash256(bytes);
+
+  stack.push(hash);
+  return true;
 }
 
 function op_checksig({ stack }: OpContext) {
