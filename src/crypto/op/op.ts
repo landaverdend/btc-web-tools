@@ -407,68 +407,167 @@ function op_pick({ stack }: OpContext) {
 }
 
 function op_roll({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const n = decodeNumber(stack.pop()!);
+
+  if (n < 0 || n >= stack.length) {
+    return false;
+  }
+
+  const removed = stack.splice(stack.length - n - 1, 1);
+  stack.push(removed[0]);
+
+  return true;
 }
 
 function op_rot({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 3) {
+    return false;
+  }
+
+  const removed = stack.splice(stack.length - 3, 1);
+  stack.push(removed[0]);
+
+  return true;
 }
 
 function op_swap({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const first = stack.pop()!;
+  const second = stack.pop()!;
+
+  stack.push(first);
+  stack.push(second);
+
+  return true;
 }
 
 function op_tuck({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const first = stack.pop()!;
+  const second = stack.pop()!;
+
+  stack.push(...[first, second, first]);
+
+  return true;
 }
 
 function op_size({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const top = stack[stack.length - 1];
+  stack.push(encodeNumber(top.length));
+
+  return true;
 }
 
 function op_equal({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const el1 = decodeNumber(stack.pop()!);
+  const el2 = decodeNumber(stack.pop()!);
+
+  if (el1 === el2) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
+
+  return true;
 }
 
 function op_equalverify({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const el1 = decodeNumber(stack.pop()!);
+  const el2 = decodeNumber(stack.pop()!);
+
+  if (el1 !== el2) {
+    return false;
+  }
+
+  return true;
 }
 
 function op_1add({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const el = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(el + 1));
+
+  return true;
 }
 
 function op_1sub({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const el = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(el - 1));
+
+  return true;
 }
 
 function op_negate({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const el = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(-el));
+
+  return true;
 }
 
 function op_abs({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const el = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(Math.abs(el)));
+
+  return true;
 }
 
 function op_not({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const el = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(el === 0 ? 1 : 0));
+
+  return true;
 }
 
 function op_0notequal({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  if (stack.length < 1) {
+    return false;
+  }
+
+  const el = decodeNumber(stack.pop()!);
+  stack.push(encodeNumber(el === 0 ? 0 : 1));
+
+  return true;
 }
 
 function op_add({ stack }: OpContext) {
