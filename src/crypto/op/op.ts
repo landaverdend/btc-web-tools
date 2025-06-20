@@ -390,8 +390,20 @@ function op_over({ stack }: OpContext) {
 }
 
 function op_pick({ stack }: OpContext) {
-  throw new Error('Not implemented');
-  return false;
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const n = decodeNumber(stack.pop()!);
+
+  if (n < 0 || n >= stack.length) {
+    return false;
+  }
+
+  const el = stack[stack.length - n - 1];
+  stack.push(el);
+
+  return true;
 }
 
 function op_roll({ stack }: OpContext) {
