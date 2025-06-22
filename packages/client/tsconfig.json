@@ -30,7 +30,8 @@
       "@state/*": ["src/state/*"],
       "@service/*": ["src/service/*"],
       "@hooks/*": ["src/hooks/*"],
-      "@crypto/*": ["src/crypto/*"]
+      "@crypto/*": ["src/crypto/*"],
+      "@api/*": ["src/api/*"]
     }
   }
 }

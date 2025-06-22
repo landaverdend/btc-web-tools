@@ -19,6 +19,7 @@ export default defineConfig({
       '@assets': path.resolve(__dirname, './public/'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@crypto': path.resolve(__dirname, './src/crypto'),
+      '@api': path.resolve(__dirname, './src/api'),
     },
   },
 });

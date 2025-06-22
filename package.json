@@ -8,7 +8,7 @@
   "scripts": {
     "client": "npm run dev -w @bitcoin-tools/client",
     "server": "npm run dev -w @bitcoin-tools/server",
-    "dev": "npm run client & npm run server"
+    "dev": "concurrently \"npm run client\" \"npm run server\""
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
