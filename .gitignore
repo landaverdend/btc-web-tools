@@ -22,3 +22,5 @@ yarn-error.log*
 *.tsbuildinfo
 .cursorignore
 /packages/server/.env
+/packages/client/.vite
+/packages/shared/dist
