@@ -7,6 +7,13 @@ export default defineConfig({
   plugins: [react(), svgr()],
   server: {
     port: 3000,
+    proxy: {
+      '/tx': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   envDir: path.resolve(__dirname, './'),
   resolve: {

@@ -9,6 +9,7 @@ import Reset from '@assets/icons/reset.svg?react';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { useDebugStore } from '@/state/debugStore';
 import { Tooltip } from 'react-tooltip';
+import { TxFetcher } from '@/components/txFetcher/TxFetcher';
 
 type DTProps = {
   children: React.ReactNode;
@@ -59,6 +60,7 @@ export default function ScriptView() {
               />
             </DebugTooltip>
           </div>
+          <TxFetcher />
         </div>
         <StackView />
       </div>

@@ -1,8 +1,7 @@
 import Navbar from '@components/navbar/Navbar';
 import TxView from '@views/txview/TxView';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ScriptView from '@views/scriptView/ScriptView';
-import { callBackend } from './api/api';
 
 export type ViewType = 'tx' | 'script';
 
@@ -17,10 +16,6 @@ export default function App() {
         return <ScriptView />;
     }
   };
-
-  useEffect(() => {
-    callBackend('/');
-  }, []);
 
   return (
     <div>

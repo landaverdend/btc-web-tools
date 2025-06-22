@@ -43,11 +43,17 @@ app.get('/tx/:txid', async (req, res) => {
 
   try {
     const response = await fetch(url, options);
+
+    if (response.status !== 200) {
+      throw new Error(`Fetch failed: ${response.statusText}`);
+    }
+
     const data = await response.text();
+
     res.status(200).send(data);
   } catch (error) {
-    console.error('Error fetching tx: ', error);
-    res.status(500).send('Error fetching tx');
+    const errortxt = error instanceof Error ? error.message : 'Generic error';
+    res.status(500).send(errortxt);
   }
 });
 

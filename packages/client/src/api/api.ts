@@ -1,11 +1,16 @@
-async function callBackend(path: string) {
-  const response = await fetch(`http://localhost:3001${path}`);
+async function fetchTx(txid: string, testnet = false) {
+  const url = `/tx/${txid}${testnet ? '?testnet=true' : ''}`;
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+  const response = await fetch(url);
+  if (response.status !== 200) {
+    const errorText = await response.text();
+
+    throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
   }
 
-  return response.json();
+  const text = await response.text();
+
+  return text;
 }
 
-export { callBackend };
+export { fetchTx };
