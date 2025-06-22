@@ -10,7 +10,11 @@ function NextArg({ nextArg }: { nextArg: string }) {
 
   const nextArgColor = nextArg.startsWith('0x') ? 'var(--sky-blue)' : 'var(--soft-orange)';
 
-  return <span style={{ color: nextArgColor }}>{nextArg} </span>;
+  return (
+    <span style={{ color: nextArgColor }} className="next-arg">
+      {nextArg}{' '}
+    </span>
+  );
 }
 function getStatusColor(status: ScriptDebuggerResult) {
   if (status === 'Success') return 'var(--soft-green)';
@@ -33,7 +37,7 @@ export function StackView({}: StackProps) {
           Program Counter: <span style={{ color: 'var(--sky-blue)' }}>{programCounter}</span>
         </span>
 
-        <span className="details-item">
+        <span className="details-item next-arg-container">
           <span>Current Argument: </span>
           <NextArg nextArg={getNextArgument()} />
         </span>
@@ -60,7 +64,7 @@ function Stack({ stack, title }: SProps) {
     <div className="flex-column stack-container">
       <div className="flex-column stack-items">
         {stack.map((item) => (
-          <span key={crypto.randomUUID()} className="stack-item">
+          <span key={crypto.randomUUID()} className="hex-string">
             0x{item.length === 0 ? '00' : bytesToHex(item)}
           </span>
         ))}

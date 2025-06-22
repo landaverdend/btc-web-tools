@@ -42,3 +42,18 @@
     padding: 5px;
   }
 }
+
+.next-arg-container {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* For hex strings that can get big...*/
+.hex-string {
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
