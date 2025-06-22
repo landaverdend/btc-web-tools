@@ -23,9 +23,16 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-app.get('/tx', async (_, res) => {
-  const url = 'https://enterprise.blockstream.info/api/blocks/tip/hash';
+const BASE_URL = 'https://blockstream.info/api/';
+const BASE_TESTNET_URL = 'https://blockstream.info/testnet/api/';
+
+app.get('/tx/:txid', async (req, res) => {
+  const { txid } = req.params;
+  const { testnet } = req.query;
+
+  const useTestnet = testnet === 'true';
   const accessToken = await TokenFetcher.getToken();
+  const url = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}/hex`;
 
   const options = {
     method: 'GET',
@@ -34,10 +41,14 @@ app.get('/tx', async (_, res) => {
     },
   };
 
-  fetch(url, options)
-    .then((response) => response.text()) // Use response.json() if it's JSON
-    .then((data) => console.log(data))
-    .catch((error) => console.error('Error:', error));
+  try {
+    const response = await fetch(url, options);
+    const data = await response.text();
+    res.status(200).send(data);
+  } catch (error) {
+    console.error('Error fetching tx: ', error);
+    res.status(500).send('Error fetching tx');
+  }
 });
 
 app.get('/', (_, res) => {
