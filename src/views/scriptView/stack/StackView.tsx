@@ -10,11 +10,7 @@ function NextArg({ nextArg }: { nextArg: string }) {
 
   const nextArgColor = nextArg.startsWith('0x') ? 'var(--sky-blue)' : 'var(--soft-orange)';
 
-  return (
-    <span style={{ color: nextArgColor }} className="next-arg">
-      {nextArg}{' '}
-    </span>
-  );
+  return <span style={{ color: nextArgColor }}>{nextArg} </span>;
 }
 function getStatusColor(status: ScriptDebuggerResult) {
   if (status === 'Success') return 'var(--soft-green)';

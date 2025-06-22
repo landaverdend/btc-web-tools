@@ -67,6 +67,7 @@ function isConditional(cmd: ScriptCommand) {
 
 function validateScript(script: ScriptCommand[]) {
   validateConditionals(script);
+  validatePushBytes(script);
 }
 
 // Go through the whole script and validate that the conditional statements are well formed.
@@ -111,5 +112,23 @@ function validateConditionals(script: ScriptCommand[]) {
 
   if (ifStack.length > 0 || depth !== 0) {
     throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ENDIF');
+  }
+}
+
+// Validate that the push bytes are the correct length.
+function validatePushBytes(script: ScriptCommand[]) {
+  for (let i = 0; i < script.length; i++) {
+    const cmd = script[i];
+
+    if (typeof cmd === 'number' && cmd >= 1 && cmd <= 75) {
+      if (i + 1 >= script.length) throw new Error('Pushbyte command is not followed by data');
+
+      const nextCmd = script[i + 1];
+      if (!(nextCmd instanceof Uint8Array)) throw new Error('Pushbyte command is not followed by data');
+      if (nextCmd.length !== cmd) {
+        throw new Error(`OP_PUSHBYTES${cmd} expects ${cmd} bytes, but got ${nextCmd.length}`);
+      }
+      i++; // skip next command since we already validated it...
+    }
   }
 }

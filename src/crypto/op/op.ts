@@ -49,6 +49,14 @@ export function decodeNumber(bytes: Uint8Array) {
   return isNegative ? -result : result;
 }
 
+function op_pushbytes({ stack, programCounter, cmds }: OpContext, opcode: number) {
+  const dataToPush = cmds[programCounter + 1] as Uint8Array;
+
+  stack.push(dataToPush);
+
+  return true;
+}
+
 function isEncodedZero(bytes: Uint8Array) {
   return bytes.length === 0 || (bytes.length === 1 && bytes[0] === 0);
 }
@@ -884,6 +892,7 @@ function op_hash256({ stack }: OpContext) {
   return true;
 }
 
+// TODO: implement properly
 function op_checksig({ stack }: OpContext) {
   if (stack.length < 2) {
     return false;
@@ -950,8 +959,20 @@ export type OpContext = {
   pushConditionFrame: (conditionFrame: ConditionFrame) => void;
 };
 
+function fillPushBytes() {
+  const pushBytes: Record<number, (context: OpContext) => boolean> = {};
+  for (let i = 1; i <= 75; i++) {
+    pushBytes[i] = (context: OpContext) => {
+      return op_pushbytes(context, i);
+    };
+  }
+
+  return pushBytes;
+}
+
 export const OP_CODE_FUNCTIONS: Record<number, (context: OpContext) => boolean> = {
   0: op_0,
+  ...fillPushBytes(),
   79: op_1negate,
   81: op_1,
   82: op_2,
@@ -1040,8 +1061,18 @@ export const OP_CODE_FUNCTIONS: Record<number, (context: OpContext) => boolean> 
   185: op_nop,
 };
 
+function fillPushbyteNames() {
+  const pushByteNames: Record<number, string> = {};
+  for (let i = 1; i <= 75; i++) {
+    pushByteNames[i] = `OP_PUSHBYTES${i}`;
+  }
+
+  return pushByteNames;
+}
+
 export const OP_CODE_NAMES: Record<number, string> = {
   0: 'OP_0',
+  ...fillPushbyteNames(),
   76: 'OP_PUSHDATA1',
   77: 'OP_PUSHDATA2',
   78: 'OP_PUSHDATA4',
