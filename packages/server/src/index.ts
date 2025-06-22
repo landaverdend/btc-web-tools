@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
+import { TokenFetcher } from './token';
 
 dotenv.config();
 
@@ -20,6 +21,23 @@ app.use(
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+app.get('/tx', async (_, res) => {
+  const url = 'https://enterprise.blockstream.info/api/blocks/tip/hash';
+  const accessToken = await TokenFetcher.getToken();
+
+  const options = {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+
+  fetch(url, options)
+    .then((response) => response.text()) // Use response.json() if it's JSON
+    .then((data) => console.log(data))
+    .catch((error) => console.error('Error:', error));
 });
 
 app.get('/', (_, res) => {
