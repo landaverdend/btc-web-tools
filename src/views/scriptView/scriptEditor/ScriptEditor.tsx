@@ -2,7 +2,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/theme-twilight';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScriptMode } from '../ace-modes/ScriptMode';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import './script-editor.css';
@@ -24,6 +24,34 @@ export function ScriptEditor({}: ScriptEditorProps) {
   const [userText, setUserText] = useState<string>(initialTemplate);
   const [compileError, setCompileError] = useState<string | null>(null);
 
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleChange = useCallback(
+    (value: string) => {
+      console.log('handleChange', value);
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+      console.log('setting timeout');
+
+      // Set new timeout for debounced compilation
+      debounceTimeoutRef.current = setTimeout(() => {
+        try {
+          const script = compileScript(value);
+          setScript(script);
+          setCompileError(null);
+          reset();
+        } catch (error) {
+          console.error(error);
+          setCompileError(error instanceof Error ? error.message : 'Unknown error');
+        }
+      }, 500);
+
+      setUserText(value);
+    },
+    [setScript, reset]
+  );
+
   useEffect(() => {
     if (editorRef.current) {
       const editor = editorRef.current.editor;
@@ -32,20 +60,20 @@ export function ScriptEditor({}: ScriptEditorProps) {
     }
   }, [programCounter, script]);
 
-  const handleChange = (value: string) => {
-    try {
-      const script = compileScript(value);
-      // If there are no compile errors, reset the debugger
-      setScript(script);
-      setCompileError(null);
-      reset();
-    } catch (error) {
-      console.error(error);
-      setCompileError(error instanceof Error ? error.message : 'Unknown error');
-    }
+  // const handleChange = (value: string) => {
+  //   try {
+  //     const script = compileScript(value);
+  //     // If there are no compile errors, reset the debugger
+  //     setScript(script);
+  //     setCompileError(null);
+  //     reset();
+  //   } catch (error) {
+  //     console.error(error);
+  //     setCompileError(error instanceof Error ? error.message : 'Unknown error');
+  //   }
 
-    setUserText(value);
-  };
+  //   setUserText(value);
+  // };
 
   // This is so dumb, but it works.
   const highlightCurrentToken = (editor: IAceEditor) => {
