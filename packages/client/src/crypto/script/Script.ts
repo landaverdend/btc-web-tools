@@ -5,6 +5,7 @@ import { FormattedScript, ScriptLE } from '@/types/tx';
 
 export type ScriptCommand = number | Uint8Array;
 
+
 // A script is just a list of bigint commands.
 export class Script {
   cmds: ScriptCommand[];

@@ -1,4 +1,5 @@
 import { decodeNumber, OP_CODE_FUNCTIONS, OP_CODE_NAMES, OP_CODES, OpContext } from '@/crypto/op/op';
+import { ScriptCommand } from '@/crypto/script/Script';
 import { bytesToHex } from '@/crypto/util/helper';
 import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
 
@@ -44,10 +45,10 @@ export function useScriptDebugger() {
           break;
         case OP_CODES.OP_ENDIF:
           conditionFrames.pop();
-          incProgramCounter();
+          incProgramCounter(cmd);
           break;
         default:
-          incProgramCounter();
+          incProgramCounter(cmd);
           break;
       }
 
@@ -57,13 +58,13 @@ export function useScriptDebugger() {
     } else {
       // if command is a bytearray, push it onto the stack.
       stack.push(cmd);
-      incProgramCounter();
+      incProgramCounter(cmd);
     }
 
     return 'Running';
   }
 
-  function incProgramCounter() {
+  function incProgramCounter(cmd: ScriptCommand) {
     // Check if we're at a condition index. If we are, then jump to the next control point.
     if (conditionFrames.length > 0) {
       const { elseIndex, endIndex } = conditionFrames[conditionFrames.length - 1];
@@ -74,7 +75,12 @@ export function useScriptDebugger() {
       }
     }
 
-    setProgramCounter(programCounter + 1);
+    // Skip over OP_PUSHBYTES commands by 2.
+    if (typeof cmd === 'number' && cmd > 0 && cmd <= 75) {
+      setProgramCounter(programCounter + 2);
+    } else {
+      setProgramCounter(programCounter + 1);
+    }
   }
 
   const getNextArgument = () => {

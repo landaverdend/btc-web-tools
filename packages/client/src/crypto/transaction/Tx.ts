@@ -3,6 +3,17 @@ import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndi
 import { FormattedTx, FormattedWitnessStack, TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
+
+export enum ScriptType {
+  P2PKH = 'P2PKH', // Legacy: Pay-to-Public-Key-Hash
+  P2PK = 'P2PK', // Legacy: Pay-to-Public-Key
+  P2SH = 'P2SH', // Legacy: Pay-to-Script-Hash
+  P2WPKH = 'P2WPKH', // SegWit: Pay-to-Witness-Public-Key-Hash
+  P2WSH = 'P2WSH', // SegWit: Pay-to-Witness-Script-Hash
+  P2TR = 'P2TR', // Taproot: Pay-to-Taproot
+  UNKNOWN = 'UNKNOWN',
+}
+
 export default class Tx {
   version: number;
 
