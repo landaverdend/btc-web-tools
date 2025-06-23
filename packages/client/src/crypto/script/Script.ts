@@ -5,7 +5,6 @@ import { FormattedScript, ScriptLE } from '@/types/tx';
 
 export type ScriptCommand = number | Uint8Array;
 
-
 // A script is just a list of bigint commands.
 export class Script {
   cmds: ScriptCommand[];
@@ -15,6 +14,10 @@ export class Script {
 
     // Serialize the commands to get the length of the script. Throw out an error if the script is too long.
     this.serializeCommands();
+  }
+
+  add(other: Script) {
+    return new Script([...this.cmds, ...other.cmds]);
   }
 
   // Mostly for the debugger. If used by others then maybe move this.
@@ -62,7 +65,7 @@ export class Script {
     };
   }
 
-  format() {
+  format(include0x = false) {
     return {
       cmds: this.cmds.map((cmd) => {
         // OP_Code
@@ -71,10 +74,21 @@ export class Script {
         }
         // Pushdata
         else {
-          return bytesToHex(cmd);
+          return bytesToHex(cmd, include0x);
         }
       }),
     };
+  }
+
+  toString() {
+    let toRet = '';
+
+    const formatted = this.format(true);
+    for (const cmd of formatted.cmds) {
+      toRet += cmd + '\n';
+    }
+
+    return toRet;
   }
 
   toHex() {
@@ -102,7 +116,7 @@ export class Script {
     return new Script(cmds);
   }
 
-  static fromStream(stream: ByteStream) {
+  static fromStream(stream: ByteStream, includePushBytes = false) {
     const length = stream.readVarInt();
     const cmds: (number | Uint8Array)[] = [];
 
@@ -114,6 +128,12 @@ export class Script {
       // range(1, 75) means the next n bytes are a pushdata command.
       if (current >= 1 && current <= 75) {
         let n = current;
+
+        // include PUSHBYTES in the output of the script.
+        if (includePushBytes) {
+          cmds.push(current);
+        }
+
         cmds.push(stream.read(n));
         count += n;
       }

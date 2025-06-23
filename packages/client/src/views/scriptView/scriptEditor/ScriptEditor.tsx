@@ -7,7 +7,7 @@ import { ScriptMode } from '../ace-modes/ScriptMode';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import './script-editor.css';
 import { Range } from 'ace-builds';
-import { initialTemplate, useDebugStore } from '@/state/debugStore';
+import { useDebugStore } from '@/state/debugStore';
 import { compileScript } from '@/crypto/script/scriptCompiler';
 import { IAceEditor } from 'react-ace/lib/types';
 
@@ -19,20 +19,17 @@ export function ScriptEditor({}: ScriptEditorProps) {
   const editorRef = useRef<AceEditor>(null);
   const pcMarkerRef = useRef<number | null>(null);
 
-  const { reset, setScript, programCounter, script } = useDebugStore();
+  const { reset, setScript, programCounter, script, scriptAsm, setScriptAsm } = useDebugStore();
 
-  const [userText, setUserText] = useState<string>(initialTemplate);
   const [compileError, setCompileError] = useState<string | null>(null);
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleChange = useCallback(
     (value: string) => {
-      console.log('handleChange', value);
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
-      console.log('setting timeout');
 
       // Set new timeout for debounced compilation
       debounceTimeoutRef.current = setTimeout(() => {
@@ -45,9 +42,9 @@ export function ScriptEditor({}: ScriptEditorProps) {
           console.error(error);
           setCompileError(error instanceof Error ? error.message : 'Unknown error');
         }
-      }, 500);
+      }, 250);
 
-      setUserText(value);
+      setScriptAsm(value);
     },
     [setScript, reset]
   );
@@ -60,22 +57,6 @@ export function ScriptEditor({}: ScriptEditorProps) {
     }
   }, [programCounter, script]);
 
-  // const handleChange = (value: string) => {
-  //   try {
-  //     const script = compileScript(value);
-  //     // If there are no compile errors, reset the debugger
-  //     setScript(script);
-  //     setCompileError(null);
-  //     reset();
-  //   } catch (error) {
-  //     console.error(error);
-  //     setCompileError(error instanceof Error ? error.message : 'Unknown error');
-  //   }
-
-  //   setUserText(value);
-  // };
-
-  // This is so dumb, but it works.
   const highlightCurrentToken = (editor: IAceEditor) => {
     const session = editor.session;
 
@@ -122,7 +103,7 @@ export function ScriptEditor({}: ScriptEditorProps) {
         ref={editorRef}
         mode={SCRIPT_MODE}
         theme="twilight"
-        value={userText}
+        value={scriptAsm}
         height="100%"
         width="100%"
         onChange={handleChange}

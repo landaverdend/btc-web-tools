@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import './tx-fetcher.css';
 import { fetchTx } from '@/api/api';
-import Tx from '@/crypto/transaction/Tx';
+import { encodeVarInt, hexToBytes } from '@/crypto/util/helper';
+import { ByteStream } from '@/crypto/util/ByteStream';
+import { Script } from '@/crypto/script/Script';
+import { useDebugStore } from '@/state/debugStore';
 
 export function TxFetcher() {
+  const { setScript, setScriptAsm } = useDebugStore();
+
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
 
@@ -17,9 +22,26 @@ export function TxFetcher() {
 
     try {
       const tx = await fetchTx(txid, testnet);
-      const txObj = Tx.fromHex(tx);
 
-      console.log(txObj);
+      // TODO: fix this or move it elsewhere...
+
+      const scriptPKBytes = hexToBytes(tx.vin[0].prevout.scriptpubkey);
+      const varint = encodeVarInt(scriptPKBytes.length);
+
+      const scriptSig = hexToBytes(tx.vin[0].scriptsig);
+      const varint2 = encodeVarInt(scriptSig.length);
+
+      // need to prepend the varint to script bytes for stream to read it
+      const pkStream = new ByteStream(new Uint8Array([...varint, ...scriptPKBytes]));
+      const sigStream = new ByteStream(new Uint8Array([...varint2, ...scriptSig]));
+
+      const pkScript = Script.fromStream(pkStream, true);
+      const sigScript = Script.fromStream(sigStream, true);
+
+      const result = sigScript.add(pkScript);
+
+      setScript(result);
+      setScriptAsm(result.toString());
 
       setError('');
     } catch (error) {

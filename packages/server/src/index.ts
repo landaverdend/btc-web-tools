@@ -32,7 +32,7 @@ app.get('/tx/:txid', async (req, res) => {
 
   const useTestnet = testnet === 'true';
   const accessToken = await TokenFetcher.getToken();
-  const url = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}/hex`;
+  const url = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}`;
 
   const options = {
     method: 'GET',
@@ -48,7 +48,7 @@ app.get('/tx/:txid', async (req, res) => {
       throw new Error(`Fetch failed: ${response.statusText}`);
     }
 
-    const data = await response.text();
+    const data = await response.json();
 
     res.status(200).send(data);
   } catch (error) {

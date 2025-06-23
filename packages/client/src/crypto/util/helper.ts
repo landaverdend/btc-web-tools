@@ -88,6 +88,7 @@ export function hexToBytes(hex: string) {
   return bytes;
 }
 
-export function bytesToHex(bytes: Uint8Array) {
-  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+export function bytesToHex(bytes: Uint8Array, include0x = false) {
+  let prefix = include0x ? '0x' : '';
+  return prefix + Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
