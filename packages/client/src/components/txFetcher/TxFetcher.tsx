@@ -6,9 +6,11 @@ import { ByteStream } from '@/crypto/util/ByteStream';
 import { Script } from '@/crypto/script/Script';
 import { useDebugStore } from '@/state/debugStore';
 import Tx from '@/crypto/transaction/Tx';
+import { useTxStore } from '@state/txStore';
 
 export function TxFetcher() {
-  const { tx, selectedInput, setScript, setScriptAsm, setTx, setSelectedInput, setPrevScriptPubkey } = useDebugStore();
+  const { setScript, setScriptAsm } = useDebugStore();
+  const { tx, setTx, selectedInput, setSelectedInput, setPrevScriptPubkey } = useTxStore();
 
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);

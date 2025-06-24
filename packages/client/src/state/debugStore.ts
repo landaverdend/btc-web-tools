@@ -1,6 +1,5 @@
 import { Script } from '@/crypto/script/Script';
 import { compileScript } from '@/crypto/script/scriptCompiler';
-import Tx from '@/crypto/transaction/Tx';
 import { create } from 'zustand/react';
 
 const initialTemplate = 'OP_0\nOP_NOTIF\nOP_2\nOP_ELSE\nOP_3\nOP_ENDIF';
@@ -19,15 +18,6 @@ interface DebugState {
 
   scriptAsm: string;
   setScriptAsm: (scriptAsm: string) => void;
-
-  tx?: Tx;
-  setTx: (tx: Tx) => void;
-
-  prevScriptPubkey?: string; // hex string of the previous script pubkey.
-  setPrevScriptPubkey: (prevScriptPubkey: string) => void;
-
-  selectedInput?: number;
-  setSelectedInput: (input: number) => void;
 
   stack: Uint8Array[];
   setStack: (stack: Uint8Array[]) => void;
@@ -54,15 +44,6 @@ interface DebugState {
 export const useDebugStore = create<DebugState>((set, get) => ({
   script: compileScript(initialTemplate),
   setScript: (script: Script) => set({ script }),
-
-  tx: undefined,
-  setTx: (tx: Tx) => set({ tx }),
-
-  selectedInput: undefined,
-  setSelectedInput: (input: number) => set({ selectedInput: input }),
-
-  prevScriptPubkey: undefined,
-  setPrevScriptPubkey: (prevScriptPubkey: string) => set({ prevScriptPubkey }),
 
   stack: [],
   setStack: (stack: Uint8Array[]) => set({ stack }),

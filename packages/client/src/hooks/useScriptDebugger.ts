@@ -2,21 +2,12 @@ import { decodeNumber, OP_CODE_FUNCTIONS, OP_CODE_NAMES, OP_CODES, OpContext } f
 import { Script, ScriptCommand } from '@/crypto/script/Script';
 import { bytesToHex } from '@/crypto/util/helper';
 import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
+import { useTxStore } from '@/state/txStore';
 
 export function useScriptDebugger() {
-  const {
-    script,
-    programCounter,
-    setProgramCounter,
-    stack,
-    status,
-    conditionFrames,
-    pushConditionFrame,
-    altStack,
-    tx,
-    selectedInput,
-    prevScriptPubkey,
-  } = useDebugStore();
+  const { script, programCounter, setProgramCounter, stack, status, conditionFrames, pushConditionFrame, altStack } =
+    useDebugStore();
+  const { tx, selectedInput, prevScriptPubkey } = useTxStore();
 
   function step(): ScriptDebuggerResult {
     // Program is already done....
