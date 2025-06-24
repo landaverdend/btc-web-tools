@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './tx-fetcher.css';
-import { fetchTx } from '@/api/api';
+import { fetchTx, TxJson } from '@/api/api';
 import { bytesToHex, encodeVarInt, hexToBytes } from '@/crypto/util/helper';
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { Script } from '@/crypto/script/Script';
@@ -10,11 +10,11 @@ import { useTxStore } from '@state/txStore';
 
 export function TxFetcher() {
   const { setScript, setScriptAsm } = useDebugStore();
-  const { tx, setTx, selectedInput, setSelectedInput, setPrevScriptPubkey } = useTxStore();
+  const { setTx, setSelectedInput, setPrevScriptPubkey, setTxMetadata } = useTxStore();
 
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
-
+  const [txJson, setTxJson] = useState<any>();
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
@@ -43,8 +43,10 @@ export function TxFetcher() {
       const result = sigScript.add(pkScript);
       const tx = Tx.fromHex(serializedTx);
 
+      setTxJson(txJson);
       setTx(tx);
       setSelectedInput(0);
+      setTxMetadata({ txid, lockType: txJson.vin[0].prevout.scriptpubkey_type });
 
       setScript(result);
       setScriptAsm(result.toString());
@@ -81,19 +83,40 @@ export function TxFetcher() {
 
         <button onClick={handleSubmit}>Fetch</button>
       </div>
+      <TxDetails />
+    </div>
+  );
+}
 
-      {tx && (
-        <div className="flex-column input-selection">
-          Input Select
-          {tx.inputs.map((input, i) => {
-            return (
+type TxDetailsProps = {};
+function TxDetails({}: TxDetailsProps) {
+  const { tx, selectedInput, txMetadata, setSelectedInput } = useTxStore();
+
+  if (!tx) return <></>;
+
+  return (
+    <div className="flex-column tx-details-container">
+      <div className="flex-column tx-metadata-container">
+        <div className="tx-metadata">
+          Tx ID: <span style={{ color: 'var(--soft-green)' }}>{txMetadata?.txid}</span>
+        </div>
+        <div className="tx-metadata">
+          Lock Type: <span style={{ color: 'var(--soft-red)' }}>{txMetadata?.lockType}</span>
+        </div>
+      </div>
+
+      <div className="flex-column input-selection">
+        Input Select
+        {tx.inputs.map((input, i) => {
+          return (
+            <>
               <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => setSelectedInput(i)}>
                 {bytesToHex(input.txid, true)}
               </div>
-            );
-          })}
-        </div>
-      )}
+            </>
+          );
+        })}
+      </div>
     </div>
   );
 }

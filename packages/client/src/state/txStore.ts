@@ -1,7 +1,15 @@
 import Tx from '@/crypto/transaction/Tx';
 import { create } from 'zustand';
 
+type TxMetadata = {
+  txid: string;
+  lockType: string;
+};
+
 interface TxState {
+  txMetadata?: TxMetadata;
+  setTxMetadata: (txMetadata: TxMetadata) => void;
+
   tx?: Tx;
   setTx: (tx: Tx) => void;
 
@@ -15,6 +23,9 @@ interface TxState {
 }
 
 export const useTxStore = create<TxState>((set) => ({
+  txMetadata: undefined,
+  setTxMetadata: (txMetadata: TxMetadata) => set({ txMetadata }),
+
   tx: undefined,
   setTx: (tx: Tx) => set({ tx }),
 

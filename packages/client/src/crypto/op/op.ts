@@ -922,9 +922,29 @@ function op_checksig({ stack, sighash }: OpContext) {
   }
 }
 
-function op_checksigverify({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+function op_checksigverify({ stack, sighash }: OpContext) {
+  if (stack.length < 2) {
+    return false;
+  }
+
+  const sec_pubkey = stack.pop()!;
+  const der_signature = stack.pop()!.slice(0, -1);
+
+  try {
+    const formattedSig = Signature.fromDer(der_signature).toBytes();
+    const isValid = secp.verify(formattedSig, sighash!, sec_pubkey);
+
+    if (isValid) {
+      stack.push(encodeNumber(1));
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error('Error in OP_CHECKSIG: ', error);
+    stack.push(encodeNumber(0));
+    return true;
+  }
 }
 
 function op_checkmultisig({ stack }: OpContext) {
