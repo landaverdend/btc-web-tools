@@ -4,8 +4,18 @@ import { bytesToHex } from '@/crypto/util/helper';
 import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
 
 export function useScriptDebugger() {
-  const { script, programCounter, setProgramCounter, stack, status, conditionFrames, pushConditionFrame, altStack } =
-    useDebugStore();
+  const {
+    script,
+    programCounter,
+    setProgramCounter,
+    stack,
+    status,
+    conditionFrames,
+    pushConditionFrame,
+    altStack,
+    tx,
+    selectedInput,
+  } = useDebugStore();
 
   function step(): ScriptDebuggerResult {
     // Program is already done....
@@ -34,6 +44,8 @@ export function useScriptDebugger() {
         setProgramCounter,
         programCounter,
         pushConditionFrame,
+        tx,
+        selectedInput,
       };
 
       let result = func(opContext);

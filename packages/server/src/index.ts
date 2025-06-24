@@ -32,7 +32,8 @@ app.get('/tx/:txid', async (req, res) => {
 
   const useTestnet = testnet === 'true';
   const accessToken = await TokenFetcher.getToken();
-  const url = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}`;
+  const jsonUrl = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}`;
+  const hexUrl = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}/hex`;
 
   const options = {
     method: 'GET',
@@ -42,15 +43,23 @@ app.get('/tx/:txid', async (req, res) => {
   };
 
   try {
-    const response = await fetch(url, options);
+    const jsonResponse = await fetch(jsonUrl, options);
+    const hexResponse = await fetch(hexUrl, options);
 
-    if (response.status !== 200) {
-      throw new Error(`Fetch failed: ${response.statusText}`);
+    if (jsonResponse.status !== 200) {
+      throw new Error(`Fetch failed: ${jsonResponse.statusText}`);
+    }
+    if (hexResponse.status !== 200) {
+      throw new Error(`Fetch failed: ${hexResponse.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await jsonResponse.json();
+    const hexData = await hexResponse.text();
 
-    res.status(200).send(data);
+    res.status(200).send({
+      serializedTx: hexData,
+      txJson: data,
+    });
   } catch (error) {
     const errortxt = error instanceof Error ? error.message : 'Generic error';
     res.status(500).send(errortxt);

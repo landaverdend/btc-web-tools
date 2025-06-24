@@ -1,8 +1,17 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
-import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
+import {
+  bigEndianToInteger,
+  bytesToHex,
+  encodeVarInt,
+  hexToBytes,
+  integerToLittleEndian,
+  littleEndianToInteger,
+} from '@/crypto/util/helper';
 import { FormattedTx, FormattedWitnessStack, TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
+import { Script } from '../script/Script';
+import { hash256 } from '../hash/hashUtil';
 
 export enum ScriptType {
   P2PKH = 'P2PKH', // Legacy: Pay-to-Public-Key-Hash
@@ -14,10 +23,14 @@ export enum ScriptType {
   UNKNOWN = 'UNKNOWN',
 }
 
+const SIGHASH_ALL = 0x01;
+const SIGHASH_NONE = 0x02;
+const SIGHASH_SINGLE = 0x03;
+const SIGHASH_ANYONECANPAY = 0x80;
+
 export default class Tx {
   version: number;
 
-  // https://bitcoincore.org/en/segwit_wallet_dev/
   isSegwit: boolean;
   witnessMarker?: number;
   witnessFlag?: number;
@@ -95,6 +108,54 @@ export default class Tx {
           isSegwit ? { marker: marker!, flag: flag!, witnessData: witnessData! } : undefined
         )
       : new Tx(version, inputs, outputs, locktime);
+  }
+
+  sighash(inputIndex: number, prevScriptPubkey: Script) {
+    const stream = new ByteStream();
+    stream.write(integerToLittleEndian(this.version, 4));
+    stream.write(encodeVarInt(this.inputs.length));
+
+    for (let i = 0; i < this.inputs.length; i++) {
+      const input = this.inputs[i];
+
+      if (i === inputIndex) {
+        const clone = input.clone();
+        clone.scriptSig = prevScriptPubkey.clone();
+
+        stream.write(clone.toBytes());
+      } else {
+        // Pass in original txin with empty script
+        stream.write(new TxIn(input.txid, input.vout, input.sequence).toBytes());
+      }
+    }
+
+    stream.write(encodeVarInt(this.outputs.length));
+    for (const output of this.outputs) {
+      stream.write(output.toBytes());
+    }
+
+    stream.write(integerToLittleEndian(this.locktime, 4));
+    stream.write(integerToLittleEndian(SIGHASH_ALL, 4));
+
+    let bytes = stream.toBytes();
+
+    console.log(bytesToHex(bytes));
+    bytes = hash256(bytes);
+    console.log('h256: ', bytesToHex(bytes));
+
+    return bigEndianToInteger(bytes);
+  }
+
+  clone() {
+    if (this.isSegwit) {
+      return new Tx(this.version, this.inputs, this.outputs, this.locktime, this.isSegwit, {
+        marker: this.witnessMarker!,
+        flag: this.witnessFlag!,
+        witnessData: this.witnessData!,
+      });
+    }
+
+    return new Tx(this.version, this.inputs, this.outputs, this.locktime);
   }
 
   static fromJson(json: FormattedTx) {

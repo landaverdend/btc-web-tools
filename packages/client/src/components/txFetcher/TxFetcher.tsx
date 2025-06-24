@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import './tx-fetcher.css';
 import { fetchTx } from '@/api/api';
-import { encodeVarInt, hexToBytes } from '@/crypto/util/helper';
+import { bytesToHex, encodeVarInt, hexToBytes } from '@/crypto/util/helper';
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { Script } from '@/crypto/script/Script';
 import { useDebugStore } from '@/state/debugStore';
+import Tx from '@/crypto/transaction/Tx';
 
 export function TxFetcher() {
-  const { setScript, setScriptAsm } = useDebugStore();
+  const { tx, setScript, setScriptAsm, setTx, setSelectedInput } = useDebugStore();
 
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
@@ -21,14 +22,13 @@ export function TxFetcher() {
     }
 
     try {
-      const tx = await fetchTx(txid, testnet);
+      const response = await fetchTx(txid, testnet);
+      const { serializedTx, txJson } = response;
 
-      // TODO: fix this or move it elsewhere...
-
-      const scriptPKBytes = hexToBytes(tx.vin[0].prevout.scriptpubkey);
+      const scriptPKBytes = hexToBytes(txJson.vin[0].prevout.scriptpubkey);
       const varint = encodeVarInt(scriptPKBytes.length);
 
-      const scriptSig = hexToBytes(tx.vin[0].scriptsig);
+      const scriptSig = hexToBytes(txJson.vin[0].scriptsig);
       const varint2 = encodeVarInt(scriptSig.length);
 
       // need to prepend the varint to script bytes for stream to read it
@@ -39,6 +39,10 @@ export function TxFetcher() {
       const sigScript = Script.fromStream(sigStream, true);
 
       const result = sigScript.add(pkScript);
+      const tx = Tx.fromHex(serializedTx);
+
+      setTx(tx);
+      setSelectedInput(0);
 
       setScript(result);
       setScriptAsm(result.toString());
@@ -74,6 +78,19 @@ export function TxFetcher() {
 
         <button onClick={handleSubmit}>Fetch</button>
       </div>
+
+      {tx && (
+        <div className="flex-column input-selection">
+          Input Select
+          {tx.inputs.map((input, i) => {
+            return (
+              <div key={i} className="txin-item" onClick={() => setSelectedInput(i)}>
+                {bytesToHex(input.txid, true)}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

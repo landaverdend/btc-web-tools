@@ -1,5 +1,6 @@
 .tx-fetcher-container {
   align-items: center;
+  gap: 10px;
 
   h3 {
     font-size: 1.2rem;
@@ -39,5 +40,29 @@
     cursor: pointer;
     width: 50%;
     align-self: center;
+  }
+}
+
+.input-selection {
+  align-items: center;
+
+  background-color: var(--header-gray);
+  padding: 10px;
+  border-radius: 5px;
+
+  .txin-item {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    padding: 5px;
+  }
+
+  .txin-item:hover {
+    color: var(--soft-orange);
+    background-color: var(--input-gray);
+    border-radius: 5px;
+    cursor: pointer;
   }
 }

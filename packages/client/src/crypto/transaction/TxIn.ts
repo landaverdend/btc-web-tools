@@ -1,6 +1,6 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { Script } from '../script/Script';
-import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
+import { bytesToHex, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
 import { FormattedTxIn, TxInLE } from '@/types/tx';
 
 export default class TxIn {
@@ -55,6 +55,10 @@ export default class TxIn {
     stream.write(integerToLittleEndian(this.sequence, 4));
 
     return stream.toBytes();
+  }
+
+  clone() {
+    return new TxIn(this.txid, this.vout, this.sequence, this.scriptSig.clone());
   }
 
   static fromJson(json: FormattedTxIn) {

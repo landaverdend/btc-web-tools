@@ -3,6 +3,7 @@ import { ScriptCommand } from '../script/Script';
 import { ripemd160, sha1 } from '@noble/hashes/legacy';
 import { sha256 } from '@noble/hashes/sha2';
 import { hash160, hash256 } from '../hash/hashUtil';
+import Tx from '../transaction/Tx';
 
 export function encodeNumber(num: number) {
   if (num === 0) {
@@ -893,7 +894,7 @@ function op_hash256({ stack }: OpContext) {
 }
 
 // TODO: implement properly
-function op_checksig({ stack }: OpContext) {
+function op_checksig({ stack, tx, selectedInput }: OpContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -902,20 +903,6 @@ function op_checksig({ stack }: OpContext) {
   const pubKey = stack.pop()!;
 
   try {
-    // Basic format validation
-    if (signature.length < 9 || pubKey.length < 33) {
-      stack.push(encodeNumber(0));
-      return true;
-    }
-
-    // Extract sighash type
-    const sighashType = signature[signature.length - 1];
-    const signatureBytes = signature.slice(0, -1);
-
-    // Mock verification - just check if signature looks reasonable
-    const isValid = signatureBytes.length >= 8 && pubKey.length >= 33;
-
-    stack.push(encodeNumber(isValid ? 1 : 0));
     return true;
   } catch (error) {
     stack.push(encodeNumber(0));
@@ -957,6 +944,9 @@ export type OpContext = {
   programCounter: number;
   setProgramCounter: (num: number) => void;
   pushConditionFrame: (conditionFrame: ConditionFrame) => void;
+
+  tx?: Tx;
+  selectedInput?: number;
 };
 
 function fillPushBytes() {

@@ -1,4 +1,4 @@
-import { littleEndianToInteger, integerToLittleEndian, readVarInt, encodeVarInt } from '../helper';
+import { littleEndianToInteger, integerToLittleEndian, readVarInt, encodeVarInt, bigEndianToInteger } from '../helper';
 
 describe('littleEndianToInteger', () => {
   test('correct conversion', () => {
@@ -105,6 +105,22 @@ describe('encodeVarInt', () => {
     // const want = 0x010000000000000000n;
     const val = 0x0100000000000000n;
     const got = encodeVarInt(val);
+    expect(got).toEqual(want);
+  });
+});
+
+describe('bigEndianToInteger', () => {
+  test('correct conversion', () => {
+    const bytes = new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01]);
+    const want = 1n;
+    const got = bigEndianToInteger(bytes);
+    expect(got).toEqual(want);
+  });
+
+  test('correct conversion', () => {
+    const bytes = new Uint8Array([0x12, 0x34, 0x56, 0x78, 0x91]);
+    const want = 0x1234567891n;
+    const got = bigEndianToInteger(bytes);
     expect(got).toEqual(want);
   });
 });

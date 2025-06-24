@@ -29,6 +29,10 @@ export class Script {
     return this.cmds[index];
   }
 
+  clone() {
+    return new Script([...this.cmds]);
+  }
+
   serializeCommands() {
     let res = new ByteStream();
 

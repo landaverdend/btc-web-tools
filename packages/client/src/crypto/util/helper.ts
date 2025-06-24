@@ -8,6 +8,16 @@ export function littleEndianToInteger(bytes: Uint8Array): bigint {
   return result;
 }
 
+export function bigEndianToInteger(bytes: Uint8Array): bigint {
+  let result = 0n;
+
+  for (let i = 0; i < bytes.length; i++) {
+    result = (result << 8n) | BigInt(bytes[i]);
+  }
+
+  return result;
+}
+
 export function integerToLittleEndian(value: number | bigint, length: number) {
   const bytes = new Uint8Array(length);
 

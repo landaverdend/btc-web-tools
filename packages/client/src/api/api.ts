@@ -1,4 +1,9 @@
-type APITxResponse = {
+export type APIResponse = {
+  serializedTx: string;
+  txJson: TxJson;
+};
+
+export type TxJson = {
   txid: string;
   version: number;
   locktime: number;
@@ -33,7 +38,7 @@ type APITxResponse = {
   };
 };
 
-async function fetchTx(txid: string, testnet = false): Promise<APITxResponse> {
+async function fetchTx(txid: string, testnet = false): Promise<APIResponse> {
   const url = `/tx/${txid}${testnet ? '?testnet=true' : ''}`;
 
   const response = await fetch(url);
@@ -43,7 +48,7 @@ async function fetchTx(txid: string, testnet = false): Promise<APITxResponse> {
     throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
   }
 
-  const data = (await response.json()) as APITxResponse;
+  const data = (await response.json()) as APIResponse;
 
   return data;
 }
