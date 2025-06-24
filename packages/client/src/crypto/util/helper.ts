@@ -8,16 +8,6 @@ export function littleEndianToInteger(bytes: Uint8Array): bigint {
   return result;
 }
 
-export function bigEndianToInteger(bytes: Uint8Array): bigint {
-  let result = 0n;
-
-  for (let i = 0; i < bytes.length; i++) {
-    result = (result << 8n) | BigInt(bytes[i]);
-  }
-
-  return result;
-}
-
 export function integerToLittleEndian(value: number | bigint, length: number) {
   const bytes = new Uint8Array(length);
 
@@ -31,6 +21,35 @@ export function integerToLittleEndian(value: number | bigint, length: number) {
     bytes[i] = Number(temp & 0xffn);
     temp >>= 8n;
     i++;
+  }
+
+  return bytes;
+}
+
+export function bigEndianToInteger(bytes: Uint8Array): bigint {
+  let result = 0n;
+
+  for (let i = 0; i < bytes.length; i++) {
+    result = (result << 8n) | BigInt(bytes[i]);
+  }
+
+  return result;
+}
+
+// 01020304 => [01, 02, 03, 04]
+export function integerToBigEndian(value: number | bigint, length: number) {
+  const bytes = new Uint8Array(length);
+
+  if (typeof value === 'number') {
+    value = BigInt(value);
+  }
+
+  let temp = value;
+  let i = length - 1;
+  while (temp > 0n && i >= 0n) {
+    bytes[i] = Number(temp & 0xffn);
+    temp >>= 8n;
+    i--;
   }
 
   return bytes;

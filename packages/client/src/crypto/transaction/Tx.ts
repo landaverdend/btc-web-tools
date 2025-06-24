@@ -138,7 +138,6 @@ export default class Tx {
 
     let bytes = stream.toBytes();
     bytes = hash256(bytes);
-    // return bigEndianToInteger(bytes);
     return bytes;
   }
 

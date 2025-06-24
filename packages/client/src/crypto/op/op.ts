@@ -6,6 +6,7 @@ import { hash160, hash256 } from '../hash/hashUtil';
 import Tx from '../transaction/Tx';
 import * as secp from '@noble/secp256k1';
 import { bytesToHex } from '../util/helper';
+import { Signature } from '../signature/signature';
 
 export function encodeNumber(num: number) {
   if (num === 0) {
@@ -909,6 +910,7 @@ function op_checksig({ stack, sighash }: OpContext) {
     console.log('der_signature: ', bytesToHex(der_signature));
     console.log('sec_pubkey: ', bytesToHex(sec_pubkey));
 
+    const sig = Signature.fromDer(der_signature);
     const isValid = secp.verify(der_signature, sighash!, sec_pubkey);
 
     if (isValid) {
@@ -919,6 +921,7 @@ function op_checksig({ stack, sighash }: OpContext) {
 
     return true;
   } catch (error) {
+    console.error('Error in OP_CHECKSIG: ', error);
     stack.push(encodeNumber(0));
     return true;
   }
