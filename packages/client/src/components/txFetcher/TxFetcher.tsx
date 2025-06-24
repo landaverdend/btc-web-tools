@@ -8,7 +8,7 @@ import { useDebugStore } from '@/state/debugStore';
 import Tx from '@/crypto/transaction/Tx';
 
 export function TxFetcher() {
-  const { tx, setScript, setScriptAsm, setTx, setSelectedInput, setPrevScriptPubkey } = useDebugStore();
+  const { tx, selectedInput, setScript, setScriptAsm, setTx, setSelectedInput, setPrevScriptPubkey } = useDebugStore();
 
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
@@ -85,7 +85,7 @@ export function TxFetcher() {
           Input Select
           {tx.inputs.map((input, i) => {
             return (
-              <div key={i} className="txin-item" onClick={() => setSelectedInput(i)}>
+              <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => setSelectedInput(i)}>
                 {bytesToHex(input.txid, true)}
               </div>
             );

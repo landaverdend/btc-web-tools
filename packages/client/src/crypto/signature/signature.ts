@@ -1,5 +1,5 @@
 import { ByteStream } from '../util/ByteStream';
-import { bigEndianToInteger } from '../util/helper';
+import { bigEndianToInteger, integerToBigEndian } from '../util/helper';
 
 export class Signature {
   r: bigint;
@@ -11,7 +11,10 @@ export class Signature {
   }
 
   toBytes() {
-    // const rBytes = integerToBigEndian(this.r, 32);
+    const rBytes = integerToBigEndian(this.r, 32);
+    const sBytes = integerToBigEndian(this.s, 32);
+
+    return new Uint8Array([...rBytes, ...sBytes]);
   }
 
   static fromDer(der: Uint8Array) {

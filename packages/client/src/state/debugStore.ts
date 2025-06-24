@@ -86,5 +86,12 @@ export const useDebugStore = create<DebugState>((set, get) => ({
 
   getCurrentCmd: () => get().script.getCmd(get().programCounter),
 
-  reset: () => set({ programCounter: 0, stack: [], altStack: [], status: 'Not Started', conditionFrames: [] }),
+  reset: () =>
+    set({
+      programCounter: 0,
+      stack: [],
+      altStack: [],
+      status: 'Not Started',
+      conditionFrames: [],
+    }),
 }));

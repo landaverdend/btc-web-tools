@@ -896,7 +896,6 @@ function op_hash256({ stack }: OpContext) {
   return true;
 }
 
-// TODO: implement properly
 function op_checksig({ stack, sighash }: OpContext) {
   if (stack.length < 2) {
     return false;
@@ -906,12 +905,8 @@ function op_checksig({ stack, sighash }: OpContext) {
   const der_signature = stack.pop()!.slice(0, -1);
 
   try {
-    console.log('sighash: ', bytesToHex(sighash!));
-    console.log('der_signature: ', bytesToHex(der_signature));
-    console.log('sec_pubkey: ', bytesToHex(sec_pubkey));
-
-    const sig = Signature.fromDer(der_signature);
-    const isValid = secp.verify(der_signature, sighash!, sec_pubkey);
+    const formattedSig = Signature.fromDer(der_signature).toBytes();
+    const isValid = secp.verify(formattedSig, sighash!, sec_pubkey);
 
     if (isValid) {
       stack.push(encodeNumber(1));

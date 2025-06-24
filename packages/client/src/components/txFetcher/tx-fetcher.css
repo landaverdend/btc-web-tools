@@ -65,4 +65,8 @@
     border-radius: 5px;
     cursor: pointer;
   }
+
+  .txin-item.active {
+    color: var(--soft-orange);
+  }
 }
