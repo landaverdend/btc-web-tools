@@ -1,12 +1,5 @@
 import { ByteStream } from '@/crypto/util/ByteStream';
-import {
-  bigEndianToInteger,
-  bytesToHex,
-  encodeVarInt,
-  hexToBytes,
-  integerToLittleEndian,
-  littleEndianToInteger,
-} from '@/crypto/util/helper';
+import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
 import { FormattedTx, FormattedWitnessStack, TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
