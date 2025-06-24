@@ -121,7 +121,6 @@ export default class Tx {
       if (i === inputIndex) {
         const clone = input.clone();
         clone.scriptSig = prevScriptPubkey.clone();
-
         stream.write(clone.toBytes());
       } else {
         // Pass in original txin with empty script
@@ -138,12 +137,9 @@ export default class Tx {
     stream.write(integerToLittleEndian(SIGHASH_ALL, 4));
 
     let bytes = stream.toBytes();
-
-    console.log(bytesToHex(bytes));
     bytes = hash256(bytes);
-    console.log('h256: ', bytesToHex(bytes));
-
-    return bigEndianToInteger(bytes);
+    // return bigEndianToInteger(bytes);
+    return bytes;
   }
 
   clone() {

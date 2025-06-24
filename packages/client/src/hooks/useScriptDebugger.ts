@@ -1,5 +1,5 @@
 import { decodeNumber, OP_CODE_FUNCTIONS, OP_CODE_NAMES, OP_CODES, OpContext } from '@/crypto/op/op';
-import { ScriptCommand } from '@/crypto/script/Script';
+import { Script, ScriptCommand } from '@/crypto/script/Script';
 import { bytesToHex } from '@/crypto/util/helper';
 import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
 
@@ -15,6 +15,7 @@ export function useScriptDebugger() {
     altStack,
     tx,
     selectedInput,
+    prevScriptPubkey,
   } = useDebugStore();
 
   function step(): ScriptDebuggerResult {
@@ -48,18 +49,26 @@ export function useScriptDebugger() {
         selectedInput,
       };
 
-      let result = func(opContext);
+      let result = false;
 
       switch (cmd) {
         // OP_IF and OP_NOTIF are control flow instructions that increment the program counter inside their own function
         case OP_CODES.OP_IF:
         case OP_CODES.OP_NOTIF:
+          result = func(opContext);
           break;
         case OP_CODES.OP_ENDIF:
+          result = func(opContext);
           conditionFrames.pop();
           incProgramCounter(cmd);
           break;
+        case OP_CODES.OP_CHECKSIG:
+          const sighash = tx?.sighash(selectedInput!, Script.fromHex(prevScriptPubkey!));
+          result = func({ ...opContext, sighash });
+          incProgramCounter(cmd);
+          break;
         default:
+          result = func(opContext);
           incProgramCounter(cmd);
           break;
       }

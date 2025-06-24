@@ -8,7 +8,7 @@ import { useDebugStore } from '@/state/debugStore';
 import Tx from '@/crypto/transaction/Tx';
 
 export function TxFetcher() {
-  const { tx, setScript, setScriptAsm, setTx, setSelectedInput } = useDebugStore();
+  const { tx, setScript, setScriptAsm, setTx, setSelectedInput, setPrevScriptPubkey } = useDebugStore();
 
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
@@ -46,6 +46,7 @@ export function TxFetcher() {
 
       setScript(result);
       setScriptAsm(result.toString());
+      setPrevScriptPubkey(txJson.vin[0].prevout.scriptpubkey);
 
       setError('');
     } catch (error) {

@@ -4,6 +4,8 @@ import { ripemd160, sha1 } from '@noble/hashes/legacy';
 import { sha256 } from '@noble/hashes/sha2';
 import { hash160, hash256 } from '../hash/hashUtil';
 import Tx from '../transaction/Tx';
+import * as secp from '@noble/secp256k1';
+import { bytesToHex } from '../util/helper';
 
 export function encodeNumber(num: number) {
   if (num === 0) {
@@ -894,15 +896,27 @@ function op_hash256({ stack }: OpContext) {
 }
 
 // TODO: implement properly
-function op_checksig({ stack, tx, selectedInput }: OpContext) {
+function op_checksig({ stack, sighash }: OpContext) {
   if (stack.length < 2) {
     return false;
   }
 
-  const signature = stack.pop()!;
-  const pubKey = stack.pop()!;
+  const sec_pubkey = stack.pop()!;
+  const der_signature = stack.pop()!.slice(0, -1);
 
   try {
+    console.log('sighash: ', bytesToHex(sighash!));
+    console.log('der_signature: ', bytesToHex(der_signature));
+    console.log('sec_pubkey: ', bytesToHex(sec_pubkey));
+
+    const isValid = secp.verify(der_signature, sighash!, sec_pubkey);
+
+    if (isValid) {
+      stack.push(encodeNumber(1));
+    } else {
+      stack.push(encodeNumber(0));
+    }
+
     return true;
   } catch (error) {
     stack.push(encodeNumber(0));
@@ -947,6 +961,7 @@ export type OpContext = {
 
   tx?: Tx;
   selectedInput?: number;
+  sighash?: Uint8Array;
 };
 
 function fillPushBytes() {

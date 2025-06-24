@@ -23,8 +23,8 @@ interface DebugState {
   tx?: Tx;
   setTx: (tx: Tx) => void;
 
-  prevScriptPubkey?: Uint8Array;
-  setPrevScriptPubkey: (prevScriptPubkey: Uint8Array) => void;
+  prevScriptPubkey?: string; // hex string of the previous script pubkey.
+  setPrevScriptPubkey: (prevScriptPubkey: string) => void;
 
   selectedInput?: number;
   setSelectedInput: (input: number) => void;
@@ -62,7 +62,7 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   setSelectedInput: (input: number) => set({ selectedInput: input }),
 
   prevScriptPubkey: undefined,
-  setPrevScriptPubkey: (prevScriptPubkey: Uint8Array) => set({ prevScriptPubkey }),
+  setPrevScriptPubkey: (prevScriptPubkey: string) => set({ prevScriptPubkey }),
 
   stack: [],
   setStack: (stack: Uint8Array[]) => set({ stack }),
@@ -73,6 +73,7 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   programCounter: 0,
   setProgramCounter: (currentCmd: number) => set({ programCounter: currentCmd }),
 
+  // User inputted script
   scriptAsm: initialTemplate,
   setScriptAsm: (scriptAsm: string) => set({ scriptAsm }),
 

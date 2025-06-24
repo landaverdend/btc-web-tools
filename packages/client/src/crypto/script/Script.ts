@@ -120,6 +120,13 @@ export class Script {
     return new Script(cmds);
   }
 
+  static fromHex(hex: string) {
+    const bytes = hexToBytes(hex);
+    const stream = new ByteStream(new Uint8Array([...encodeVarInt(bytes.length), ...bytes]));
+
+    return Script.fromStream(stream);
+  }
+
   static fromStream(stream: ByteStream, includePushBytes = false) {
     const length = stream.readVarInt();
     const cmds: (number | Uint8Array)[] = [];
