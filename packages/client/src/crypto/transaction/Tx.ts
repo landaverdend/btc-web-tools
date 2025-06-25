@@ -25,6 +25,7 @@ export default class Tx {
   version: number;
 
   isSegwit: boolean;
+  isCoinbase: boolean;
   witnessMarker?: number;
   witnessFlag?: number;
   witnessData?: TxWitnessData;
@@ -46,12 +47,20 @@ export default class Tx {
     this.outputs = outputs;
     this.locktime = locktime;
 
+    this.isCoinbase = this.checkIsCoinbase();
+
     this.isSegwit = isSegwit;
     if (isSegwit) {
       this.witnessMarker = segwitData?.marker;
       this.witnessFlag = segwitData?.flag;
       this.witnessData = segwitData?.witnessData;
     }
+  }
+
+  id() {
+    const bytes = this.toBytes();
+
+    return bytesToHex(hash256(bytes).reverse());
   }
 
   /**
@@ -132,6 +141,17 @@ export default class Tx {
     let bytes = stream.toBytes();
     bytes = hash256(bytes);
     return bytes;
+  }
+
+  checkIsCoinbase() {
+    if (this.inputs.length !== 1) return false;
+
+    const firstInput = this.inputs[0];
+    // initial txid is all zeros
+    const isAllZeros = firstInput.txid.every((byte) => byte === 0);
+    const isMaxVout = firstInput.vout === 0xffffffff;
+
+    return isAllZeros && isMaxVout;
   }
 
   clone() {

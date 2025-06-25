@@ -1,40 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './tx-fetcher.css';
 import { bytesToHex } from '@/crypto/util/helper';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
 import ColoredText from '@/components/coloredText/ColoredText';
 import { useDebugStore } from '@/state/debugStore';
+import { useScriptBuilder } from '@/hooks/useScriptBuilder';
+import Tx from '@/crypto/transaction/Tx';
 
 export function TxFetcher() {
   // Global State variables
-  const { reset } = useDebugStore();
-  const { selectedInput, setTxMetadata, setPrevScriptPubkey, reset: resetTxStore } = useTxStore();
+  const { reset, setScript, setScriptAsm } = useDebugStore();
+  const { reset: resetTxStore, setTxMetadata, setTx } = useTxStore();
 
   // Hooks
-  const { fetchTransaction, error, apiResponse, handleLockType } = useFetchTx();
+  const { fetchTransaction, error } = useFetchTx();
+  const { buildExecutionScript } = useScriptBuilder();
 
   // Local State Variables
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
 
-  // When the selected input changes, update the unlocking script and tx metadata
-  useEffect(() => {
-    if (!apiResponse || selectedInput === undefined) return;
+  const handleFetch = async () => {
+    const response = await fetchTransaction(txid, testnet);
 
-    const { txJson } = apiResponse;
-    const theInput = txJson.vin[selectedInput];
+    if (response) {
+      const tx = Tx.fromHex(response.serializedTx);
 
-    // update unlocking script.
-    handleLockType(theInput.prevout!.scriptpubkey_type, apiResponse);
+      // Coinbase transactions don't have unlocking scripts.
+      const script = buildExecutionScript(0, tx);
 
-    // update the tx context/metadata/prev script pubkey
-    setTxMetadata({ txid: txJson.txid, lockType: txJson.vin[selectedInput].prevout!.scriptpubkey_type });
-    setPrevScriptPubkey(txJson.vin[selectedInput].prevout!.scriptpubkey);
+      // Set the script in the editor/debugger.
+      setScript(script);
+      setScriptAsm(script.toString());
 
-    // Reset the debugger state.
-    reset();
-  }, [selectedInput]);
+      setTx(tx); // Set the global tx state
+      setTxMetadata({ txid: tx.id(), isCoinbase: tx.isCoinbase });
+
+      reset();
+    }
+  };
 
   return (
     <div className="flex-column tx-fetcher-container">
@@ -59,7 +64,7 @@ export function TxFetcher() {
           <input id="testnet" type="checkbox" checked={testnet} onChange={(e) => setTestnet(e.target.checked)} />
         </label>
         <div className="flex-row tx-fetcher-buttons">
-          <button onClick={() => fetchTransaction(txid, testnet)}>Fetch</button>
+          <button onClick={handleFetch}>Fetch</button>
           <button
             onClick={() => {
               reset();
@@ -87,13 +92,19 @@ function TxDetails({}: TxDetailsProps) {
           <div className="tx-metadata">
             Tx ID: <ColoredText color="var(--soft-green)">{txid}</ColoredText>
           </div>
-          <div className="tx-metadata">
-            Lock Type:
-            <ColoredText color="var(--soft-red)">{' ' + lockType}</ColoredText>
-          </div>
-          <div className="tx-metadata">
-            {isCoinbase && <ColoredText color="var(--sky-blue)">Coinbase Transaction</ColoredText>}
-          </div>
+
+          {lockType && (
+            <div className="tx-metadata">
+              Lock Type:
+              <ColoredText color="var(--soft-red)">{' ' + lockType}</ColoredText>
+            </div>
+          )}
+
+          {isCoinbase && (
+            <div className="tx-metadata">
+              <ColoredText color="var(--sky-blue)">Coinbase Transaction</ColoredText>
+            </div>
+          )}
         </div>
       )}
 

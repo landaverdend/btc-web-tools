@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 type TxMetadata = {
   txid: string;
-  lockType: string;
+  lockType?: string;
   isCoinbase?: boolean;
 };
 
