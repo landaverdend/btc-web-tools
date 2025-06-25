@@ -2,8 +2,15 @@
   align-items: center;
   gap: 10px;
 
+  background-color: var(--header-gray);
+  padding: 10px;
+  border-radius: 5px;
+
+  width: 210px;
+
   h3 {
     font-size: 1.2rem;
+    user-select: none;
   }
 }
 
@@ -14,12 +21,13 @@
   padding: 10px;
   border-radius: 5px;
 
+  width: 100%;
   label {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   input {
-    padding: 5px;
+    padding: 10px;
     border-radius: 5px;
     border: none;
   }
@@ -59,12 +67,12 @@
 
   .tx-metadata-container {
     .tx-metadata {
-      max-width: 200px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
 
       padding: 5px;
+      max-width: 200px;
     }
   }
 
@@ -73,12 +81,12 @@
     gap: 5px;
 
     .txin-item {
-      max-width: 200px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
 
       padding: 5px;
+      max-width: 200px;
     }
 
     .txin-item:hover {
