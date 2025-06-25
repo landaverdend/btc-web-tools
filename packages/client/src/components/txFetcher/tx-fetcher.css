@@ -59,7 +59,7 @@
 
   .tx-metadata-container {
     .tx-metadata {
-      max-width: 150px;
+      max-width: 200px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -73,7 +73,7 @@
     gap: 5px;
 
     .txin-item {
-      max-width: 150px;
+      max-width: 200px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

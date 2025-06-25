@@ -11,7 +11,9 @@ export function useScriptDebugger() {
 
   function step(): ScriptDebuggerResult {
     // Program is already done....
-    if (status === 'Success' || status === 'Failure') return status;
+    if (status === 'Success' || status === 'Failure') {
+      return status;
+    }
 
     if (programCounter >= script.cmds.length) {
       // Script end check.
@@ -53,9 +55,11 @@ export function useScriptDebugger() {
           conditionFrames.pop();
           incProgramCounter(cmd);
           break;
+        case OP_CODES.OP_CHECKSIGVERIFY:
         case OP_CODES.OP_CHECKSIG:
           const sighash = tx?.sighash(selectedInput!, Script.fromHex(prevScriptPubkey!));
-          result = func({ ...opContext, sighash });
+          opContext.sighash = sighash;
+          result = func(opContext);
           incProgramCounter(cmd);
           break;
         default:

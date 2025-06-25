@@ -5,7 +5,6 @@ import { sha256 } from '@noble/hashes/sha2';
 import { hash160, hash256 } from '../hash/hashUtil';
 import Tx from '../transaction/Tx';
 import * as secp from '@noble/secp256k1';
-import { bytesToHex } from '../util/helper';
 import { Signature } from '../signature/signature';
 
 export function encodeNumber(num: number) {
@@ -43,7 +42,8 @@ export function decodeNumber(bytes: Uint8Array) {
     return 0;
   }
 
-  const bigEndian = bytes.reverse();
+  const bytesCopy = new Uint8Array([...bytes]);
+  const bigEndian = bytesCopy.reverse();
   const isNegative = (bigEndian[0] & 0x80) !== 0;
 
   let result = isNegative ? bigEndian[0] & 0x7f : bigEndian[0];
@@ -65,7 +65,7 @@ function isEncodedZero(bytes: Uint8Array) {
   return bytes.length === 0 || (bytes.length === 1 && bytes[0] === 0);
 }
 
-function op_nop({ stack }: OpContext) {
+function op_nop({}: OpContext) {
   return true;
 }
 
@@ -1087,7 +1087,7 @@ export const OP_CODE_FUNCTIONS: Record<number, (context: OpContext) => boolean> 
 function fillPushbyteNames() {
   const pushByteNames: Record<number, string> = {};
   for (let i = 1; i <= 75; i++) {
-    pushByteNames[i] = `OP_PUSHBYTES${i}`;
+    pushByteNames[i] = `OP_PUSHBYTES_${i}`;
   }
 
   return pushByteNames;

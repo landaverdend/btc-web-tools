@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './tx-fetcher.css';
-import { fetchTx, TxJson } from '@/api/api';
+import { fetchTx } from '@/api/api';
 import { bytesToHex, encodeVarInt, hexToBytes } from '@/crypto/util/helper';
 import { ByteStream } from '@/crypto/util/ByteStream';
 import { Script } from '@/crypto/script/Script';
@@ -14,7 +14,6 @@ export function TxFetcher() {
 
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
-  const [txJson, setTxJson] = useState<any>();
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
@@ -43,7 +42,6 @@ export function TxFetcher() {
       const result = sigScript.add(pkScript);
       const tx = Tx.fromHex(serializedTx);
 
-      setTxJson(txJson);
       setTx(tx);
       setSelectedInput(0);
       setTxMetadata({ txid, lockType: txJson.vin[0].prevout.scriptpubkey_type });
@@ -109,11 +107,9 @@ function TxDetails({}: TxDetailsProps) {
         Input Select
         {tx.inputs.map((input, i) => {
           return (
-            <>
-              <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => setSelectedInput(i)}>
-                {bytesToHex(input.txid, true)}
-              </div>
-            </>
+            <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => setSelectedInput(i)}>
+              {bytesToHex(input.txid, true)}
+            </div>
           );
         })}
       </div>
