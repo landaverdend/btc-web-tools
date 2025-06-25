@@ -1,6 +1,4 @@
-import { APIResponse, fetchTx, Vin } from '@api/api';
-import { ByteStream } from '@crypto/util/ByteStream';
-import { encodeVarInt, hexToBytes } from '@/crypto/util/helper';
+import { APIResponse, fetchTx } from '@api/api';
 import { useState } from 'react';
 import { Script } from '@/crypto/script/Script';
 import Tx from '@/crypto/transaction/Tx';
@@ -73,10 +71,8 @@ export function useFetchTx() {
     setScriptAsm(result.toString());
   };
 
-  const handleCoinbaseLockTypes = ({ txJson, serializedTx }: APIResponse) => {
-    const tx = Tx.fromHex(serializedTx);
-
-    setTxMetadata({ txid: txJson.txid, lockType: txJson.vin[0].prevout!.scriptpubkey_type });
+  const handleCoinbaseLockTypes = ({ txJson }: APIResponse) => {
+    setTxMetadata({ txid: txJson.txid, lockType: 'N/A', isCoinbase: true });
   };
 
   const handleSegwitLockTypes = (scriptPubkey: string) => {

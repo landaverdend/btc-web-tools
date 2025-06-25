@@ -2,6 +2,7 @@ import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
 import './stack-view.css';
 import { bytesToHex } from '@/crypto/util/helper';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
+import ColoredText from '@/components/coloredText/ColoredText';
 
 function NextArg({ nextArg }: { nextArg: string }) {
   if (nextArg === undefined || nextArg === '') {
@@ -10,7 +11,7 @@ function NextArg({ nextArg }: { nextArg: string }) {
 
   const nextArgColor = nextArg.startsWith('0x') ? 'var(--sky-blue)' : 'var(--soft-orange)';
 
-  return <span style={{ color: nextArgColor }}>{nextArg} </span>;
+  return <ColoredText color={nextArgColor}>{nextArg}</ColoredText>;
 }
 function getStatusColor(status: ScriptDebuggerResult) {
   if (status === 'Success') return 'var(--soft-green)';
@@ -30,7 +31,8 @@ export function StackView({}: StackProps) {
 
       <div className="flex-row stack-details-container">
         <span className="details-item" style={{ border: `1px solid var(--sky-blue)` }}>
-          Program Counter: <span style={{ color: 'var(--sky-blue)' }}>{programCounter}</span>
+          Program Counter:
+          <ColoredText color="var(--sky-blue)">{programCounter}</ColoredText>
         </span>
 
         <span className="details-item next-arg-container">
@@ -39,7 +41,8 @@ export function StackView({}: StackProps) {
         </span>
 
         <span className="details-item" style={{ border: `1px solid ${getStatusColor(status)}` }}>
-          Script Status: <span style={{ color: getStatusColor(status) }}>{status}</span>
+          Script Status:
+          <ColoredText color={getStatusColor(status)}>{status}</ColoredText>
         </span>
       </div>
 

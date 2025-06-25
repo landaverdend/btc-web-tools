@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import { TokenFetcher } from './token';
+import { TxCache } from './TxCache';
 
 dotenv.config();
 
@@ -26,11 +27,26 @@ app.listen(PORT, () => {
 const BASE_URL = 'https://blockstream.info/api/';
 const BASE_TESTNET_URL = 'https://blockstream.info/testnet/api/';
 
+// Initialize the FIFO cache with a reasonable size limit
+const txCache = new TxCache(1000);
+
 app.get('/tx/:txid', async (req, res) => {
   const { txid } = req.params;
   const { testnet } = req.query;
 
   const useTestnet = testnet === 'true';
+
+  // Generate cache key that includes testnet flag
+  const cacheKey = `${txid}-${useTestnet ? 'testnet' : 'mainnet'}`;
+
+  // Check cache first
+  const cachedResult = txCache.get(cacheKey);
+  if (cachedResult) {
+    console.log('cache hit');
+    return res.status(200).send(cachedResult);
+  }
+
+  // If not in cache, fetch from API
   const accessToken = await TokenFetcher.getToken();
   const jsonUrl = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}`;
   const hexUrl = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}/hex`;
@@ -56,10 +72,15 @@ app.get('/tx/:txid', async (req, res) => {
     const data = await jsonResponse.json();
     const hexData = await hexResponse.text();
 
-    res.status(200).send({
+    const result = {
       serializedTx: hexData,
       txJson: data,
-    });
+    };
+
+    // Cache the result
+    txCache.set(cacheKey, result);
+
+    res.status(200).send(result);
   } catch (error) {
     const errortxt = error instanceof Error ? error.message : 'Generic error';
     res.status(500).send(errortxt);

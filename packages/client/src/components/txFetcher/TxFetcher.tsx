@@ -3,6 +3,7 @@ import './tx-fetcher.css';
 import { bytesToHex } from '@/crypto/util/helper';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
+import ColoredText from '@/components/coloredText/ColoredText';
 
 export function TxFetcher() {
   const { fetchTransaction, error } = useFetchTx();
@@ -43,30 +44,37 @@ export function TxFetcher() {
 type TxDetailsProps = {};
 function TxDetails({}: TxDetailsProps) {
   const { tx, selectedInput, txMetadata, setSelectedInput } = useTxStore();
-
-  if (!tx) return <></>;
+  const { txid, lockType, isCoinbase } = txMetadata || {};
 
   return (
     <div className="flex-column tx-details-container">
-      <div className="flex-column tx-metadata-container">
-        <div className="tx-metadata">
-          Tx ID: <span style={{ color: 'var(--soft-green)' }}>{txMetadata?.txid}</span>
+      {txMetadata && (
+        <div className="flex-column tx-metadata-container">
+          <div className="tx-metadata">
+            Tx ID: <ColoredText color="var(--soft-green)">{txMetadata?.txid}</ColoredText>
+          </div>
+          <div className="tx-metadata">
+            Lock Type:
+            <ColoredText color="var(--soft-red)">{' ' + txMetadata?.lockType}</ColoredText>
+          </div>
+          <div className="tx-metadata">
+            {isCoinbase && <ColoredText color="var(--sky-blue)">Coinbase Transaction</ColoredText>}
+          </div>
         </div>
-        <div className="tx-metadata">
-          Lock Type: <span style={{ color: 'var(--soft-red)' }}>{txMetadata?.lockType}</span>
-        </div>
-      </div>
+      )}
 
-      <div className="flex-column input-selection">
-        Input Select
-        {tx.inputs.map((input, i) => {
-          return (
-            <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => setSelectedInput(i)}>
-              {bytesToHex(input.txid, true)}
-            </div>
-          );
-        })}
-      </div>
+      {tx && (
+        <div className="flex-column input-selection">
+          Input Select
+          {tx.inputs.map((input, i) => {
+            return (
+              <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => setSelectedInput(i)}>
+                {bytesToHex(input.txid, true)}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
