@@ -46,7 +46,7 @@ export class Script {
           res.write(integerToLittleEndian(cmd.length, 1));
         } else if (len > 75 && len < 0x100) {
           res.write(integerToLittleEndian(76, 1));
-          res.write(integerToLittleEndian(length, 1));
+          res.write(integerToLittleEndian(len, 1));
         } else if (len >= 0x100 && len <= 520) {
           res.write(integerToLittleEndian(77, 1));
           res.write(integerToLittleEndian(len, 2));
@@ -120,11 +120,11 @@ export class Script {
     return new Script(cmds);
   }
 
-  static fromHex(hex: string) {
+  static fromHex(hex: string, includePushBytes = false) {
     const bytes = hexToBytes(hex);
     const stream = new ByteStream(new Uint8Array([...encodeVarInt(bytes.length), ...bytes]));
 
-    return Script.fromStream(stream);
+    return Script.fromStream(stream, includePushBytes);
   }
 
   static fromStream(stream: ByteStream, includePushBytes = false) {

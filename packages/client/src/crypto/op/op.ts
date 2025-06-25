@@ -4,8 +4,9 @@ import { ripemd160, sha1 } from '@noble/hashes/legacy';
 import { sha256 } from '@noble/hashes/sha2';
 import { hash160, hash256 } from '../hash/hashUtil';
 import Tx from '../transaction/Tx';
-import * as secp from '@noble/secp256k1';
+import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { Signature } from '../signature/signature';
+import { bytesToHex, numberToHex } from '../util/helper';
 
 export function encodeNumber(num: number) {
   if (num === 0) {
@@ -247,6 +248,18 @@ function op_verify({ stack }: OpContext) {
     return false;
   }
 
+  return true;
+}
+
+function op_pushdata1({}: OpContext) {
+  return true;
+}
+
+function op_pushdata2({}: OpContext) {
+  return true;
+}
+
+function op_pushdata4({}: OpContext) {
   return true;
 }
 
@@ -905,8 +918,7 @@ function op_checksig({ stack, sighash }: OpContext) {
   const der_signature = stack.pop()!.slice(0, -1);
 
   try {
-    const formattedSig = Signature.fromDer(der_signature).toBytes();
-    const isValid = secp.verify(formattedSig, sighash!, sec_pubkey);
+    const isValid = secp256k1.verify(der_signature, sighash!, sec_pubkey, { format: 'der' });
 
     if (isValid) {
       stack.push(encodeNumber(1));
@@ -932,7 +944,7 @@ function op_checksigverify({ stack, sighash }: OpContext) {
 
   try {
     const formattedSig = Signature.fromDer(der_signature).toBytes();
-    const isValid = secp.verify(formattedSig, sighash!, sec_pubkey);
+    const isValid = secp256k1.verify(formattedSig, sighash!, sec_pubkey);
 
     if (isValid) {
       stack.push(encodeNumber(1));
@@ -996,6 +1008,9 @@ function fillPushBytes() {
 export const OP_CODE_FUNCTIONS: Record<number, (context: OpContext) => boolean> = {
   0: op_0,
   ...fillPushBytes(),
+  76: op_pushdata1,
+  77: op_pushdata2,
+  78: op_pushdata4,
   79: op_1negate,
   81: op_1,
   82: op_2,

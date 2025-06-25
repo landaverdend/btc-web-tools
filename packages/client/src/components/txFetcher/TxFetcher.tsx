@@ -1,15 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './tx-fetcher.css';
 import { bytesToHex } from '@/crypto/util/helper';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
 import ColoredText from '@/components/coloredText/ColoredText';
+import { useDebugStore } from '@/state/debugStore';
 
 export function TxFetcher() {
-  const { fetchTransaction, error } = useFetchTx();
+  // Global State variables
+  const { setScript, setScriptAsm, reset } = useDebugStore();
+  const { selectedInput, setTxMetadata, setPrevScriptPubkey } = useTxStore();
 
+  // Hooks
+  const { fetchTransaction, error, apiResponse, buildLegacyUnlockingScript } = useFetchTx();
+
+  // Local State Variables
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
+
+  // When the selected input changes, update the unlocking script and tx metadata
+  useEffect(() => {
+    if (!apiResponse || selectedInput === undefined) return;
+
+    const { txJson } = apiResponse;
+
+    // update unlocking script
+    const unlockingScript = buildLegacyUnlockingScript(selectedInput, apiResponse);
+    setScript(unlockingScript);
+    setScriptAsm(unlockingScript.toString());
+
+    // update the tx context/metadata/prev script pubkey
+    setTxMetadata({ txid: txJson.txid, lockType: txJson.vin[selectedInput].prevout!.scriptpubkey_type });
+    setPrevScriptPubkey(txJson.vin[selectedInput].prevout!.scriptpubkey);
+
+    // Reset the debugger state.
+    reset();
+  }, [selectedInput, apiResponse]);
 
   return (
     <div className="flex-column tx-fetcher-container">
@@ -51,11 +77,11 @@ function TxDetails({}: TxDetailsProps) {
       {txMetadata && (
         <div className="flex-column tx-metadata-container">
           <div className="tx-metadata">
-            Tx ID: <ColoredText color="var(--soft-green)">{txMetadata?.txid}</ColoredText>
+            Tx ID: <ColoredText color="var(--soft-green)">{txid}</ColoredText>
           </div>
           <div className="tx-metadata">
             Lock Type:
-            <ColoredText color="var(--soft-red)">{' ' + txMetadata?.lockType}</ColoredText>
+            <ColoredText color="var(--soft-red)">{' ' + lockType}</ColoredText>
           </div>
           <div className="tx-metadata">
             {isCoinbase && <ColoredText color="var(--sky-blue)">Coinbase Transaction</ColoredText>}
@@ -68,7 +94,12 @@ function TxDetails({}: TxDetailsProps) {
           Input Select
           {tx.inputs.map((input, i) => {
             return (
-              <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => setSelectedInput(i)}>
+              <div
+                key={i}
+                className={`txin-item ${i === selectedInput ? 'active' : ''}`}
+                onClick={() => {
+                  setSelectedInput(i);
+                }}>
                 {bytesToHex(input.txid, true)}
               </div>
             );

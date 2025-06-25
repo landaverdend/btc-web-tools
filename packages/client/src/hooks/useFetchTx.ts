@@ -1,4 +1,4 @@
-import { APIResponse, fetchTx } from '@api/api';
+import { APIResponse, fetchTx, TxJson } from '@api/api';
 import { useState } from 'react';
 import { Script } from '@/crypto/script/Script';
 import Tx from '@/crypto/transaction/Tx';
@@ -11,6 +11,7 @@ export function useFetchTx() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [apiResponse, setApiResponse] = useState<APIResponse | null>(null);
 
   const fetchTransaction = async (txid: string, testnet: boolean) => {
     if (!txid) {
@@ -21,6 +22,8 @@ export function useFetchTx() {
     setIsLoading(true);
     try {
       const response = await fetchTx(txid, testnet);
+      setApiResponse(response);
+
       const { txJson } = response;
 
       // First check if the transaction is a coinbase, if so, escape early.
@@ -33,19 +36,24 @@ export function useFetchTx() {
       const locktype = txJson.vin[0].prevout?.scriptpubkey_type;
 
       switch (locktype) {
+        case 'p2ms':
+          handleP2MSLockTypes(response);
+          break;
         case 'p2pk':
         case 'p2pkh':
           handleLegacyLockTypes(response);
           break;
         case 'p2wpkh':
-          handleSegwitLockTypes(txJson.vin[0].prevout!.scriptpubkey);
+          handleSegwitLockTypes(response);
           break;
         case 'p2tr':
-          handleTaprootLockTypes(txJson.vin[0].prevout!.scriptpubkey);
+          handleTaprootLockTypes(response);
           break;
         default:
           throw new Error('Unknown locktype');
       }
+
+      setError(null);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
@@ -54,10 +62,7 @@ export function useFetchTx() {
   };
 
   const handleLegacyLockTypes = ({ txJson, serializedTx }: APIResponse) => {
-    const pkScript = Script.fromHex(txJson.vin[0].prevout!.scriptpubkey);
-    const sigScript = Script.fromHex(txJson.vin[0].scriptsig);
-
-    const result = sigScript.add(pkScript);
+    const unlockingScript = buildLegacyUnlockingScript(0, { txJson, serializedTx });
     const tx = Tx.fromHex(serializedTx);
 
     // Set the global transaction context
@@ -67,21 +72,34 @@ export function useFetchTx() {
     setPrevScriptPubkey(txJson.vin[0].prevout!.scriptpubkey);
 
     // Send updates to script editor and overwrite the current script...
-    setScript(result);
-    setScriptAsm(result.toString());
+    setScript(unlockingScript);
+    setScriptAsm(unlockingScript.toString());
   };
 
   const handleCoinbaseLockTypes = ({ txJson }: APIResponse) => {
     setTxMetadata({ txid: txJson.txid, lockType: 'N/A', isCoinbase: true });
   };
 
-  const handleSegwitLockTypes = (scriptPubkey: string) => {
+  const handleSegwitLockTypes = ({}: APIResponse) => {
     throw new Error('Segwit not implemented!');
   };
 
-  const handleTaprootLockTypes = (scriptPubkey: string) => {
+  const handleTaprootLockTypes = ({}: APIResponse) => {
     throw new Error('Taproot not implemented!');
   };
 
-  return { fetchTransaction, isLoading, error };
+  const handleP2MSLockTypes = ({}: APIResponse) => {
+    throw new Error('P2MS not implemented!');
+  };
+
+  const buildLegacyUnlockingScript = (inputIndex: number, { txJson }: APIResponse): Script => {
+    const input = txJson.vin[inputIndex];
+
+    const pkScript = Script.fromHex(input.prevout!.scriptpubkey, true);
+    const sigScript = Script.fromHex(input.scriptsig, true);
+
+    return sigScript.add(pkScript);
+  };
+
+  return { fetchTransaction, buildLegacyUnlockingScript, isLoading, error, apiResponse };
 }

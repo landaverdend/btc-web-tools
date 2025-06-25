@@ -121,3 +121,7 @@ export function bytesToHex(bytes: Uint8Array, include0x = false) {
   let prefix = include0x ? '0x' : '';
   return prefix + Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
+export function numberToHex(num: number | bigint) {
+  return num.toString(16).padStart(2, '0');
+}
