@@ -1,6 +1,6 @@
 export type APIResponse = {
   serializedTx: string;
-  txJson: TxJson;
+  txJson: TxMetadata; // basically parent map that holds a bunch of the transaction data, alongside previous input stuff
 };
 
 export type Vin = {
@@ -18,7 +18,7 @@ export type Vin = {
   sequence: number;
 };
 
-export type TxJson = {
+export type TxMetadata = {
   txid: string;
   version: number;
   locktime: number;

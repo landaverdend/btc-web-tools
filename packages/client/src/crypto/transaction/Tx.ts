@@ -6,16 +6,6 @@ import TxOut from './TxOut';
 import { Script } from '../script/Script';
 import { hash256 } from '../hash/hashUtil';
 
-export enum ScriptType {
-  P2PKH = 'P2PKH', // Legacy: Pay-to-Public-Key-Hash
-  P2PK = 'P2PK', // Legacy: Pay-to-Public-Key
-  P2SH = 'P2SH', // Legacy: Pay-to-Script-Hash
-  P2WPKH = 'P2WPKH', // SegWit: Pay-to-Witness-Public-Key-Hash
-  P2WSH = 'P2WSH', // SegWit: Pay-to-Witness-Script-Hash
-  P2TR = 'P2TR', // Taproot: Pay-to-Taproot
-  UNKNOWN = 'UNKNOWN',
-}
-
 const SIGHASH_ALL = 0x01;
 const SIGHASH_NONE = 0x02;
 const SIGHASH_SINGLE = 0x03;

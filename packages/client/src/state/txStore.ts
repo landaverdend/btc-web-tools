@@ -1,11 +1,6 @@
+import { TxMetadata } from '@/api/api';
 import Tx from '@/crypto/transaction/Tx';
 import { create } from 'zustand';
-
-type TxMetadata = {
-  txid: string;
-  lockType?: string;
-  isCoinbase?: boolean;
-};
 
 interface TxState {
   txMetadata?: TxMetadata;

@@ -34,8 +34,8 @@ export function TxFetcher() {
       setScript(script);
       setScriptAsm(script.toString());
 
+      setTxMetadata(response.txJson);
       setTx(tx); // Set the global tx state
-      setTxMetadata({ txid: tx.id(), isCoinbase: tx.isCoinbase });
 
       reset();
     }
@@ -83,7 +83,9 @@ export function TxFetcher() {
 type TxDetailsProps = {};
 function TxDetails({}: TxDetailsProps) {
   const { tx, selectedInput, txMetadata, setSelectedInput } = useTxStore();
-  const { txid, lockType, isCoinbase } = txMetadata || {};
+  const { txid } = txMetadata || {};
+
+  const isCoinbase = tx?.isCoinbase;
 
   return (
     <div className="flex-column tx-details-container">
@@ -93,13 +95,6 @@ function TxDetails({}: TxDetailsProps) {
             Tx ID: <ColoredText color="var(--soft-green)">{txid}</ColoredText>
           </div>
 
-          {lockType && (
-            <div className="tx-metadata">
-              Lock Type:
-              <ColoredText color="var(--soft-red)">{' ' + lockType}</ColoredText>
-            </div>
-          )}
-
           {isCoinbase && (
             <div className="tx-metadata">
               <ColoredText color="var(--sky-blue)">Coinbase Transaction</ColoredText>
@@ -108,10 +103,10 @@ function TxDetails({}: TxDetailsProps) {
         </div>
       )}
 
-      {tx && (
+      {txMetadata && (
         <div className="flex-column input-selection">
           Input Select
-          {tx.inputs.map((input, i) => {
+          {txMetadata.vin.map((input, i) => {
             return (
               <div
                 key={i}
@@ -119,7 +114,7 @@ function TxDetails({}: TxDetailsProps) {
                 onClick={() => {
                   setSelectedInput(i);
                 }}>
-                {bytesToHex(input.txid, true)}
+                <ColoredText color="var(--soft-purple)">{input.prevout?.scriptpubkey_type}</ColoredText>: {input.txid}
               </div>
             );
           })}
