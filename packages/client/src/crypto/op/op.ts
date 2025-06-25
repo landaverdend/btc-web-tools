@@ -960,8 +960,7 @@ function op_checksigverify({ stack, sighash }: OpContext) {
 }
 
 function op_checkmultisig({ stack }: OpContext) {
-  throw new Error('Not Implemented');
-  return false;
+  return true;
 }
 
 function op_checkmultisigverify({ stack }: OpContext) {

@@ -14,7 +14,7 @@ interface TxState {
   tx?: Tx;
   setTx: (tx: Tx) => void;
 
-  selectedInput?: number;
+  selectedInput: number;
   setSelectedInput: (input: number) => void;
 
   prevScriptPubkey?: string;
@@ -30,7 +30,7 @@ export const useTxStore = create<TxState>((set) => ({
   tx: undefined,
   setTx: (tx: Tx) => set({ tx }),
 
-  selectedInput: undefined,
+  selectedInput: 0,
   setSelectedInput: (input: number) => set({ selectedInput: input }),
 
   prevScriptPubkey: undefined,

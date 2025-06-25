@@ -5,7 +5,7 @@ import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
 import { useTxStore } from '@/state/txStore';
 
 export function useScriptDebugger() {
-  const { script, programCounter, setProgramCounter, stack, status, conditionFrames, pushConditionFrame, altStack } =
+  const { script, programCounter, setProgramCounter, stack, status, conditionFrames, pushConditionFrame, altStack, setStatus } =
     useDebugStore();
   const { tx, selectedInput, prevScriptPubkey } = useTxStore();
 
@@ -17,8 +17,8 @@ export function useScriptDebugger() {
 
     if (programCounter >= script.cmds.length) {
       // Script end check.
-      // if stack is empty, or the last item is 0, then the script failed.
-      if (stack.length === 0 || decodeNumber(stack.pop()!) === 0) {
+      // if stack is has more than 1 item, or the last item is 0, then the script failed.
+      if (stack.length !== 1 || decodeNumber(stack.pop()!) === 0) {
         return 'Failure';
       }
       return 'Success';

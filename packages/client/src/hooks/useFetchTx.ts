@@ -7,12 +7,16 @@ import { useTxStore } from '@/state/txStore';
 
 export function useFetchTx() {
   const { setScript, setScriptAsm } = useDebugStore();
-  const { setTx, setSelectedInput, setPrevScriptPubkey, setTxMetadata } = useTxStore();
+  const { selectedInput, setTx, setSelectedInput, setPrevScriptPubkey, setTxMetadata } = useTxStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiResponse, setApiResponse] = useState<APIResponse | null>(null);
 
+  // The General Idea: Fetch the transaction, set the selected input to zero.
+  // Handle the creation of the unlocking script depending on the input type.
+  //   - relegate this to a handleInput function
+  //      - this function should take in the input, and call the script creation function depending on the locking type.
   const fetchTransaction = async (txid: string, testnet: boolean) => {
     if (!txid) {
       setError('Missing txid');
@@ -32,26 +36,12 @@ export function useFetchTx() {
         return;
       }
 
+      // When the tx is fetched, set the initial selected input to the first input.
+      setSelectedInput(0);
+
       // Check the locktype of the first selected input.
       const locktype = txJson.vin[0].prevout?.scriptpubkey_type;
-
-      switch (locktype) {
-        case 'p2ms':
-          handleP2MSLockTypes(response);
-          break;
-        case 'p2pk':
-        case 'p2pkh':
-          handleLegacyLockTypes(response);
-          break;
-        case 'p2wpkh':
-          handleSegwitLockTypes(response);
-          break;
-        case 'p2tr':
-          handleTaprootLockTypes(response);
-          break;
-        default:
-          throw new Error('Unknown locktype');
-      }
+      handleLockType(locktype!, response);
 
       setError(null);
     } catch (error) {
@@ -62,14 +52,15 @@ export function useFetchTx() {
   };
 
   const handleLegacyLockTypes = ({ txJson, serializedTx }: APIResponse) => {
-    const unlockingScript = buildLegacyUnlockingScript(0, { txJson, serializedTx });
+    const inputIndex = selectedInput < txJson.vin.length ? selectedInput : 0;
+
+    const unlockingScript = buildLegacyUnlockingScript(inputIndex, { txJson, serializedTx });
     const tx = Tx.fromHex(serializedTx);
 
     // Set the global transaction context
     setTx(tx);
-    setSelectedInput(0);
-    setTxMetadata({ txid: txJson.txid, lockType: txJson.vin[0].prevout!.scriptpubkey_type });
-    setPrevScriptPubkey(txJson.vin[0].prevout!.scriptpubkey);
+    setTxMetadata({ txid: txJson.txid, lockType: txJson.vin[selectedInput!].prevout!.scriptpubkey_type });
+    setPrevScriptPubkey(txJson.vin[selectedInput!].prevout!.scriptpubkey);
 
     // Send updates to script editor and overwrite the current script...
     setScript(unlockingScript);
@@ -78,6 +69,29 @@ export function useFetchTx() {
 
   const handleCoinbaseLockTypes = ({ txJson }: APIResponse) => {
     setTxMetadata({ txid: txJson.txid, lockType: 'N/A', isCoinbase: true });
+  };
+
+  const handleLockType = (locktype: string, response: APIResponse) => {
+    switch (locktype) {
+      case 'p2ms':
+        handleP2MSLockTypes(response);
+        break;
+      case 'p2pk':
+      case 'p2pkh':
+        handleLegacyLockTypes(response);
+        break;
+      case 'p2wpkh':
+        handleSegwitLockTypes(response);
+        break;
+      case 'p2tr':
+        handleTaprootLockTypes(response);
+        break;
+      case 'p2sh':
+        handleP2SHLockTypes(response);
+        break;
+      default:
+        throw new Error('Unknown locktype');
+    }
   };
 
   const handleSegwitLockTypes = ({}: APIResponse) => {
@@ -92,6 +106,8 @@ export function useFetchTx() {
     throw new Error('P2MS not implemented!');
   };
 
+  const handleP2SHLockTypes = (response: APIResponse) => {};
+
   const buildLegacyUnlockingScript = (inputIndex: number, { txJson }: APIResponse): Script => {
     const input = txJson.vin[inputIndex];
 
@@ -101,5 +117,5 @@ export function useFetchTx() {
     return sigScript.add(pkScript);
   };
 
-  return { fetchTransaction, buildLegacyUnlockingScript, isLoading, error, apiResponse };
+  return { fetchTransaction, handleLockType, isLoading, error, apiResponse };
 }

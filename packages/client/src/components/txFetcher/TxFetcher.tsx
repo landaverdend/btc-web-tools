@@ -8,11 +8,11 @@ import { useDebugStore } from '@/state/debugStore';
 
 export function TxFetcher() {
   // Global State variables
-  const { setScript, setScriptAsm, reset } = useDebugStore();
+  const { reset } = useDebugStore();
   const { selectedInput, setTxMetadata, setPrevScriptPubkey, reset: resetTxStore } = useTxStore();
 
   // Hooks
-  const { fetchTransaction, error, apiResponse, buildLegacyUnlockingScript } = useFetchTx();
+  const { fetchTransaction, error, apiResponse, handleLockType } = useFetchTx();
 
   // Local State Variables
   const [txid, setTxid] = useState('');
@@ -23,11 +23,10 @@ export function TxFetcher() {
     if (!apiResponse || selectedInput === undefined) return;
 
     const { txJson } = apiResponse;
+    const theInput = txJson.vin[selectedInput];
 
-    // update unlocking script
-    const unlockingScript = buildLegacyUnlockingScript(selectedInput, apiResponse);
-    setScript(unlockingScript);
-    setScriptAsm(unlockingScript.toString());
+    // update unlocking script.
+    handleLockType(theInput.prevout!.scriptpubkey_type, apiResponse);
 
     // update the tx context/metadata/prev script pubkey
     setTxMetadata({ txid: txJson.txid, lockType: txJson.vin[selectedInput].prevout!.scriptpubkey_type });
@@ -35,7 +34,7 @@ export function TxFetcher() {
 
     // Reset the debugger state.
     reset();
-  }, [selectedInput, apiResponse]);
+  }, [selectedInput]);
 
   return (
     <div className="flex-column tx-fetcher-container">
