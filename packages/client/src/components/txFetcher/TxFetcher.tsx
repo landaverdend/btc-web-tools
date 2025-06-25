@@ -9,7 +9,7 @@ import { useDebugStore } from '@/state/debugStore';
 export function TxFetcher() {
   // Global State variables
   const { setScript, setScriptAsm, reset } = useDebugStore();
-  const { selectedInput, setTxMetadata, setPrevScriptPubkey } = useTxStore();
+  const { selectedInput, setTxMetadata, setPrevScriptPubkey, reset: resetTxStore } = useTxStore();
 
   // Hooks
   const { fetchTransaction, error, apiResponse, buildLegacyUnlockingScript } = useFetchTx();
@@ -59,8 +59,17 @@ export function TxFetcher() {
           Testnet?
           <input id="testnet" type="checkbox" checked={testnet} onChange={(e) => setTestnet(e.target.checked)} />
         </label>
-
-        <button onClick={() => fetchTransaction(txid, testnet)}>Fetch</button>
+        <div className="flex-row tx-fetcher-buttons">
+          <button onClick={() => fetchTransaction(txid, testnet)}>Fetch</button>
+          <button
+            onClick={() => {
+              reset();
+              resetTxStore();
+            }}
+            id="reset">
+            Reset
+          </button>
+        </div>
       </div>
       <TxDetails />
     </div>

@@ -36,5 +36,5 @@ export const useTxStore = create<TxState>((set) => ({
   prevScriptPubkey: undefined,
   setPrevScriptPubkey: (prevScriptPubkey: string) => set({ prevScriptPubkey }),
 
-  reset: () => set({ tx: undefined, selectedInput: undefined, prevScriptPubkey: undefined }),
+  reset: () => set({ tx: undefined, selectedInput: undefined, prevScriptPubkey: undefined, txMetadata: undefined }),
 }));
