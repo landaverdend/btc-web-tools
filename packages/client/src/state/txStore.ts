@@ -4,6 +4,7 @@ import { create } from 'zustand';
 type TxMetadata = {
   txid: string;
   lockType: string;
+  isCoinbase?: boolean;
 };
 
 interface TxState {

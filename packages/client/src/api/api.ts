@@ -3,24 +3,26 @@ export type APIResponse = {
   txJson: TxJson;
 };
 
+export type Vin = {
+  txid: string;
+  vout: number;
+  prevout?: {
+    scriptpubkey: string;
+    scriptpubkey_asm: string;
+    scriptpubkey_type: string;
+    value: number;
+  };
+  scriptsig: string;
+  scriptsig_asm: string;
+  is_coinbase: boolean;
+  sequence: number;
+};
+
 export type TxJson = {
   txid: string;
   version: number;
   locktime: number;
-  vin: Array<{
-    txid: string;
-    vout: number;
-    prevout: {
-      scriptpubkey: string;
-      scriptpubkey_asm: string;
-      scriptpubkey_type: string;
-      value: number;
-    };
-    scriptsig: string;
-    scriptsig_asm: string;
-    is_coinbase: boolean;
-    sequence: number;
-  }>;
+  vin: Array<Vin>;
   vout: Array<{
     scriptpubkey: string;
     scriptpubkey_asm: string;

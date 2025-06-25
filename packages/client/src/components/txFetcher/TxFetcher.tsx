@@ -1,60 +1,14 @@
 import { useState } from 'react';
 import './tx-fetcher.css';
-import { fetchTx } from '@/api/api';
-import { bytesToHex, encodeVarInt, hexToBytes } from '@/crypto/util/helper';
-import { ByteStream } from '@/crypto/util/ByteStream';
-import { Script } from '@/crypto/script/Script';
-import { useDebugStore } from '@/state/debugStore';
-import Tx from '@/crypto/transaction/Tx';
+import { bytesToHex } from '@/crypto/util/helper';
 import { useTxStore } from '@state/txStore';
+import { useFetchTx } from '@/hooks/useFetchTx';
 
 export function TxFetcher() {
-  const { setScript, setScriptAsm } = useDebugStore();
-  const { setTx, setSelectedInput, setPrevScriptPubkey, setTxMetadata } = useTxStore();
+  const { fetchTransaction, error } = useFetchTx();
 
   const [txid, setTxid] = useState('');
   const [testnet, setTestnet] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async () => {
-    if (!txid) {
-      setError('Missing transaction ID');
-      return;
-    }
-
-    try {
-      const response = await fetchTx(txid, testnet);
-      const { serializedTx, txJson } = response;
-
-      const scriptPKBytes = hexToBytes(txJson.vin[0].prevout.scriptpubkey);
-      const varint = encodeVarInt(scriptPKBytes.length);
-
-      const scriptSig = hexToBytes(txJson.vin[0].scriptsig);
-      const varint2 = encodeVarInt(scriptSig.length);
-
-      // need to prepend the varint to script bytes for stream to read it
-      const pkStream = new ByteStream(new Uint8Array([...varint, ...scriptPKBytes]));
-      const sigStream = new ByteStream(new Uint8Array([...varint2, ...scriptSig]));
-
-      const pkScript = Script.fromStream(pkStream, true);
-      const sigScript = Script.fromStream(sigStream, true);
-
-      const result = sigScript.add(pkScript);
-      const tx = Tx.fromHex(serializedTx);
-
-      setTx(tx);
-      setSelectedInput(0);
-      setTxMetadata({ txid, lockType: txJson.vin[0].prevout.scriptpubkey_type });
-
-      setScript(result);
-      setScriptAsm(result.toString());
-      setPrevScriptPubkey(txJson.vin[0].prevout.scriptpubkey);
-
-      setError('');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Unknown error');
-    }
-  };
 
   return (
     <div className="flex-column tx-fetcher-container">
@@ -79,7 +33,7 @@ export function TxFetcher() {
           <input id="testnet" type="checkbox" checked={testnet} onChange={(e) => setTestnet(e.target.checked)} />
         </label>
 
-        <button onClick={handleSubmit}>Fetch</button>
+        <button onClick={() => fetchTransaction(txid, testnet)}>Fetch</button>
       </div>
       <TxDetails />
     </div>
