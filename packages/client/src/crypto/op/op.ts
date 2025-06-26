@@ -6,7 +6,6 @@ import { hash160, hash256 } from '../hash/hashUtil';
 import Tx from '../transaction/Tx';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { Signature } from '../signature/signature';
-import { bytesToHex, numberToHex } from '../util/helper';
 
 export function encodeNumber(num: number) {
   if (num === 0) {

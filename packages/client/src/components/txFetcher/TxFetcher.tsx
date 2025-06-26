@@ -79,12 +79,26 @@ export function TxFetcher() {
 
 type TxDetailsProps = {};
 function TxDetails({}: TxDetailsProps) {
+  // Global state imports
   const { tx, selectedInput, txMetadata, setSelectedInput } = useTxStore();
   const { txid } = txMetadata || {};
 
-  const isCoinbase = tx?.isCoinbase;
+  // Hooks
+  const { setScript, setScriptAsm } = useDebugStore();
+  const { buildExecutionScript } = useScriptBuilder();
 
+  const isCoinbase = tx?.isCoinbase;
   const showInputs = txMetadata && !isCoinbase;
+
+  const handleSelectInput = (inputIndex: number) => {
+    setSelectedInput(inputIndex);
+
+    const script = buildExecutionScript(inputIndex, txMetadata!);
+
+    // Set the script in the editor/debugger.
+    setScript(script);
+    setScriptAsm(script.toString());
+  };
 
   return (
     <div className="flex-column tx-details-container">
@@ -107,12 +121,7 @@ function TxDetails({}: TxDetailsProps) {
           Input Select
           {txMetadata.vin.map((input, i) => {
             return (
-              <div
-                key={i}
-                className={`txin-item ${i === selectedInput ? 'active' : ''}`}
-                onClick={() => {
-                  setSelectedInput(i);
-                }}>
+              <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => handleSelectInput(i)}>
                 <ColoredText color="var(--soft-purple)">{input.prevout?.scriptpubkey_type}</ColoredText>: {input.txid}
               </div>
             );

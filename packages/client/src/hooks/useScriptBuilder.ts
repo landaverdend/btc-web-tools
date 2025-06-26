@@ -3,8 +3,6 @@ import { Script } from '@/crypto/script/Script';
 
 // Build a script from a response
 export function useScriptBuilder() {
-  
-
   const buildP2PKH = (input: Vin) => {
     const scriptsig = Script.fromHex(input.scriptsig);
     const pubkey = Script.fromHex(input.prevout!.scriptpubkey);
