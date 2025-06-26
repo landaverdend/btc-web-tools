@@ -3,6 +3,8 @@ import { Script, ScriptCommand } from '@/crypto/script/Script';
 import { hexToBytes } from '@/crypto/util/helper';
 
 export function compileScript(scriptText: string) {
+  scriptText = removeComments(scriptText);
+
   // Split by whitespace and filter out empty strings
   const commands = scriptText
     .trim()
@@ -36,6 +38,10 @@ export function compileScript(scriptText: string) {
   validateScript(parsedCommands);
 
   return new Script(parsedCommands);
+}
+
+function removeComments(scriptText: string) {
+  return scriptText.replace(/\/\/.*$/gm, '').replace(/^\s*[\r\n]/gm, '');
 }
 
 function validateCommand(cmd: string) {

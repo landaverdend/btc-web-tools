@@ -10,6 +10,13 @@ export function useScriptBuilder() {
     return scriptsig.add(pubkey);
   };
 
+  const buildP2SH = (input: Vin) => {
+    const scriptpubkey = Script.fromHex(input.prevout!.scriptpubkey, true);
+    const scriptsig = Script.fromHex(input.scriptsig, true);
+
+    return scriptsig.add(scriptpubkey);
+  };
+
   const buildExecutionScript = (inputIndex: number, tx: TxMetadata) => {
     const input = tx.vin[inputIndex];
 
@@ -23,6 +30,8 @@ export function useScriptBuilder() {
       case 'p2pkh':
       case 'p2pk':
         return buildP2PKH(input);
+      case 'p2sh':
+        return buildP2SH(input);
       default:
         throw new Error(`Unsupported script type ${type}`);
     }

@@ -51,7 +51,6 @@ async function fetchTx(txid: string, testnet = false): Promise<APIResponse> {
   }
 
   const data = (await response.json()) as APIResponse;
-
   return data;
 }
 
