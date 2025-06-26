@@ -38,6 +38,6 @@
   }
 
   .navbar-list-item.active {
-    color: #faba72;
+    color: var(--soft-orange-light);
   }
 }

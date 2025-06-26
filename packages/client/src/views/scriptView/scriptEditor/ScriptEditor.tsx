@@ -16,14 +16,17 @@ const PC_MARKER_CLASS = 'debug-program-counter';
 
 interface ScriptEditorProps {}
 export function ScriptEditor({}: ScriptEditorProps) {
+  // Refs
   const editorRef = useRef<AceEditor>(null);
   const pcMarkerRef = useRef<number | null>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Global State
   const { reset, setScript, programCounter, script, scriptAsm, setScriptAsm } = useDebugStore();
 
+  // Local State
   const [compileError, setCompileError] = useState<string | null>(null);
-
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [activeTab, setActiveTab] = useState<'asm' | 'hex'>('asm');
 
   const handleChange = useCallback(
     (value: string) => {
@@ -95,8 +98,17 @@ export function ScriptEditor({}: ScriptEditorProps) {
 
   return (
     <div className="flex-column script-editor-container">
-      <div className="flex-row header-panel">
-        Script Debugger {compileError && <div className="error-message">{compileError}</div>}
+      <div className="flex-row script-debugger-header">
+        <div className="script-tabs">
+          <span className={`script-tab ${activeTab === 'asm' ? 'active-tab' : ''}`} onClick={() => setActiveTab('asm')}>
+            ASM
+          </span>
+          <span className={`script-tab ${activeTab === 'hex' ? 'active-tab' : ''}`} onClick={() => setActiveTab('hex')}>
+            HEX
+          </span>
+        </div>
+
+        {compileError && <div className="error-message">{compileError}</div>}
       </div>
 
       <AceEditor
