@@ -7,7 +7,7 @@ import { useTxStore } from '@/state/txStore';
 export function useScriptDebugger() {
   const { script, programCounter, setProgramCounter, stack, status, conditionFrames, pushConditionFrame, altStack, setStatus } =
     useDebugStore();
-  const { tx, selectedInput, prevScriptPubkey } = useTxStore();
+  const { tx, selectedInput, prevScriptPubkey, txMetadata } = useTxStore();
 
   function step(): ScriptDebuggerResult {
     // Program is already done....
@@ -57,8 +57,10 @@ export function useScriptDebugger() {
           break;
         case OP_CODES.OP_CHECKSIGVERIFY:
         case OP_CODES.OP_CHECKSIG:
-          const sighash = tx?.sighash(selectedInput!, Script.fromHex(prevScriptPubkey!));
+          const prevScriptPubkey = txMetadata!.vin[selectedInput].prevout!.scriptpubkey;
+          const sighash = tx?.sighash(selectedInput, Script.fromHex(prevScriptPubkey));
           opContext.sighash = sighash;
+
           result = func(opContext);
           incProgramCounter(cmd);
           break;

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import './tx-fetcher.css';
-import { bytesToHex } from '@/crypto/util/helper';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
 import ColoredText from '@/components/coloredText/ColoredText';
@@ -26,9 +25,7 @@ export function TxFetcher() {
 
     if (response) {
       const tx = Tx.fromHex(response.serializedTx);
-
-      // Coinbase transactions don't have unlocking scripts.
-      const script = buildExecutionScript(0, tx);
+      const script = buildExecutionScript(0, response.txJson);
 
       // Set the script in the editor/debugger.
       setScript(script);
@@ -87,6 +84,8 @@ function TxDetails({}: TxDetailsProps) {
 
   const isCoinbase = tx?.isCoinbase;
 
+  const showInputs = txMetadata && !isCoinbase;
+
   return (
     <div className="flex-column tx-details-container">
       {txMetadata && (
@@ -103,7 +102,7 @@ function TxDetails({}: TxDetailsProps) {
         </div>
       )}
 
-      {txMetadata && (
+      {showInputs && (
         <div className="flex-column input-selection">
           Input Select
           {txMetadata.vin.map((input, i) => {
