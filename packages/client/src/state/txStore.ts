@@ -2,7 +2,7 @@ import { TxMetadata } from '@/api/api';
 import Tx from '@/crypto/transaction/Tx';
 import { create } from 'zustand';
 
-interface TxState {
+export interface TxState {
   txMetadata?: TxMetadata;
   setTxMetadata: (txMetadata: TxMetadata) => void;
 

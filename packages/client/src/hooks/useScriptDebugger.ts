@@ -1,106 +1,19 @@
-import { decodeNumber, OP_CODE_FUNCTIONS, OP_CODE_NAMES, OP_CODES, OpContext } from '@/crypto/op/op';
-import { Script, ScriptCommand } from '@/crypto/script/Script';
+import { OP_CODE_NAMES } from '@/crypto/op/op';
+import { ScriptExecutionEngine } from '@/crypto/script/execution/scriptExecutionEngine';
 import { bytesToHex } from '@/crypto/util/helper';
-import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
+import { useDebugStore } from '@/state/debugStore';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useTxStore } from '@/state/txStore';
+import { useMemo } from 'react';
 
 export function useScriptDebugger() {
-  const { programCounter, setProgramCounter, stack, status, conditionFrames, pushConditionFrame, altStack, setStatus } =
-    useDebugStore();
-  const { tx, selectedInput, txMetadata } = useTxStore();
+  const { programCounter } = useDebugStore();
   const { script } = useScriptEditorStore();
+  const debugStore = useDebugStore();
+  const txStore = useTxStore();
 
-  function step(): ScriptDebuggerResult {
-    // Program is already done....
-    if (status === 'Success' || status === 'Failure') {
-      return status;
-    }
-
-    if (programCounter >= script.cmds.length) {
-      // Script end check.
-      // if stack is has more than 1 item, or the last item is 0, then the script failed.
-      if (stack.length !== 1 || decodeNumber(stack.pop()!) === 0) {
-        return 'Failure';
-      }
-      return 'Success';
-    }
-
-    // Get command to run.
-    const cmd = script.getCmd(programCounter);
-
-    // Check whether we push data or do an operation
-    if (typeof cmd === 'number') {
-      const func = OP_CODE_FUNCTIONS[cmd];
-      // build the op context
-      const opContext: OpContext = {
-        stack,
-        altStack,
-        cmds: script.cmds,
-        setProgramCounter,
-        programCounter,
-        pushConditionFrame,
-        tx,
-        selectedInput,
-      };
-
-      let result = false;
-
-      switch (cmd) {
-        // OP_IF and OP_NOTIF are control flow instructions that increment the program counter inside their own function
-        case OP_CODES.OP_IF:
-        case OP_CODES.OP_NOTIF:
-          result = func(opContext);
-          break;
-        case OP_CODES.OP_ENDIF:
-          result = func(opContext);
-          conditionFrames.pop();
-          incProgramCounter(cmd);
-          break;
-        case OP_CODES.OP_CHECKSIGVERIFY:
-        case OP_CODES.OP_CHECKSIG:
-          const prevScriptPubkey = txMetadata!.vin[selectedInput].prevout!.scriptpubkey;
-          const sighash = tx?.sighash(selectedInput, Script.fromHex(prevScriptPubkey));
-          opContext.sighash = sighash;
-          result = func(opContext);
-          incProgramCounter(cmd);
-          break;
-        default:
-          result = func(opContext);
-          incProgramCounter(cmd);
-          break;
-      }
-
-      if (!result) {
-        return 'Failure';
-      }
-    } else {
-      // if command is a bytearray, push it onto the stack.
-      stack.push(cmd);
-      incProgramCounter(cmd);
-    }
-
-    return 'Running';
-  }
-
-  function incProgramCounter(cmd: ScriptCommand) {
-    // Check if we're at a condition index. If we are, then jump to the next control point.
-    if (conditionFrames.length > 0) {
-      const { elseIndex, endIndex } = conditionFrames[conditionFrames.length - 1];
-
-      if (programCounter === elseIndex) {
-        setProgramCounter(endIndex);
-        return;
-      }
-    }
-
-    // Skip over OP_PUSHBYTES commands by 2.
-    if (typeof cmd === 'number' && cmd > 0 && cmd <= 75) {
-      setProgramCounter(programCounter + 2);
-    } else {
-      setProgramCounter(programCounter + 1);
-    }
-  }
+  // Rebuild the execution engine whenever the script or tx context changes.
+  const executionEngine = useMemo(() => new ScriptExecutionEngine(debugStore, txStore, script), [script]);
 
   const getNextArgument = () => {
     const cmd = script.getCmd(programCounter);
@@ -111,6 +24,11 @@ export function useScriptDebugger() {
 
     return '0x' + bytesToHex(cmd);
   };
+
+  function step() {
+    executionEngine.updateContext(debugStore, txStore);
+    executionEngine.step();
+  }
 
   return {
     step,

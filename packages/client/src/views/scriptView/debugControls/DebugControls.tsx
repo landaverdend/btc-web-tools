@@ -7,7 +7,7 @@ import Reset from '@assets/icons/reset.svg?react';
 import './debug-controls.css';
 
 export function DebugControls() {
-  const { reset, setStatus } = useDebugStore();
+  const { reset } = useDebugStore();
   const { step } = useScriptDebugger();
 
   return (
@@ -21,8 +21,9 @@ export function DebugControls() {
         <DebugTooltip tooltipContent="Step">
           <Stepover
             onClick={() => {
-              const status = step();
-              setStatus(status);
+              // const status = step();
+              // setStatus(status);
+              step();
             }}
             height={20}
             width={20}

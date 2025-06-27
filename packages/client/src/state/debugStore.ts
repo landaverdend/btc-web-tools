@@ -8,7 +8,7 @@ export type ConditionFrame = {
   endIndex: number; // index of the OP_ENDIF instruction.
 };
 
-interface DebugState {
+export interface DebugState {
   stack: Uint8Array[];
   setStack: (stack: Uint8Array[]) => void;
 
