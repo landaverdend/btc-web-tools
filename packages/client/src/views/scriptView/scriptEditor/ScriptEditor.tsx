@@ -64,7 +64,6 @@ export function ScriptEditor({}: ScriptEditorProps) {
   );
 
   const handleASMChange = (value: string) => {
-    console.log(tx);
     setScriptASM(value);
     try {
       const script = compileScript(value, tx !== undefined);

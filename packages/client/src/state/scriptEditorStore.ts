@@ -26,7 +26,7 @@ export const useScriptEditorStore = create<ScriptEditorState>((set, get) => ({
   script: new Script(),
   setScript: (script: Script) => set({ script }),
 
-  scriptASM: '',
+  scriptASM: '// Enter your script here. For hex, use 0x prefix.',
   setScriptASM: (scriptASM: string) => set({ scriptASM }),
 
   scriptHex: '',

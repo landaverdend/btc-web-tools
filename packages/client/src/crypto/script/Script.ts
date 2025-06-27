@@ -5,9 +5,18 @@ import { FormattedScript, ScriptLE } from '@/types/tx';
 
 export type ScriptCommand = number | Uint8Array;
 
+interface ScriptSection {
+  type: 'scriptsig' | 'pubkey' | 'redeem';
+  description: string; // Comment for the script editor
+
+  startIndex: number;
+  endIndex: number;
+}
+
 // A script is just a list of bigint commands.
 export class Script {
   cmds: ScriptCommand[];
+  sections: ScriptSection[] = [];
 
   constructor(cmds?: ScriptCommand[]) {
     this.cmds = cmds ?? [];
@@ -90,8 +99,18 @@ export class Script {
     let toRet = '';
 
     const formatted = this.format(true);
+
+    let sectionIndex = 0;
+
+    let i = 0;
     for (const cmd of formatted.cmds) {
+      if (sectionIndex < this.sections.length && i === this.sections[sectionIndex].startIndex) {
+        toRet += `// ${this.sections[sectionIndex].description}\n`;
+        sectionIndex++;
+      }
+
       toRet += cmd + '\n';
+      i++;
     }
 
     return toRet;

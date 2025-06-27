@@ -1,8 +1,4 @@
-import { Script } from '@/crypto/script/Script';
-import { compileScript } from '@/crypto/script/scriptCompiler';
 import { create } from 'zustand/react';
-
-const initialTemplate = 'OP_0\nOP_NOTIF\nOP_2\nOP_ELSE\nOP_3\nOP_ENDIF';
 
 export type ScriptDebuggerResult = 'Success' | 'Failure' | 'Running' | 'Not Started';
 
