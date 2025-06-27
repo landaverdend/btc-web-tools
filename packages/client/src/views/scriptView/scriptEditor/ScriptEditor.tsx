@@ -12,6 +12,7 @@ import { compileScript } from '@/crypto/script/scriptCompiler';
 import { IAceEditor } from 'react-ace/lib/types';
 import { Script } from '@/crypto/script/Script';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
+import { useTxStore } from '@/state/txStore';
 
 const ASM_SCRIPT_MODE = new ScriptMode();
 const PC_MARKER_CLASS = 'debug-program-counter';
@@ -24,9 +25,10 @@ export function ScriptEditor({}: ScriptEditorProps) {
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Global State
-  const { reset, programCounter, tx } = useDebugStore();
+  const { reset, programCounter } = useDebugStore();
   const { compileError, setScript, scriptASM, setScriptASM, scriptHex, setScriptHex, setCompileError, script } =
     useScriptEditorStore();
+  const { tx } = useTxStore();
 
   // Local State
   const [activeTab, setActiveTab] = useState<'asm' | 'hex'>('asm');
@@ -93,15 +95,17 @@ export function ScriptEditor({}: ScriptEditorProps) {
 
   // Program counter changes or new script is added. Clear the previous
   useEffect(() => {
-    if (editorRef.current) {
-      const editor = editorRef.current.editor;
-      clearPCMarker(editor);
+    if (editorRef.current === null) return;
+
+    const editor = editorRef.current.editor;
+    clearPCMarker(editor);
+
+    if (activeTab !== 'hex' && compileError === null) {
       highlightCurrentToken(editor);
     }
-  }, [programCounter, script]);
+  }, [programCounter, script, activeTab]);
 
   const highlightCurrentToken = (editor: IAceEditor) => {
-    if (activeTab === 'hex' || compileError) return;
     const session = editor.session;
 
     let instruction = 0;
