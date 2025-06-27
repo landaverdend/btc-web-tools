@@ -6,11 +6,13 @@ import ColoredText from '@/components/coloredText/ColoredText';
 import { useDebugStore } from '@/state/debugStore';
 import { useScriptBuilder } from '@/hooks/useScriptBuilder';
 import Tx from '@/crypto/transaction/Tx';
+import { useScriptEditorStore } from '@/state/scriptEditorStore';
 
 export function TxFetcher() {
   // Global State variables
-  const { reset, setScript, setScriptAsm } = useDebugStore();
+  const { reset } = useDebugStore();
   const { reset: resetTxStore, setTxMetadata, setTx } = useTxStore();
+  const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
 
   // Hooks
   const { fetchTransaction, error } = useFetchTx();
@@ -27,9 +29,10 @@ export function TxFetcher() {
       const tx = Tx.fromHex(response.serializedTx);
       const script = buildExecutionScript(0, response.txJson);
 
-      // Set the script in the editor/debugger.
+      // Update the script editor textfields/object
       setScript(script);
-      setScriptAsm(script.toString());
+      setScriptASM(script.toString());
+      setScriptHex(script.toHex());
 
       setTxMetadata(response.txJson);
       setTx(tx); // Set the global tx state
@@ -82,9 +85,9 @@ function TxDetails({}: TxDetailsProps) {
   // Global state imports
   const { tx, selectedInput, txMetadata, setSelectedInput } = useTxStore();
   const { txid } = txMetadata || {};
+  const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
 
   // Hooks
-  const { setScript, setScriptAsm } = useDebugStore();
   const { buildExecutionScript } = useScriptBuilder();
 
   const isCoinbase = tx?.isCoinbase;
@@ -94,10 +97,10 @@ function TxDetails({}: TxDetailsProps) {
     setSelectedInput(inputIndex);
 
     const script = buildExecutionScript(inputIndex, txMetadata!);
-
-    // Set the script in the editor/debugger.
+    // Update the script editor textfields/object
     setScript(script);
-    setScriptAsm(script.toString());
+    setScriptASM(script.toString());
+    setScriptHex(script.toHex());
   };
 
   return (

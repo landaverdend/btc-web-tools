@@ -13,12 +13,6 @@ export type ConditionFrame = {
 };
 
 interface DebugState {
-  script: Script;
-  setScript: (script: Script) => void;
-
-  scriptAsm: string;
-  setScriptAsm: (scriptAsm: string) => void;
-
   stack: Uint8Array[];
   setStack: (stack: Uint8Array[]) => void;
 
@@ -37,14 +31,9 @@ interface DebugState {
   pushConditionFrame: (conditionFrame: ConditionFrame) => void;
 
   reset: () => void;
-
-  getCurrentCmd: () => number | Uint8Array;
 }
 
 export const useDebugStore = create<DebugState>((set, get) => ({
-  script: compileScript(initialTemplate),
-  setScript: (script: Script) => set({ script }),
-
   stack: [],
   setStack: (stack: Uint8Array[]) => set({ stack }),
 
@@ -54,18 +43,12 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   programCounter: 0,
   setProgramCounter: (currentCmd: number) => set({ programCounter: currentCmd }),
 
-  // User inputted script
-  scriptAsm: initialTemplate,
-  setScriptAsm: (scriptAsm: string) => set({ scriptAsm }),
-
   conditionFrames: [],
   setConditionFrames: (conditionFrames: ConditionFrame[]) => set({ conditionFrames }),
   pushConditionFrame: (conditionFrame: ConditionFrame) => set({ conditionFrames: [...get().conditionFrames, conditionFrame] }),
 
   status: 'Not Started',
   setStatus: (status: ScriptDebuggerResult) => set({ status }),
-
-  getCurrentCmd: () => get().script.getCmd(get().programCounter),
 
   reset: () =>
     set({

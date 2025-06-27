@@ -74,7 +74,9 @@ export class Script {
       cmds: this.cmds.map((cmd) => {
         // OP_Code
         if (typeof cmd === 'number') {
-          return OP_CODE_NAMES[cmd];
+          const opcodeName = OP_CODE_NAMES[cmd];
+          if (opcodeName === undefined) throw new Error(`Unknown opcode: ${cmd}`);
+          return opcodeName;
         }
         // Pushdata
         else {
@@ -95,8 +97,8 @@ export class Script {
     return toRet;
   }
 
-  toHex() {
-    return bytesToHex(this.toBytes());
+  toHex(include0x = false) {
+    return bytesToHex(this.toBytes(), include0x);
   }
 
   toBytes() {
@@ -168,7 +170,7 @@ export class Script {
     }
 
     if (count !== length) {
-      throw new Error('Parsing script failed.');
+      throw new Error('Parsing script failed. Mismatched length');
     }
 
     return new Script(cmds);

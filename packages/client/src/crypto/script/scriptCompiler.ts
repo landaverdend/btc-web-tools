@@ -2,7 +2,7 @@ import { OP_CODES } from '@/crypto/op/op';
 import { Script, ScriptCommand } from '@/crypto/script/Script';
 import { hexToBytes } from '@/crypto/util/helper';
 
-export function compileScript(scriptText: string) {
+export function compileScript(scriptText: string, txInContext = false) {
   scriptText = removeComments(scriptText);
 
   // Split by whitespace and filter out empty strings
@@ -35,7 +35,7 @@ export function compileScript(scriptText: string) {
     return bytes;
   });
 
-  validateScript(parsedCommands);
+  validateScript(parsedCommands, txInContext);
 
   return new Script(parsedCommands);
 }
@@ -71,7 +71,13 @@ function isConditional(cmd: ScriptCommand) {
   return cmd === OP_CODES.OP_IF || cmd === OP_CODES.OP_NOTIF;
 }
 
-function validateScript(script: ScriptCommand[]) {
+function validateScript(script: ScriptCommand[], txInContext = false) {
+  if (script.includes(OP_CODES.OP_CHECKSIGVERIFY) || script.includes(OP_CODES.OP_CHECKSIG)) {
+    if (!txInContext) {
+      throw new Error('OP_CHECKSIGVERIFY/OP_CHECKSIG require a Tx to be provided.');
+    }
+  }
+
   validateConditionals(script);
   validatePushBytes(script);
 }

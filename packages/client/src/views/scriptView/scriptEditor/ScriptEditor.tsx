@@ -10,22 +10,25 @@ import { Range } from 'ace-builds';
 import { useDebugStore } from '@/state/debugStore';
 import { compileScript } from '@/crypto/script/scriptCompiler';
 import { IAceEditor } from 'react-ace/lib/types';
+import { Script } from '@/crypto/script/Script';
+import { useScriptEditorStore } from '@/state/scriptEditorStore';
 
-const SCRIPT_MODE = new ScriptMode();
+const ASM_SCRIPT_MODE = new ScriptMode();
 const PC_MARKER_CLASS = 'debug-program-counter';
 
 interface ScriptEditorProps {}
 export function ScriptEditor({}: ScriptEditorProps) {
-  // Refs
+  // Refs objects
   const editorRef = useRef<AceEditor>(null);
   const pcMarkerRef = useRef<number | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Global State
-  const { reset, setScript, programCounter, script, scriptAsm, setScriptAsm } = useDebugStore();
+  const { reset, programCounter, tx } = useDebugStore();
+  const { compileError, setScript, scriptASM, setScriptASM, scriptHex, setScriptHex, setCompileError, script } =
+    useScriptEditorStore();
 
   // Local State
-  const [compileError, setCompileError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'asm' | 'hex'>('asm');
 
   const handleChange = useCallback(
@@ -36,22 +39,59 @@ export function ScriptEditor({}: ScriptEditorProps) {
 
       // Set new timeout for debounced compilation
       debounceTimeoutRef.current = setTimeout(() => {
-        try {
-          const script = compileScript(value);
-          setScript(script);
-          setCompileError(null);
-          reset();
-        } catch (error) {
-          console.error(error);
-          setCompileError(error instanceof Error ? error.message : 'Unknown error');
+        /**
+         * Try to compile the script.
+         *
+         * If valid:
+         * - update script object
+         * - update scriptASM and scriptHex
+         * - clear both errors.
+         * - reset the debugger state
+         *
+         * If invalid:
+         * - set the error message.
+         */
+        if (activeTab === 'asm') {
+          handleASMChange(value);
+        } else {
+          handleHexChange(value);
         }
       }, 250);
-
-      setScriptAsm(value);
     },
-    [setScript, reset]
+    [activeTab]
   );
 
+  const handleASMChange = (value: string) => {
+    console.log(tx);
+    setScriptASM(value);
+    try {
+      const script = compileScript(value, tx !== undefined);
+      setScript(script);
+      setScriptHex(script.cmds.length > 0 ? script.toHex() : '');
+
+      reset();
+      setCompileError(null);
+    } catch (error) {
+      setCompileError({ message: error instanceof Error ? error.message : 'Unknown Error', source: 'asm' });
+    }
+  };
+
+  const handleHexChange = (value: string) => {
+    setScriptHex(value);
+
+    try {
+      const script = Script.fromHex(value, true);
+      setScript(script);
+      setScriptASM(script.toString());
+
+      reset();
+      setCompileError(null);
+    } catch (error) {
+      setCompileError({ message: error instanceof Error ? error.message : 'Unknown Error', source: 'hex' });
+    }
+  };
+
+  // Program counter changes or new script is added. Clear the previous
   useEffect(() => {
     if (editorRef.current) {
       const editor = editorRef.current.editor;
@@ -61,6 +101,7 @@ export function ScriptEditor({}: ScriptEditorProps) {
   }, [programCounter, script]);
 
   const highlightCurrentToken = (editor: IAceEditor) => {
+    if (activeTab === 'hex' || compileError) return;
     const session = editor.session;
 
     let instruction = 0;
@@ -108,14 +149,14 @@ export function ScriptEditor({}: ScriptEditorProps) {
           </span>
         </div>
 
-        {compileError && <div className="error-message">{compileError}</div>}
+        {compileError && <div className="error-message">{compileError.message}</div>}
       </div>
 
       <AceEditor
         ref={editorRef}
-        mode={SCRIPT_MODE}
+        mode={ASM_SCRIPT_MODE}
         theme="twilight"
-        value={scriptAsm}
+        value={activeTab === 'asm' ? scriptASM : scriptHex}
         height="100%"
         width="100%"
         onChange={handleChange}

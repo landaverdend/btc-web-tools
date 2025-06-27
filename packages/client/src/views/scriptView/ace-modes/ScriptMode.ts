@@ -1,7 +1,7 @@
 import TextMode from 'ace-builds/src-noconflict/mode-text';
 
 export class ScriptMode extends TextMode.Mode {
-  constructor() {
+  constructor(hexMode = false) {
     super();
     this.HighlightRules = ScriptHighlightRules;
   }
@@ -20,6 +20,11 @@ export class ScriptHighlightRules extends new TextMode.Mode().HighlightRules {
         {
           token: 'constant.numeric', // For hex values
           regex: '0x[0-9a-fA-F]+',
+          caseInsensitive: true,
+        },
+        {
+          token: 'constant.numeric', // For hex values
+          regex: '[0-9a-fA-F]+',
           caseInsensitive: true,
         },
         {
