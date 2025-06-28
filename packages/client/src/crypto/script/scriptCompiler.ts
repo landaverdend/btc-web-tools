@@ -2,7 +2,6 @@ import { OP_CODES } from '@/crypto/op/op';
 import { Script } from '@/crypto/script/Script';
 import { hexToBytes } from '@/crypto/util/helper';
 
-
 export function compileScript(scriptText: string, txInContext = false) {
   scriptText = removeComments(scriptText);
 

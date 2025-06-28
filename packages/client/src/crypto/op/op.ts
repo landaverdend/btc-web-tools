@@ -2,7 +2,6 @@ import { ripemd160, sha1 } from '@noble/hashes/legacy';
 import { sha256 } from '@noble/hashes/sha2';
 import { hash160, hash256 } from '../hash/hashUtil';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
-import { Signature } from '../signature/signature';
 import { Script } from '../script/Script';
 import { ExecutionContext } from '../script/execution/executionContext';
 
@@ -914,8 +913,7 @@ function op_checksigverify({ stack, txContext }: ExecutionContext) {
   const der_signature = stack.pop()!.slice(0, -1);
 
   try {
-    const formattedSig = Signature.fromDer(der_signature).toBytes();
-    const isValid = secp256k1.verify(formattedSig, sighash!, sec_pubkey);
+    const isValid = secp256k1.verify(der_signature, sighash!, sec_pubkey, { format: 'der' });
 
     if (isValid) {
       stack.push(encodeNumber(1));
