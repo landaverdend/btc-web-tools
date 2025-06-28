@@ -7,12 +7,13 @@ import { ScriptMode } from '../ace-modes/ScriptMode';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import './script-editor.css';
 import { Range } from 'ace-builds';
-import { useDebugStore } from '@/state/debugStore';
 import { compileScript } from '@/crypto/script/scriptCompiler';
 import { IAceEditor } from 'react-ace/lib/types';
 import { Script } from '@/crypto/script/Script';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useTxStore } from '@/state/txStore';
+import { useExecutionStore } from '@/state/executionStore';
+import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 
 const ASM_SCRIPT_MODE = new ScriptMode();
 const PC_MARKER_CLASS = 'debug-program-counter';
@@ -25,11 +26,13 @@ export function ScriptEditor({}: ScriptEditorProps) {
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Global State
-  const { reset, programCounter } = useDebugStore();
+  const { programCounter } = useExecutionStore().executionContext;
   const { compileError, setScript, scriptASM, setScriptASM, scriptHex, setScriptHex, setCompileError, script } =
     useScriptEditorStore();
+
   const { tx } = useTxStore();
 
+  const { reset } = useScriptDebugger();
   // Local State
   const [activeTab, setActiveTab] = useState<'asm' | 'hex'>('asm');
 

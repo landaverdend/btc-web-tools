@@ -1,10 +1,7 @@
 import { fetchTx } from '@api/api';
 import { useState } from 'react';
-import { useTxStore } from '@/state/txStore';
 
 export function useFetchTx() {
-  const { setSelectedInput } = useTxStore();
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,9 +15,6 @@ export function useFetchTx() {
     setIsLoading(true);
     try {
       const response = await fetchTx(txid, testnet);
-
-      // Set the initial selected input to zero.
-      setSelectedInput(0);
 
       setError(null);
       return response;

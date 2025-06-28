@@ -3,20 +3,20 @@ import './tx-fetcher.css';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
 import ColoredText from '@/components/coloredText/ColoredText';
-import { useDebugStore } from '@/state/debugStore';
 import { useScriptBuilder } from '@/hooks/useScriptBuilder';
 import Tx from '@/crypto/transaction/Tx';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
+import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 
 export function TxFetcher() {
   // Global State variables
-  const { reset } = useDebugStore();
   const { reset: resetTxStore, setTxMetadata, setTx } = useTxStore();
   const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
 
   // Hooks
   const { fetchTransaction, error } = useFetchTx();
   const { buildExecutionScript } = useScriptBuilder();
+  const { reset } = useScriptDebugger();
 
   // Local State Variables
   const [txid, setTxid] = useState('');

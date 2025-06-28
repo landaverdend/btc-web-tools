@@ -1,128 +1,98 @@
-import { DebugState } from '@/state/debugStore';
-import { TxState } from '@/state/txStore';
-import { Script, ScriptCommand } from '../Script';
-import { decodeNumber, OP_CODE_FUNCTIONS, OP_CODES, OpContext } from '@/crypto/op/op';
+import Tx from '@/crypto/transaction/Tx';
+import { Script } from '../Script';
+import { TxMetadata } from '@/api/api';
+import { OP_CODE_NAMES } from '@/crypto/op/op';
+import { bytesToHex } from '@/crypto/util/helper';
+import { ExecutionContext, TxContext } from './ExecutionContext';
 
+export type ScriptExecutionStatus = 'Success' | 'Failure' | 'Running' | 'Not Started';
+
+const DEFAULT_CONTEXT: ExecutionContext = {
+  script: new Script(),
+  stack: [],
+  altStack: [],
+  redeemStack: [],
+  conditionFrames: [],
+  programCounter: 0,
+};
 export class ScriptExecutionEngine {
-  constructor(private debugState: DebugState, private txState: TxState, private script: Script) {}
+  context: ExecutionContext;
+  executionStatus: ScriptExecutionStatus;
 
-  updateContext(debugState: DebugState, txState: TxState) {
-    this.debugState = debugState;
-    this.txState = txState;
+  constructor(script: Script, tx?: Tx, txMetadata?: TxMetadata) {
+    let txContext: TxContext | undefined;
+    if (tx && txMetadata) {
+      txContext = {
+        tx: tx,
+        txMetadata: txMetadata,
+        selectedInputIndex: 0,
+      };
+    }
+
+    this.executionStatus = 'Not Started';
+    this.context = {
+      script,
+      stack: [],
+      altStack: [],
+      redeemStack: [],
+      programCounter: 0,
+      conditionFrames: [],
+      txContext,
+    };
   }
 
-  step() {
-    const { programCounter, status } = this.debugState;
+  updateScript(script: Script) {
+    this.context.script = script;
+    this.resetStacks();
+  }
 
-    if (this.checkIfDone()) {
-      // If status is still running, move forward to either success or failed
-      if (status === 'Running') {
-        this.setExecutionStatus();
-      }
+  updateTx(tx?: Tx, txMetadata?: TxMetadata) {
+    if (!tx || !txMetadata) {
+      this.context.txContext = undefined;
+      this.resetStacks();
       return;
     }
 
-    // Maybe move this guy...
-    this.debugState.setStatus('Running');
-
-    const cmd = this.script.getCmd(programCounter);
-    if (typeof cmd === 'number') {
-      this.handleOpCode(cmd);
-    } else {
-      this.handleData(cmd);
-    }
-  }
-
-  checkIfDone() {
-    const { programCounter } = this.debugState;
-
-    if (programCounter >= this.script.cmds.length) {
-      return true;
-    }
-  }
-
-  setExecutionStatus() {
-    const { stack } = this.debugState;
-    if (stack.length !== 1 || decodeNumber(stack.pop()!) === 0) {
-      this.debugState.setStatus('Failure');
-    } else {
-      this.debugState.setStatus('Success');
-    }
-  }
-
-  handleOpCode(cmd: number) {
-    const { stack, altStack, setProgramCounter, pushConditionFrame, programCounter, conditionFrames } = this.debugState;
-    const { tx, selectedInput, txMetadata } = this.txState;
-
-    const func = OP_CODE_FUNCTIONS[cmd];
-
-    const opContext: OpContext = {
-      stack: stack,
-      altStack: altStack,
-      cmds: this.script.cmds,
-      setProgramCounter: setProgramCounter,
-      programCounter,
-      pushConditionFrame,
-      tx: tx,
-      selectedInput: selectedInput,
+    this.context.txContext = {
+      tx,
+      txMetadata,
+      selectedInputIndex: 0,
     };
-
-    let result = false;
-
-    switch (cmd) {
-      // OP_IF and OP_NOTIF are control flow instructions that increment the program counter inside their own function
-      case OP_CODES.OP_IF:
-      case OP_CODES.OP_NOTIF:
-        result = func(opContext);
-        break;
-      case OP_CODES.OP_ENDIF:
-        result = func(opContext);
-        conditionFrames.pop();
-        this.incProgramCounter(cmd);
-        break;
-      case OP_CODES.OP_CHECKSIGVERIFY:
-      case OP_CODES.OP_CHECKSIG:
-        const prevScriptPubkey = txMetadata!.vin[selectedInput].prevout!.scriptpubkey;
-        const sighash = tx?.sighash(selectedInput, Script.fromHex(prevScriptPubkey));
-        opContext.sighash = sighash;
-        result = func(opContext);
-        this.incProgramCounter(cmd);
-        break;
-      default:
-        result = func(opContext);
-        this.incProgramCounter(cmd);
-        break;
-    }
-
-    if (!result) {
-      this.debugState.setStatus('Failure');
-    }
+    this.resetStacks();
   }
 
-  handleData(data: Uint8Array) {
-    const { stack } = this.debugState;
-    stack.push(data);
-    this.incProgramCounter(data);
+  resetStacks() {
+    const { script, txContext } = this.context;
+
+    this.context = {
+      script,
+      txContext: txContext,
+      stack: [],
+      altStack: [],
+      redeemStack: [],
+      programCounter: 0,
+      conditionFrames: [],
+    };
   }
 
-  incProgramCounter(cmd: ScriptCommand) {
-    const { conditionFrames, programCounter, setProgramCounter } = this.debugState;
+  step() {
+    this.context.programCounter++;
 
-    // Check if we're at a condition index. If we are, then jump to the next control point.
-    if (conditionFrames.length > 0) {
-      const { elseIndex, endIndex } = conditionFrames[conditionFrames.length - 1];
+    // Get the command to run.
+    const cmd = this.context.script.getCmd(this.context.programCounter);
 
-      if (programCounter === elseIndex) {
-        setProgramCounter(endIndex);
-        return;
-      }
+    this.executionStatus = 'Running';
+  }
+
+  getNextArgFormatted() {
+    const cmd = this.context.script.getCmd(this.context.programCounter);
+
+    if (typeof cmd === 'number') {
+      return OP_CODE_NAMES[cmd];
     }
 
-    // Skip over OP_PUSHBYTES commands by 2.
-    if (typeof cmd === 'number' && cmd > 0 && cmd <= 75) {
-      setProgramCounter(programCounter + 2);
-    } else {
-      setProgramCounter(programCounter + 1);
-    }
+    return '0x' + bytesToHex(cmd);
   }
 }
+
+export const engine = new ScriptExecutionEngine(new Script());

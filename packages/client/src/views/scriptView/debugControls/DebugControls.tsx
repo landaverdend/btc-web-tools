@@ -1,14 +1,12 @@
 import { TxFetcher } from '@/components/txFetcher/TxFetcher';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
-import { useDebugStore } from '@/state/debugStore';
 import Stepover from '@assets/icons/stepover.svg?react';
 import Play from '@assets/icons/play.svg?react';
 import Reset from '@assets/icons/reset.svg?react';
 import './debug-controls.css';
 
 export function DebugControls() {
-  const { reset } = useDebugStore();
-  const { step } = useScriptDebugger();
+  const { step, reset } = useScriptDebugger();
 
   return (
     <div className="flex-column debug-controls-container">

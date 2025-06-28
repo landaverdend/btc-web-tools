@@ -1,8 +1,9 @@
-import { ScriptDebuggerResult, useDebugStore } from '@/state/debugStore';
+import { ScriptDebuggerResult } from '@/state/debugStore';
 import './stack-view.css';
 import { bytesToHex } from '@/crypto/util/helper';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import ColoredText from '@/components/coloredText/ColoredText';
+import { useExecutionStore } from '@/state/executionStore';
 
 function NextArg({ nextArg }: { nextArg: string }) {
   if (nextArg === undefined || nextArg === '') {
@@ -22,8 +23,9 @@ function getStatusColor(status: ScriptDebuggerResult) {
 
 interface StackProps {}
 export function StackView({}: StackProps) {
-  const { stack, altStack, status, programCounter } = useDebugStore();
+  const { stack, altStack, programCounter } = useExecutionStore().executionContext;
   const { getNextArgument } = useScriptDebugger();
+  const { executionStatus } = useExecutionStore();
 
   return (
     <div className="flex-column stack-view-container">
@@ -40,9 +42,9 @@ export function StackView({}: StackProps) {
           <NextArg nextArg={getNextArgument()} />
         </span>
 
-        <span className="details-item" style={{ border: `1px solid ${getStatusColor(status)}` }}>
+        <span className="details-item" style={{ border: `1px solid ${getStatusColor(executionStatus)}` }}>
           Script Status:
-          <ColoredText color={getStatusColor(status)}>{status}</ColoredText>
+          <ColoredText color={getStatusColor(executionStatus)}>{executionStatus}</ColoredText>
         </span>
       </div>
 
