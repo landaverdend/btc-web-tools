@@ -1,6 +1,12 @@
 import { OP_CODES } from '@/crypto/op/op';
-import { Script, ScriptCommand } from '@/crypto/script/Script';
+import { Script } from '@/crypto/script/Script';
 import { hexToBytes } from '@/crypto/util/helper';
+import { JumpTable } from './execution/ExecutionContext';
+
+type ControlFrame = {
+  type: 'conditional' | 'unconditional';
+  index: number;
+};
 
 export function compileScript(scriptText: string, txInContext = false) {
   scriptText = removeComments(scriptText);
@@ -35,9 +41,11 @@ export function compileScript(scriptText: string, txInContext = false) {
     return bytes;
   });
 
-  validateScript(parsedCommands, txInContext);
+  const theScript = new Script(parsedCommands);
 
-  return new Script(parsedCommands);
+  validateScript(theScript, txInContext);
+
+  return theScript;
 }
 
 function removeComments(scriptText: string) {
@@ -67,75 +75,27 @@ export function isValidBase10(num: string) {
   return /^[0-9]+$/.test(num);
 }
 
-function isConditional(cmd: ScriptCommand) {
-  return cmd === OP_CODES.OP_IF || cmd === OP_CODES.OP_NOTIF;
-}
-
-function validateScript(script: ScriptCommand[], txInContext = false) {
-  if (script.includes(OP_CODES.OP_CHECKSIGVERIFY) || script.includes(OP_CODES.OP_CHECKSIG)) {
+function validateScript(script: Script, txInContext = false) {
+  const cmds = script.cmds;
+  if (cmds.includes(OP_CODES.OP_CHECKSIGVERIFY) || cmds.includes(OP_CODES.OP_CHECKSIG)) {
     if (!txInContext) {
       throw new Error('OP_CHECKSIGVERIFY/OP_CHECKSIG require a Tx to be provided.');
     }
   }
 
-  validateConditionals(script);
   validatePushBytes(script);
 }
 
-// Go through the whole script and validate that the conditional statements are well formed.
-function validateConditionals(script: ScriptCommand[]) {
-  const ifStack = [];
-  let depth = 0;
-  const elseSet = new Set<number>([]); // set of depths where OP_ELSE has been seen.
-
-  for (let i = 0; i < script.length; i++) {
-    const cmd = script[i];
-
-    if (isConditional(cmd)) {
-      ifStack.push(cmd);
-      depth++;
-    }
-
-    // OP_ENDIF
-    if (cmd === OP_CODES.OP_ENDIF) {
-      if (ifStack.length === 0) {
-        throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ENDIF');
-      }
-      ifStack.pop();
-      elseSet.delete(depth);
-      depth--;
-    }
-
-    // OP_ELSE
-    if (cmd === OP_CODES.OP_ELSE) {
-      if (elseSet.has(depth)) {
-        throw new Error('Multiple OP_ELSE statements');
-      }
-      if (ifStack.length === 0) {
-        throw new Error('OP_ELSE without OP_IF/OP_NOTIF');
-      }
-      elseSet.add(depth);
-    }
-
-    if (depth < 0) {
-      throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ENDIF');
-    }
-  }
-
-  if (ifStack.length > 0 || depth !== 0) {
-    throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ENDIF');
-  }
-}
-
 // Validate that the push bytes are the correct length.
-function validatePushBytes(script: ScriptCommand[]) {
-  for (let i = 0; i < script.length; i++) {
-    const cmd = script[i];
+function validatePushBytes(script: Script) {
+  const cmds = script.cmds;
+  for (let i = 0; i < cmds.length; i++) {
+    const cmd = cmds[i];
 
     if (typeof cmd === 'number' && cmd >= 1 && cmd <= 75) {
-      if (i + 1 >= script.length) throw new Error('Pushbyte command is not followed by data');
+      if (i + 1 >= cmds.length) throw new Error('Pushbyte command is not followed by data');
 
-      const nextCmd = script[i + 1];
+      const nextCmd = cmds[i + 1];
       if (!(nextCmd instanceof Uint8Array)) throw new Error('Pushbyte command is not followed by data');
       if (nextCmd.length !== cmd) {
         throw new Error(`OP_PUSHBYTES${cmd} expects ${cmd} bytes, but got ${nextCmd.length}`);

@@ -3,7 +3,7 @@ import Tx from '@/crypto/transaction/Tx';
 import { Script } from '../Script';
 
 export interface JumpTable {
-  [pc: number]: { target: number; type: 'conditional' | 'unconditional' };
+  [pc: number]: number;
 }
 
 export type ExecutionContext = {
@@ -13,8 +13,6 @@ export type ExecutionContext = {
   altStack: Uint8Array[];
   redeemStack: Uint8Array[];
   programCounter: number;
-
-  jumpTable: JumpTable;
 
   txContext?: TxContext; // not all scripts need a transaction binding them...
   error?: string;

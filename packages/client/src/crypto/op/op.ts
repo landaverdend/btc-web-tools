@@ -166,7 +166,7 @@ function op_if(ctx: ExecutionContext) {
 
   // If top item is false (0), consult the jump table for the next PC instruction.
   if (isEncodedZero(top)) {
-    const nextPC = ctx.jumpTable[ctx.programCounter].target;
+    const nextPC = ctx.script.jumpTable[ctx.programCounter];
     ctx.programCounter = nextPC;
   }
 
@@ -181,7 +181,7 @@ function op_notif(ctx: ExecutionContext) {
   const top = stack.pop()!;
   // Inverse logic of OP_IF: go to next block if 0
   if (!isEncodedZero(top)) {
-    const nextPC = ctx.jumpTable[ctx.programCounter].target;
+    const nextPC = ctx.script.jumpTable[ctx.programCounter];
     ctx.programCounter = nextPC;
   }
 
@@ -190,7 +190,7 @@ function op_notif(ctx: ExecutionContext) {
 
 // ALWAYS jump when we see an OP_ELSE
 function op_else(ctx: ExecutionContext) {
-  const nextPC = ctx.jumpTable[ctx.programCounter].target;
+  const nextPC = ctx.script.jumpTable[ctx.programCounter];
   ctx.programCounter = nextPC;
 
   return true;
@@ -876,6 +876,7 @@ function op_checksig({ stack, txContext }: ExecutionContext) {
     return false;
   }
 
+  // Fill out the sighash
   const { txMetadata, selectedInputIndex, tx } = txContext!;
   const prevScriptPubkey = txMetadata!.vin[selectedInputIndex].prevout!.scriptpubkey;
   const sighash = tx?.sighash(selectedInputIndex, Script.fromHex(prevScriptPubkey));

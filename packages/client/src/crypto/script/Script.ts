@@ -13,16 +13,27 @@ interface ScriptSection {
   endIndex: number;
 }
 
+export interface JumpTable {
+  [pc: number]: number;
+}
+
+type ControlFrame = {
+  type: 'conditional' | 'unconditional';
+  index: number;
+};
+
 // A script is just a list of bigint commands.
 export class Script {
   cmds: ScriptCommand[];
   sections: ScriptSection[] = [];
+  jumpTable: JumpTable = {}; // For control/conditionals
 
   constructor(cmds?: ScriptCommand[]) {
     this.cmds = cmds ?? [];
 
     // Serialize the commands to get the length of the script. Throw out an error if the script is too long.
     this.serializeCommands();
+    this.fillJumpTable();
   }
 
   add(other: Script) {
@@ -67,6 +78,40 @@ export class Script {
     }
 
     return res;
+  }
+
+  fillJumpTable() {
+    const jumpTable: JumpTable = {};
+    const controlFrames: ControlFrame[] = [];
+
+    for (let i = 0; i < this.cmds.length; i++) {
+      const cmd = this.cmds[i];
+
+      switch (cmd) {
+        case OP_CODES.OP_IF:
+        case OP_CODES.OP_NOTIF:
+          controlFrames.push({ type: 'conditional', index: i });
+          break;
+        case OP_CODES.OP_ELSE:
+          if (controlFrames.length === 0) throw new Error('OP_ELSE without conditional');
+          const ifEntry = controlFrames.pop()!;
+          if (ifEntry.type !== 'conditional') throw new Error('OP_ELSE without conditional');
+          jumpTable[ifEntry.index] = i;
+          controlFrames.push({ type: 'unconditional', index: i });
+          break;
+        case OP_CODES.OP_ENDIF:
+          if (controlFrames.length === 0) throw new Error('ENDIF without control structure');
+          const priorEntry = controlFrames.pop()!;
+          jumpTable[priorEntry.index] = i;
+          break;
+      }
+    }
+
+    if (controlFrames.length > 0) {
+      throw new Error('Unbalanced OP_IF/OP_NOTIF/OP_ELSE/OP_ENDIF structure');
+    }
+
+    this.jumpTable = jumpTable;
   }
 
   formatLE(): ScriptLE {
