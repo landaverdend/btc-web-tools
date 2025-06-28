@@ -13,17 +13,19 @@ export interface StepStrategy {
 }
 
 export class ScriptExecutionEngine {
+  private static instance: ScriptExecutionEngine;
+
   context: ExecutionContext;
   executionStatus: ScriptExecutionStatus;
   stepStrategy: StepStrategy;
 
-  constructor(script: Script, tx?: Tx, txMetadata?: TxMetadata) {
+  private constructor(script: Script, tx?: Tx, txMetadata?: TxMetadata, selectedInput = 0) {
     let txContext: TxContext | undefined;
     if (tx && txMetadata) {
       txContext = {
         tx: tx,
         txMetadata: txMetadata,
-        selectedInputIndex: 0,
+        selectedInputIndex: selectedInput,
       };
     }
 
@@ -41,26 +43,6 @@ export class ScriptExecutionEngine {
     this.stepStrategy = new StandardStepStrategy();
   }
 
-  updateScript(script: Script) {
-    this.context.script = script;
-    this.resetExecutionContext();
-  }
-
-  updateTx(tx?: Tx, txMetadata?: TxMetadata) {
-    if (!tx || !txMetadata) {
-      this.context.txContext = undefined;
-      this.resetExecutionContext();
-      return;
-    }
-
-    this.context.txContext = {
-      tx,
-      txMetadata,
-      selectedInputIndex: 0,
-    };
-    this.resetExecutionContext();
-  }
-
   resetExecutionContext() {
     const { script, txContext } = this.context;
 
@@ -74,6 +56,19 @@ export class ScriptExecutionEngine {
     };
 
     this.executionStatus = 'Not Started';
+  }
+
+  static updateInstance(script: Script, tx?: Tx, txMetadata?: TxMetadata, selectedInput = 0) {
+    this.instance = new ScriptExecutionEngine(script, tx, txMetadata, selectedInput);
+    return this.instance;
+  }
+
+  static getInstance() {
+    if (!ScriptExecutionEngine.instance) {
+      ScriptExecutionEngine.instance = new ScriptExecutionEngine(new Script());
+    }
+
+    return ScriptExecutionEngine.instance;
   }
 
   step() {
@@ -125,5 +120,3 @@ export class ScriptExecutionEngine {
     return '0x' + bytesToHex(cmd);
   }
 }
-
-export const engine = new ScriptExecutionEngine(new Script());

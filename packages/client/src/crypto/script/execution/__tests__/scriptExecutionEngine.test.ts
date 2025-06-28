@@ -2,11 +2,17 @@ import { Script } from '../../Script';
 import { ScriptExecutionEngine } from '../scriptExecutionEngine';
 
 describe('ScriptExecutionEngine', () => {
+  beforeEach(() => {
+    ScriptExecutionEngine.updateInstance(new Script());
+  });
+
   it('should handle easy conditionals #1', () => {
     const testScriptOne = '516352675368';
 
     const script = Script.fromHex(testScriptOne);
-    const engine = new ScriptExecutionEngine(script);
+
+    ScriptExecutionEngine.updateInstance(script);
+    const engine = ScriptExecutionEngine.getInstance();
 
     engine.run();
 
@@ -20,8 +26,9 @@ describe('ScriptExecutionEngine', () => {
     const testScriptOne = '006352675168';
 
     const script = Script.fromHex(testScriptOne);
-    const engine = new ScriptExecutionEngine(script);
 
+    ScriptExecutionEngine.updateInstance(script);
+    const engine = ScriptExecutionEngine.getInstance();
     engine.run();
 
     const { stack } = engine.context;
@@ -34,7 +41,8 @@ describe('ScriptExecutionEngine', () => {
     const testScriptOne = '516352630100630204206802696953686751630230396868';
 
     const script = Script.fromHex(testScriptOne);
-    const engine = new ScriptExecutionEngine(script);
+    ScriptExecutionEngine.updateInstance(script);
+    const engine = ScriptExecutionEngine.getInstance();
 
     engine.run();
 
