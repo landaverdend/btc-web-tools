@@ -1,23 +1,21 @@
 import Tx from '@/crypto/transaction/Tx';
 import { Script } from '../Script';
 import { TxMetadata } from '@/api/api';
-import { OP_CODE_NAMES } from '@/crypto/op/op';
+import { decodeNumber, OP_CODE_NAMES } from '@/crypto/op/op';
 import { bytesToHex } from '@/crypto/util/helper';
 import { ExecutionContext, TxContext } from './ExecutionContext';
+import { StandardStepStrategy } from './strategy/standardStepStrategy';
 
 export type ScriptExecutionStatus = 'Success' | 'Failure' | 'Running' | 'Not Started';
 
-const DEFAULT_CONTEXT: ExecutionContext = {
-  script: new Script(),
-  stack: [],
-  altStack: [],
-  redeemStack: [],
-  conditionFrames: [],
-  programCounter: 0,
-};
+export interface StepStrategy {
+  step(executionContext: ExecutionContext): boolean;
+}
+
 export class ScriptExecutionEngine {
   context: ExecutionContext;
   executionStatus: ScriptExecutionStatus;
+  stepStrategy: StepStrategy;
 
   constructor(script: Script, tx?: Tx, txMetadata?: TxMetadata) {
     let txContext: TxContext | undefined;
@@ -39,17 +37,19 @@ export class ScriptExecutionEngine {
       conditionFrames: [],
       txContext,
     };
+    // temporary
+    this.stepStrategy = new StandardStepStrategy();
   }
 
   updateScript(script: Script) {
     this.context.script = script;
-    this.resetStacks();
+    this.resetExecutionContext();
   }
 
   updateTx(tx?: Tx, txMetadata?: TxMetadata) {
     if (!tx || !txMetadata) {
       this.context.txContext = undefined;
-      this.resetStacks();
+      this.resetExecutionContext();
       return;
     }
 
@@ -58,10 +58,10 @@ export class ScriptExecutionEngine {
       txMetadata,
       selectedInputIndex: 0,
     };
-    this.resetStacks();
+    this.resetExecutionContext();
   }
 
-  resetStacks() {
+  resetExecutionContext() {
     const { script, txContext } = this.context;
 
     this.context = {
@@ -73,15 +73,39 @@ export class ScriptExecutionEngine {
       programCounter: 0,
       conditionFrames: [],
     };
+    this.executionStatus = 'Not Started';
   }
 
   step() {
-    this.context.programCounter++;
+    // Back out if the script has already finished running
+    if (this.executionStatus === 'Success' || this.executionStatus === 'Failure') {
+      return;
+    }
 
-    // Get the command to run.
-    const cmd = this.context.script.getCmd(this.context.programCounter);
+    const success = this.stepStrategy.step(this.context);
 
-    this.executionStatus = 'Running';
+    if (!success) {
+      this.executionStatus = 'Failure';
+    } else {
+      this.executionStatus = 'Running';
+    }
+
+    // Check if the script has finished running.
+    this.checkEndConditions();
+  }
+
+  checkEndConditions() {
+    const { script, programCounter, stack } = this.context;
+
+    if (programCounter >= script.cmds.length) {
+      // Script end check.
+      // if stack is has more than 1 item, or the last item is 0, then the script failed.
+      if (stack.length !== 1 || decodeNumber(stack.pop()!) === 0) {
+        this.executionStatus = 'Failure';
+      } else {
+        this.executionStatus = 'Success';
+      }
+    }
   }
 
   getNextArgFormatted() {

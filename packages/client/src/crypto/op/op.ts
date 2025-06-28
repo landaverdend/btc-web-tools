@@ -159,7 +159,7 @@ function op_16({ stack }: OpContext) {
 }
 
 // We need to parse ahead of the instruction stream to see if the next instruction is an OP_ELSE or OP_ENDIF
-function op_if({ stack, cmds, programCounter, setProgramCounter, pushConditionFrame }: OpContext) {
+function op_if({ stack, cmds, programCounter, conditionFrames }: OpContext) {
   if (stack.length < 1) return false;
 
   const conditionFrame = findBranchPoints(cmds, programCounter);
@@ -167,29 +167,29 @@ function op_if({ stack, cmds, programCounter, setProgramCounter, pushConditionFr
 
   // If the top of the stack is 0, jump to the else index OR the end index.
   if (isEncodedZero(top)) {
-    setProgramCounter(conditionFrame.elseIndex ?? conditionFrame.endIndex);
-    pushConditionFrame({ ...conditionFrame, elseIndex: undefined }); // we don't want the else index to be set because then the parent method will check it
+    // setProgramCounter(conditionFrame.elseIndex ?? conditionFrame.endIndex);
+    conditionFrames.push({ ...conditionFrame, elseIndex: undefined });
   } else {
-    setProgramCounter(programCounter + 1);
-    pushConditionFrame(conditionFrame);
+    // setProgramCounter(programCounter + 1);
+    conditionFrames.push(conditionFrame);
   }
 
   return true;
 }
 
 // Inverse of OP_IF
-function op_notif({ stack, cmds, programCounter, setProgramCounter, pushConditionFrame }: OpContext) {
+function op_notif({ stack, cmds, programCounter, conditionFrames }: OpContext) {
   if (stack.length < 1) return false;
   const conditionFrame = findBranchPoints(cmds, programCounter);
 
   const top = stack.pop()!;
   // Inverse logic of OP_IF: go to next block if 0
   if (isEncodedZero(top)) {
-    setProgramCounter(programCounter + 1);
-    pushConditionFrame(conditionFrame);
+    // setProgramCounter(programCounter + 1);
+    conditionFrames.push(conditionFrame);
   } else {
-    setProgramCounter(conditionFrame.elseIndex ?? conditionFrame.endIndex);
-    pushConditionFrame({ ...conditionFrame, elseIndex: undefined });
+    // setProgramCounter(conditionFrame.elseIndex ?? conditionFrame.endIndex);
+    conditionFrames.push({ ...conditionFrame, elseIndex: undefined });
   }
 
   return true;
@@ -982,14 +982,13 @@ export type OpContext = {
   stack: Uint8Array[];
   altStack: Uint8Array[];
   cmds: ScriptCommand[];
-
-  programCounter: number;
-  setProgramCounter: (num: number) => void;
-  pushConditionFrame: (conditionFrame: ConditionFrame) => void;
+  conditionFrames: ConditionFrame[];
 
   tx?: Tx;
   selectedInput?: number;
   sighash?: Uint8Array;
+
+  programCounter: number;
 };
 
 function fillPushBytes() {

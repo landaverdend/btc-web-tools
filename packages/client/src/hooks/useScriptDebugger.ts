@@ -26,11 +26,13 @@ export function useScriptDebugger() {
   function step() {
     engine.step();
     updateFromEngine(engine.context);
+    setExecutionStatus(engine.executionStatus);
   }
 
   function reset() {
-    engine.resetStacks();
+    engine.resetExecutionContext();
     updateFromEngine(engine.context);
+    setExecutionStatus(engine.executionStatus);
   }
 
   return {
