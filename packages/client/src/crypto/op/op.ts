@@ -1,11 +1,10 @@
-import { ConditionFrame } from '@/state/debugStore';
-import { ScriptCommand } from '../script/Script';
 import { ripemd160, sha1 } from '@noble/hashes/legacy';
 import { sha256 } from '@noble/hashes/sha2';
 import { hash160, hash256 } from '../hash/hashUtil';
-import Tx from '../transaction/Tx';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { Signature } from '../signature/signature';
+import { ExecutionContext } from '../script/execution/ExecutionContext';
+import { Script } from '../script/Script';
 
 export function encodeNumber(num: number) {
   if (num === 0) {
@@ -53,8 +52,8 @@ export function decodeNumber(bytes: Uint8Array) {
   return isNegative ? -result : result;
 }
 
-function op_pushbytes({ stack, programCounter, cmds }: OpContext, opcode: number) {
-  const dataToPush = cmds[programCounter + 1] as Uint8Array;
+function op_pushbytes({ stack, script, programCounter }: ExecutionContext, opcode: number) {
+  const dataToPush = script.cmds[programCounter + 1] as Uint8Array;
 
   stack.push(dataToPush);
 
@@ -65,179 +64,143 @@ function isEncodedZero(bytes: Uint8Array) {
   return bytes.length === 0 || (bytes.length === 1 && bytes[0] === 0);
 }
 
-function op_nop({}: OpContext) {
+function op_nop({}: ExecutionContext) {
   return true;
 }
 
-function op_0({ stack }: OpContext) {
+function op_0({ stack }: ExecutionContext) {
   stack.push(encodeNumber(0));
   return true;
 }
-function op_1negate({ stack }: OpContext) {
+function op_1negate({ stack }: ExecutionContext) {
   stack.push(encodeNumber(-1));
   return true;
 }
 
-function op_1({ stack }: OpContext) {
+function op_1({ stack }: ExecutionContext) {
   stack.push(encodeNumber(1));
   return true;
 }
 
-function op_2({ stack }: OpContext) {
+function op_2({ stack }: ExecutionContext) {
   stack.push(encodeNumber(2));
   return true;
 }
 
-function op_3({ stack }: OpContext) {
+function op_3({ stack }: ExecutionContext) {
   stack.push(encodeNumber(3));
   return true;
 }
 
-function op_4({ stack }: OpContext) {
+function op_4({ stack }: ExecutionContext) {
   stack.push(encodeNumber(4));
   return true;
 }
 
-function op_5({ stack }: OpContext) {
+function op_5({ stack }: ExecutionContext) {
   stack.push(encodeNumber(5));
   return true;
 }
 
-function op_6({ stack }: OpContext) {
+function op_6({ stack }: ExecutionContext) {
   stack.push(encodeNumber(6));
   return true;
 }
 
-function op_7({ stack }: OpContext) {
+function op_7({ stack }: ExecutionContext) {
   stack.push(encodeNumber(7));
   return true;
 }
 
-function op_8({ stack }: OpContext) {
+function op_8({ stack }: ExecutionContext) {
   stack.push(encodeNumber(8));
   return true;
 }
 
-function op_9({ stack }: OpContext) {
+function op_9({ stack }: ExecutionContext) {
   stack.push(encodeNumber(9));
   return true;
 }
 
-function op_10({ stack }: OpContext) {
+function op_10({ stack }: ExecutionContext) {
   stack.push(encodeNumber(10));
   return true;
 }
 
-function op_11({ stack }: OpContext) {
+function op_11({ stack }: ExecutionContext) {
   stack.push(encodeNumber(11));
   return true;
 }
 
-function op_12({ stack }: OpContext) {
+function op_12({ stack }: ExecutionContext) {
   stack.push(encodeNumber(12));
   return true;
 }
 
-function op_13({ stack }: OpContext) {
+function op_13({ stack }: ExecutionContext) {
   stack.push(encodeNumber(13));
   return true;
 }
 
-function op_14({ stack }: OpContext) {
+function op_14({ stack }: ExecutionContext) {
   stack.push(encodeNumber(14));
   return true;
 }
 
-function op_15({ stack }: OpContext) {
+function op_15({ stack }: ExecutionContext) {
   stack.push(encodeNumber(15));
   return true;
 }
 
-function op_16({ stack }: OpContext) {
+function op_16({ stack }: ExecutionContext) {
   stack.push(encodeNumber(16));
   return true;
 }
 
 // We need to parse ahead of the instruction stream to see if the next instruction is an OP_ELSE or OP_ENDIF
-function op_if({ stack, cmds, programCounter, conditionFrames }: OpContext) {
+function op_if(ctx: ExecutionContext) {
+  const { stack } = ctx;
   if (stack.length < 1) return false;
 
-  const conditionFrame = findBranchPoints(cmds, programCounter);
   const top = stack.pop()!;
 
-  // If the top of the stack is 0, jump to the else index OR the end index.
+  // If top item is false (0), consult the jump table for the next PC instruction.
   if (isEncodedZero(top)) {
-    // setProgramCounter(conditionFrame.elseIndex ?? conditionFrame.endIndex);
-    conditionFrames.push({ ...conditionFrame, elseIndex: undefined });
-  } else {
-    // setProgramCounter(programCounter + 1);
-    conditionFrames.push(conditionFrame);
+    const nextPC = ctx.jumpTable[ctx.programCounter].target;
+    ctx.programCounter = nextPC;
   }
 
   return true;
 }
 
 // Inverse of OP_IF
-function op_notif({ stack, cmds, programCounter, conditionFrames }: OpContext) {
+function op_notif(ctx: ExecutionContext) {
+  const { stack } = ctx;
   if (stack.length < 1) return false;
-  const conditionFrame = findBranchPoints(cmds, programCounter);
 
   const top = stack.pop()!;
   // Inverse logic of OP_IF: go to next block if 0
-  if (isEncodedZero(top)) {
-    // setProgramCounter(programCounter + 1);
-    conditionFrames.push(conditionFrame);
-  } else {
-    // setProgramCounter(conditionFrame.elseIndex ?? conditionFrame.endIndex);
-    conditionFrames.push({ ...conditionFrame, elseIndex: undefined });
+  if (!isEncodedZero(top)) {
+    const nextPC = ctx.jumpTable[ctx.programCounter].target;
+    ctx.programCounter = nextPC;
   }
 
   return true;
 }
 
-// Find the associated OP_ELSE or OP_ENDIF for a given condition opcode
-function findBranchPoints(cmds: ScriptCommand[], programCounter: number): ConditionFrame {
-  // We need to parse ahead of the instruction stream and grab the next control flow instruction (OP_ELSE or OP_ENDIF)
-  const frameStack: ConditionFrame[] = [{ elseIndex: undefined, endIndex: -1 }];
+// ALWAYS jump when we see an OP_ELSE
+function op_else(ctx: ExecutionContext) {
+  const nextPC = ctx.jumpTable[ctx.programCounter].target;
+  ctx.programCounter = nextPC;
 
-  let i = programCounter + 1; // grab the next instruction
-
-  while (i < cmds.length) {
-    const cmd = cmds[i];
-
-    if (cmd === OP_CODES.OP_IF || cmd === OP_CODES.OP_NOTIF) {
-      frameStack.push({ elseIndex: undefined, endIndex: -1 });
-    }
-
-    if (cmd === OP_CODES.OP_ELSE) {
-      frameStack[frameStack.length - 1].elseIndex = i;
-    }
-
-    if (cmd === OP_CODES.OP_ENDIF) {
-      frameStack[frameStack.length - 1].endIndex = i;
-
-      // We found the original
-      if (frameStack.length === 1) {
-        return frameStack[0];
-      }
-
-      frameStack.pop();
-    }
-    i++;
-  }
-
-  throw new Error('No matching OP_ELSE or OP_ENDIF found');
-}
-
-function op_else({}: OpContext) {
   return true;
 }
 
-function op_endif({}: OpContext) {
+function op_endif({}: ExecutionContext) {
   return true;
 }
 
-function op_verify({ stack }: OpContext) {
+function op_verify({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -250,15 +213,15 @@ function op_verify({ stack }: OpContext) {
   return true;
 }
 
-function op_pushdata1({}: OpContext) {
+function op_pushdata1({}: ExecutionContext) {
   return true;
 }
 
-function op_pushdata2({}: OpContext) {
+function op_pushdata2({}: ExecutionContext) {
   return true;
 }
 
-function op_pushdata4({}: OpContext) {
+function op_pushdata4({}: ExecutionContext) {
   return true;
 }
 
@@ -266,7 +229,7 @@ function op_return() {
   return false;
 }
 
-function op_toaltstack({ stack, altStack }: OpContext) {
+function op_toaltstack({ stack, altStack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -274,7 +237,7 @@ function op_toaltstack({ stack, altStack }: OpContext) {
   return true;
 }
 
-function op_fromaltstack({ stack, altStack }: OpContext) {
+function op_fromaltstack({ stack, altStack }: ExecutionContext) {
   if (altStack.length < 1) {
     return false;
   }
@@ -282,7 +245,7 @@ function op_fromaltstack({ stack, altStack }: OpContext) {
   return true;
 }
 
-function op_2drop({ stack }: OpContext) {
+function op_2drop({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -293,7 +256,7 @@ function op_2drop({ stack }: OpContext) {
   return true;
 }
 
-function op_2dup({ stack }: OpContext) {
+function op_2dup({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -307,7 +270,7 @@ function op_2dup({ stack }: OpContext) {
   return true;
 }
 
-function op_3dup({ stack }: OpContext) {
+function op_3dup({ stack }: ExecutionContext) {
   if (stack.length < 3) {
     return false;
   }
@@ -323,7 +286,7 @@ function op_3dup({ stack }: OpContext) {
   return true;
 }
 
-function op_2over({ stack }: OpContext) {
+function op_2over({ stack }: ExecutionContext) {
   if (stack.length < 4) {
     return false;
   }
@@ -337,7 +300,7 @@ function op_2over({ stack }: OpContext) {
   return true;
 }
 
-function op_2rot({ stack }: OpContext) {
+function op_2rot({ stack }: ExecutionContext) {
   if (stack.length < 6) {
     return false;
   }
@@ -348,7 +311,7 @@ function op_2rot({ stack }: OpContext) {
   return true;
 }
 
-function op_2swap({ stack }: OpContext) {
+function op_2swap({ stack }: ExecutionContext) {
   if (stack.length < 4) {
     return false;
   }
@@ -359,7 +322,7 @@ function op_2swap({ stack }: OpContext) {
   return true;
 }
 
-function op_ifdup({ stack }: OpContext) {
+function op_ifdup({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -371,12 +334,12 @@ function op_ifdup({ stack }: OpContext) {
   return true;
 }
 
-function op_depth({ stack }: OpContext) {
+function op_depth({ stack }: ExecutionContext) {
   stack.push(encodeNumber(stack.length));
   return true;
 }
 
-function op_drop({ stack }: OpContext) {
+function op_drop({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -385,7 +348,7 @@ function op_drop({ stack }: OpContext) {
   return true;
 }
 
-function op_dup({ stack }: OpContext) {
+function op_dup({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -396,7 +359,7 @@ function op_dup({ stack }: OpContext) {
   return true;
 }
 
-function op_nip({ stack }: OpContext) {
+function op_nip({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -406,7 +369,7 @@ function op_nip({ stack }: OpContext) {
   return true;
 }
 
-function op_over({ stack }: OpContext) {
+function op_over({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -416,7 +379,7 @@ function op_over({ stack }: OpContext) {
   return true;
 }
 
-function op_pick({ stack }: OpContext) {
+function op_pick({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -433,7 +396,7 @@ function op_pick({ stack }: OpContext) {
   return true;
 }
 
-function op_roll({ stack }: OpContext) {
+function op_roll({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -450,7 +413,7 @@ function op_roll({ stack }: OpContext) {
   return true;
 }
 
-function op_rot({ stack }: OpContext) {
+function op_rot({ stack }: ExecutionContext) {
   if (stack.length < 3) {
     return false;
   }
@@ -461,7 +424,7 @@ function op_rot({ stack }: OpContext) {
   return true;
 }
 
-function op_swap({ stack }: OpContext) {
+function op_swap({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -475,7 +438,7 @@ function op_swap({ stack }: OpContext) {
   return true;
 }
 
-function op_tuck({ stack }: OpContext) {
+function op_tuck({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -488,7 +451,7 @@ function op_tuck({ stack }: OpContext) {
   return true;
 }
 
-function op_size({ stack }: OpContext) {
+function op_size({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -499,7 +462,7 @@ function op_size({ stack }: OpContext) {
   return true;
 }
 
-function op_equal({ stack }: OpContext) {
+function op_equal({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -516,7 +479,7 @@ function op_equal({ stack }: OpContext) {
   return true;
 }
 
-function op_equalverify({ stack }: OpContext) {
+function op_equalverify({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -531,7 +494,7 @@ function op_equalverify({ stack }: OpContext) {
   return true;
 }
 
-function op_1add({ stack }: OpContext) {
+function op_1add({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -542,7 +505,7 @@ function op_1add({ stack }: OpContext) {
   return true;
 }
 
-function op_1sub({ stack }: OpContext) {
+function op_1sub({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -553,7 +516,7 @@ function op_1sub({ stack }: OpContext) {
   return true;
 }
 
-function op_negate({ stack }: OpContext) {
+function op_negate({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -564,7 +527,7 @@ function op_negate({ stack }: OpContext) {
   return true;
 }
 
-function op_abs({ stack }: OpContext) {
+function op_abs({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -575,7 +538,7 @@ function op_abs({ stack }: OpContext) {
   return true;
 }
 
-function op_not({ stack }: OpContext) {
+function op_not({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -586,7 +549,7 @@ function op_not({ stack }: OpContext) {
   return true;
 }
 
-function op_0notequal({ stack }: OpContext) {
+function op_0notequal({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -597,7 +560,7 @@ function op_0notequal({ stack }: OpContext) {
   return true;
 }
 
-function op_add({ stack }: OpContext) {
+function op_add({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -609,7 +572,7 @@ function op_add({ stack }: OpContext) {
   return true;
 }
 
-function op_sub({ stack }: OpContext) {
+function op_sub({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -622,7 +585,7 @@ function op_sub({ stack }: OpContext) {
 }
 
 // NOTE: OP_MUL is not normally used in BTC script and is generally disabled.
-function op_mul({ stack }: OpContext) {
+function op_mul({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -634,7 +597,7 @@ function op_mul({ stack }: OpContext) {
   return true;
 }
 
-function op_booland({ stack }: OpContext) {
+function op_booland({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -659,7 +622,7 @@ function op_booland({ stack }: OpContext) {
   return true;
 }
 
-function op_boolor({ stack }: OpContext) {
+function op_boolor({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -676,7 +639,7 @@ function op_boolor({ stack }: OpContext) {
   return true;
 }
 
-function op_numequal({ stack }: OpContext) {
+function op_numequal({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -693,7 +656,7 @@ function op_numequal({ stack }: OpContext) {
   return true;
 }
 
-function op_numequalverify({ stack }: OpContext) {
+function op_numequalverify({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -708,7 +671,7 @@ function op_numequalverify({ stack }: OpContext) {
   return true;
 }
 
-function op_numnotequal({ stack }: OpContext) {
+function op_numnotequal({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -725,7 +688,7 @@ function op_numnotequal({ stack }: OpContext) {
   return true;
 }
 
-function op_lessthan({ stack }: OpContext) {
+function op_lessthan({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -742,7 +705,7 @@ function op_lessthan({ stack }: OpContext) {
   return true;
 }
 
-function op_greaterthan({ stack }: OpContext) {
+function op_greaterthan({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -759,7 +722,7 @@ function op_greaterthan({ stack }: OpContext) {
   return true;
 }
 
-function op_lessthanorequal({ stack }: OpContext) {
+function op_lessthanorequal({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -776,7 +739,7 @@ function op_lessthanorequal({ stack }: OpContext) {
   return true;
 }
 
-function op_greaterthanorequal({ stack }: OpContext) {
+function op_greaterthanorequal({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -793,7 +756,7 @@ function op_greaterthanorequal({ stack }: OpContext) {
   return true;
 }
 
-function op_min({ stack }: OpContext) {
+function op_min({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -810,7 +773,7 @@ function op_min({ stack }: OpContext) {
   return true;
 }
 
-function op_max({ stack }: OpContext) {
+function op_max({ stack }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
@@ -827,7 +790,7 @@ function op_max({ stack }: OpContext) {
   return true;
 }
 
-function op_within({ stack }: OpContext) {
+function op_within({ stack }: ExecutionContext) {
   if (stack.length < 3) {
     return false;
   }
@@ -845,7 +808,7 @@ function op_within({ stack }: OpContext) {
   return true;
 }
 
-function op_ripemd160({ stack }: OpContext) {
+function op_ripemd160({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -857,7 +820,7 @@ function op_ripemd160({ stack }: OpContext) {
   return true;
 }
 
-function op_sha1({ stack }: OpContext) {
+function op_sha1({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -870,7 +833,7 @@ function op_sha1({ stack }: OpContext) {
   return true;
 }
 
-function op_sha256({ stack }: OpContext) {
+function op_sha256({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -883,7 +846,7 @@ function op_sha256({ stack }: OpContext) {
   return true;
 }
 
-function op_hash160({ stack }: OpContext) {
+function op_hash160({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -896,7 +859,7 @@ function op_hash160({ stack }: OpContext) {
   return true;
 }
 
-function op_hash256({ stack }: OpContext) {
+function op_hash256({ stack }: ExecutionContext) {
   if (stack.length < 1) {
     return false;
   }
@@ -908,10 +871,14 @@ function op_hash256({ stack }: OpContext) {
   return true;
 }
 
-function op_checksig({ stack, sighash }: OpContext) {
+function op_checksig({ stack, txContext }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
+
+  const { txMetadata, selectedInputIndex, tx } = txContext!;
+  const prevScriptPubkey = txMetadata!.vin[selectedInputIndex].prevout!.scriptpubkey;
+  const sighash = tx?.sighash(selectedInputIndex, Script.fromHex(prevScriptPubkey));
 
   const sec_pubkey = stack.pop()!;
   const der_signature = stack.pop()!.slice(0, -1);
@@ -933,10 +900,14 @@ function op_checksig({ stack, sighash }: OpContext) {
   }
 }
 
-function op_checksigverify({ stack, sighash }: OpContext) {
+function op_checksigverify({ stack, txContext }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
+
+  const { txMetadata, selectedInputIndex, tx } = txContext!;
+  const prevScriptPubkey = txMetadata!.vin[selectedInputIndex].prevout!.scriptpubkey;
+  const sighash = tx?.sighash(selectedInputIndex, Script.fromHex(prevScriptPubkey));
 
   const sec_pubkey = stack.pop()!;
   const der_signature = stack.pop()!.slice(0, -1);
@@ -958,43 +929,31 @@ function op_checksigverify({ stack, sighash }: OpContext) {
   }
 }
 
-function op_checkmultisig({ stack }: OpContext) {
+function op_checkmultisig({ stack }: ExecutionContext) {
   return true;
 }
 
-function op_checkmultisigverify({ stack }: OpContext) {
+function op_checkmultisigverify({ stack }: ExecutionContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_checklocktimeverify({ stack }: OpContext) {
+function op_checklocktimeverify({ stack }: ExecutionContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
-function op_checksequenceverify({ stack }: OpContext) {
+function op_checksequenceverify({ stack }: ExecutionContext) {
   throw new Error('Not Implemented');
   return false;
 }
 
 // Multiple types of functions are possible...
-export type OpContext = {
-  stack: Uint8Array[];
-  altStack: Uint8Array[];
-  cmds: ScriptCommand[];
-  conditionFrames: ConditionFrame[];
-
-  tx?: Tx;
-  selectedInput?: number;
-  sighash?: Uint8Array;
-
-  programCounter: number;
-};
 
 function fillPushBytes() {
-  const pushBytes: Record<number, (context: OpContext) => boolean> = {};
+  const pushBytes: Record<number, (context: ExecutionContext) => boolean> = {};
   for (let i = 1; i <= 75; i++) {
-    pushBytes[i] = (context: OpContext) => {
+    pushBytes[i] = (context: ExecutionContext) => {
       return op_pushbytes(context, i);
     };
   }
@@ -1002,7 +961,7 @@ function fillPushBytes() {
   return pushBytes;
 }
 
-export const OP_CODE_FUNCTIONS: Record<number, (context: OpContext) => boolean> = {
+export const OP_CODE_FUNCTIONS: Record<number, (context: ExecutionContext) => boolean> = {
   0: op_0,
   ...fillPushBytes(),
   76: op_pushdata1,

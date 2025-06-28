@@ -1,13 +1,17 @@
 import Tx from '@/crypto/transaction/Tx';
 import { Script } from '../Script';
 import { TxMetadata } from '@/api/api';
-import { decodeNumber, OP_CODE_NAMES } from '@/crypto/op/op';
+import { decodeNumber, OP_CODE_NAMES, OP_CODES } from '@/crypto/op/op';
 import { bytesToHex } from '@/crypto/util/helper';
-import { ExecutionContext, TxContext } from './ExecutionContext';
+import { ExecutionContext, JumpTable, TxContext } from './ExecutionContext';
 import { StandardStepStrategy } from './strategy/standardStepStrategy';
 
 export type ScriptExecutionStatus = 'Success' | 'Failure' | 'Running' | 'Not Started';
 
+type ControlFrame = {
+  type: 'conditional' | 'unconditional';
+  index: number;
+};
 export interface StepStrategy {
   step(executionContext: ExecutionContext): boolean;
 }
@@ -34,9 +38,10 @@ export class ScriptExecutionEngine {
       altStack: [],
       redeemStack: [],
       programCounter: 0,
-      conditionFrames: [],
+      jumpTable: this.constructJumpTable(script),
       txContext,
     };
+
     // temporary
     this.stepStrategy = new StandardStepStrategy();
   }
@@ -70,10 +75,40 @@ export class ScriptExecutionEngine {
       stack: [],
       altStack: [],
       redeemStack: [],
+      jumpTable: this.constructJumpTable(script),
       programCounter: 0,
-      conditionFrames: [],
     };
+
     this.executionStatus = 'Not Started';
+  }
+
+  constructJumpTable(script: Script) {
+    const jumpTable: JumpTable = {};
+    const controlFrames: ControlFrame[] = [];
+
+    for (let i = 0; i < script.cmds.length; i++) {
+      const cmd = script.cmds[i];
+
+      switch (cmd) {
+        case OP_CODES.OP_IF:
+        case OP_CODES.OP_NOTIF:
+          controlFrames.push({ type: 'conditional', index: i });
+          break;
+        case OP_CODES.OP_ELSE:
+          if (controlFrames.length === 0) throw new Error('OP_ELSE without conditional');
+          const ifEntry = controlFrames.pop()!;
+          if (ifEntry.type !== 'conditional') throw new Error('OP_ELSE without conditional');
+          jumpTable[ifEntry.index] = { target: i, type: 'conditional' };
+          controlFrames.push({ type: 'unconditional', index: i });
+          break;
+        case OP_CODES.OP_ENDIF:
+          if (controlFrames.length === 0) throw new Error('ENDIF without control structure');
+          const priorEntry = controlFrames.pop()!;
+          jumpTable[priorEntry.index] = { target: i, type: priorEntry.type };
+          break;
+      }
+    }
+    return jumpTable;
   }
 
   step() {
@@ -82,6 +117,9 @@ export class ScriptExecutionEngine {
       return;
     }
 
+    // Check if the script has finished running at the start of the step so we can see the last item....
+    this.checkEndConditions();
+
     const success = this.stepStrategy.step(this.context);
 
     if (!success) {
@@ -89,9 +127,6 @@ export class ScriptExecutionEngine {
     } else {
       this.executionStatus = 'Running';
     }
-
-    // Check if the script has finished running.
-    this.checkEndConditions();
   }
 
   checkEndConditions() {

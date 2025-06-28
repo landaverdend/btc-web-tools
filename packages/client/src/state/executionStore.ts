@@ -17,7 +17,7 @@ export const useExecutionStore = create<ExecutionState>((set) => ({
     altStack: [],
     redeemStack: [],
     programCounter: 0,
-    conditionFrames: [],
+    jumpTable: {},
   },
   executionStatus: 'Not Started',
   updateFromEngine: (ctx: ExecutionContext) => {
