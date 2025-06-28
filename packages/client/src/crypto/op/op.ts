@@ -3,8 +3,8 @@ import { sha256 } from '@noble/hashes/sha2';
 import { hash160, hash256 } from '../hash/hashUtil';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { Signature } from '../signature/signature';
-import { ExecutionContext } from '../script/execution/ExecutionContext';
 import { Script } from '../script/Script';
+import { ExecutionContext } from '../script/execution/executionContext';
 
 export function encodeNumber(num: number) {
   if (num === 0) {
@@ -52,11 +52,11 @@ export function decodeNumber(bytes: Uint8Array) {
   return isNegative ? -result : result;
 }
 
-function op_pushbytes({ stack, script, programCounter }: ExecutionContext, opcode: number) {
-  const dataToPush = script.cmds[programCounter + 1] as Uint8Array;
+function op_pushbytes(ctx: ExecutionContext, opcode: number) {
+  const { script, stack } = ctx;
+  const dataToPush = script.cmds[ctx.programCounter + 1] as Uint8Array;
 
   stack.push(dataToPush);
-
   return true;
 }
 

@@ -1,5 +1,5 @@
 import { OP_CODE_FUNCTIONS } from '@/crypto/op/op';
-import { ExecutionContext } from '../ExecutionContext';
+import { ExecutionContext } from '../executionContext';
 import { StepStrategy } from '../scriptExecutionEngine';
 
 export class StandardStepStrategy implements StepStrategy {
@@ -13,7 +13,12 @@ export class StandardStepStrategy implements StepStrategy {
       result = this.executePushData(cmd, executionContext);
     }
 
-    executionContext.programCounter++;
+    // For OP_PUSHDATA1-75, we need to increment the program counter by 2 because we're pushing the OPCODE + DATA.
+    if (typeof cmd === 'number' && cmd > 0 && cmd < 76) {
+      executionContext.programCounter += 2;
+    } else {
+      executionContext.programCounter++;
+    }
 
     return result;
   }

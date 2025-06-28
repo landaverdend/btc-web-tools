@@ -71,7 +71,7 @@ export function ScriptEditor({}: ScriptEditorProps) {
     try {
       const script = compileScript(value, tx !== undefined);
       setScript(script);
-      setScriptHex(script.cmds.length > 0 ? script.toHex() : '');
+      setScriptHex(script.cmds.length > 0 ? script.toHex(false, false) : '');
 
       reset();
       setCompileError(null);

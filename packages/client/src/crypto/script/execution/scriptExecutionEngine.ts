@@ -3,7 +3,7 @@ import { Script } from '../Script';
 import { TxMetadata } from '@/api/api';
 import { decodeNumber, OP_CODE_NAMES } from '@/crypto/op/op';
 import { bytesToHex } from '@/crypto/util/helper';
-import { ExecutionContext, TxContext } from './ExecutionContext';
+import { ExecutionContext, TxContext } from './executionContext';
 import { StandardStepStrategy } from './strategy/standardStepStrategy';
 
 export type ScriptExecutionStatus = 'Success' | 'Failure' | 'Running' | 'Not Started';
@@ -92,6 +92,13 @@ export class ScriptExecutionEngine {
 
     // Check if the script has finished running at the start of the step so we can see the last item....
     this.checkEndConditions();
+  }
+
+  /* Mostly for testing purposes... */
+  run() {
+    for (let i = 0; i < this.context.script.cmds.length; i++) {
+      this.step();
+    }
   }
 
   checkEndConditions() {

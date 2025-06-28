@@ -32,7 +32,7 @@ export function TxFetcher() {
       // Update the script editor textfields/object
       setScript(script);
       setScriptASM(script.toString());
-      setScriptHex(script.toHex());
+      setScriptHex(script.toHex(false, false));
 
       setTxMetadata(response.txJson);
       setTx(tx); // Set the global tx state
@@ -100,7 +100,7 @@ function TxDetails({}: TxDetailsProps) {
     // Update the script editor textfields/object
     setScript(script);
     setScriptASM(script.toString());
-    setScriptHex(script.toHex());
+    setScriptHex(script.toHex(false, false));
   };
 
   return (

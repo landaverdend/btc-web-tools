@@ -161,14 +161,17 @@ export class Script {
     return toRet;
   }
 
-  toHex(include0x = false) {
-    return bytesToHex(this.toBytes(), include0x);
+  toHex(include0x = false, prependVarInt = true) {
+    return bytesToHex(this.toBytes(prependVarInt), include0x);
   }
 
-  toBytes() {
+  toBytes(prependVarInt = true) {
     const bytes = this.serializeCommands().toBytes();
 
-    const varint = encodeVarInt(bytes.length);
+    let varint: Uint8Array = new Uint8Array();
+    if (prependVarInt) {
+      varint = encodeVarInt(bytes.length);
+    }
     const result = new Uint8Array([...varint, ...bytes]); // prepend varint to the bytes.
 
     return result;
