@@ -7,6 +7,7 @@ import { useScriptBuilder } from '@/hooks/useScriptBuilder';
 import Tx from '@/crypto/transaction/Tx';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
+import { UnlockingScriptBuilder } from '@/crypto/script/UnlockingScriptBuilder';
 
 export function TxFetcher() {
   // Global State variables
@@ -15,7 +16,6 @@ export function TxFetcher() {
 
   // Hooks
   const { fetchTransaction, error } = useFetchTx();
-  const { buildExecutionScript } = useScriptBuilder();
   const { reset } = useScriptDebugger();
 
   // Local State Variables
@@ -29,7 +29,7 @@ export function TxFetcher() {
 
     if (response) {
       const tx = Tx.fromHex(response.serializedTx);
-      const script = buildExecutionScript({ tx: tx, txMetadata: response.txJson, selectedInputIndex: 0 });
+      const script = UnlockingScriptBuilder.buildUnlockingScript({ tx: tx, txMetadata: response.txJson, selectedInputIndex: 0 });
 
       // Update the script editor textfields/object
       setScript(script);
@@ -89,15 +89,18 @@ function TxDetails({}: TxDetailsProps) {
   const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
 
   // Hooks
-  const { buildExecutionScript } = useScriptBuilder();
-
   const isCoinbase = tx?.isCoinbase;
   const showInputs = txMetadata && !isCoinbase;
 
   const handleSelectInput = (inputIndex: number) => {
     setSelectedInput(inputIndex);
 
-    const script = buildExecutionScript({ tx: tx!, txMetadata: txMetadata!, selectedInputIndex: inputIndex });
+    const script = UnlockingScriptBuilder.buildUnlockingScript({
+      tx: tx!,
+      txMetadata: txMetadata!,
+      selectedInputIndex: inputIndex,
+    });
+
     // Update the script editor textfields/object
     setScript(script);
     setScriptASM(script.toString());
