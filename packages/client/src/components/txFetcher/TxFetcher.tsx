@@ -10,7 +10,7 @@ import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 
 export function TxFetcher() {
   // Global State variables
-  const { reset: resetTxStore, setTxMetadata, setTx } = useTxStore();
+  const { reset: resetTxStore, setSelectedInput, setTxMetadata, setTx } = useTxStore();
   const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
 
   // Hooks
@@ -23,6 +23,8 @@ export function TxFetcher() {
   const [testnet, setTestnet] = useState(false);
 
   const handleFetch = async () => {
+    reset();
+    resetTxStore();
     const response = await fetchTransaction(txid, testnet);
 
     if (response) {
@@ -34,10 +36,9 @@ export function TxFetcher() {
       setScriptASM(script.toString());
       setScriptHex(script.toHex(false, false));
 
+      setSelectedInput(0);
       setTxMetadata(response.txJson);
       setTx(tx); // Set the global tx state
-
-      reset();
     }
   };
 
