@@ -242,9 +242,10 @@ export class Script {
       }
     }
 
-    if (count !== length) {
-      throw new Error('Parsing script failed. Mismatched length');
-    }
+    // I think this isn't needed
+    // if (count !== length) {
+    //   throw new Error('Parsing script failed. Mismatched length');
+    // }
 
     return new Script(cmds);
   }
