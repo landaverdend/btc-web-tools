@@ -30,7 +30,7 @@ export function useScriptBuilder() {
         endIndex: scriptsig.cmds.length + pubkey.cmds.length,
       }
     );
-
+    result.type = input.prevout!.scriptpubkey_type;
     return result;
   };
 
@@ -65,6 +65,7 @@ export function useScriptBuilder() {
       }
     );
 
+    result.type = 'p2sh';
     return result;
   };
 
@@ -73,7 +74,19 @@ export function useScriptBuilder() {
 
     // Coinbase transactions don't have unlocking scripts. Just return the scriptsig
     if (input.is_coinbase) {
-      return Script.fromHex(input.scriptsig, true);
+      try {
+        return Script.fromHex(input.scriptsig, true);
+      } catch (error) {
+        console.log('Coinbase transaction with invalid script');
+        const script = new Script([]);
+        script.sections.push({
+          type: 'coinbase script',
+          description: 'This is a coinbase transaction with an invalid script',
+          startIndex: 0,
+          endIndex: 1,
+        });
+        return script;
+      }
     }
 
     const type = input.prevout!.scriptpubkey_type;

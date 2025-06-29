@@ -6,7 +6,7 @@ import { FormattedScript, ScriptLE } from '@/types/tx';
 export type ScriptCommand = number | Uint8Array;
 
 interface ScriptSection {
-  type: 'scriptsig' | 'pubkey' | 'redeem';
+  type: 'scriptsig' | 'pubkey' | 'redeem' | string;
   description: string; // Comment for the script editor
 
   startIndex: number;
@@ -27,6 +27,7 @@ export class Script {
   cmds: ScriptCommand[];
   sections: ScriptSection[] = [];
   jumpTable: JumpTable = {}; // For control/conditionals
+  type: 'p2sh' | 'p2pk' | 'p2wpkh' | 'p2wsh' | 'p2tr' | string = 'manual';
 
   constructor(cmds?: ScriptCommand[]) {
     this.cmds = cmds ?? [];
@@ -142,6 +143,11 @@ export class Script {
 
   toString() {
     let toRet = '';
+
+    // Very specific case for coinbase transactions with invalid scripts.
+    if (this.cmds.length === 0 && this.sections.length > 0) {
+      return `// ${this.sections[0].description}\n`;
+    }
 
     const formatted = this.format(true);
 

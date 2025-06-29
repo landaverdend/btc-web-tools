@@ -928,7 +928,9 @@ function op_checksigverify({ stack, txContext }: ExecutionContext) {
   }
 }
 
-function op_checkmultisig({ stack }: ExecutionContext) {
+function op_checkmultisig(ctx: ExecutionContext) {
+
+
   return true;
 }
 

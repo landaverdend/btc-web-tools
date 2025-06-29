@@ -1,4 +1,4 @@
-import { ExecutionContext } from '@/crypto/script/execution/ExecutionContext';
+import { ExecutionContext } from '@/crypto/script/execution/executionContext';
 import { ScriptExecutionStatus } from '@/crypto/script/execution/scriptExecutionEngine';
 import { Script } from '@/crypto/script/Script';
 import { create } from 'zustand';

@@ -20,7 +20,18 @@ export default class TxIn {
     const prevTx = stream.read(32).reverse(); // Reverse the bytes to get the hash
     const prevIndex = Number(littleEndianToInteger(stream.read(4)));
 
-    const scriptSig = Script.fromStream(stream);
+    const isCoinbase = prevIndex === 0xffffffff;
+
+    // If it's a coinbase, we need to just burn the scriptsig since it's not needed...
+    let scriptSig: Script;
+    if (isCoinbase) {
+      scriptSig = new Script();
+      const scriptSigLength = stream.readVarInt();
+      stream.read(Number(scriptSigLength));
+    } else {
+      scriptSig = Script.fromStream(stream);
+    }
+
     const sequence = Number(littleEndianToInteger(stream.read(4)));
 
     return new TxIn(prevTx, prevIndex, sequence, scriptSig);

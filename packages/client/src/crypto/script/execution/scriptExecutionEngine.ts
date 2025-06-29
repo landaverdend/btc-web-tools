@@ -5,6 +5,7 @@ import { decodeNumber, OP_CODE_NAMES } from '@/crypto/op/op';
 import { bytesToHex } from '@/crypto/util/helper';
 import { ExecutionContext, TxContext } from './executionContext';
 import { StandardStepStrategy } from './strategy/standardStepStrategy';
+import { P2SHStepStrategy } from './strategy/p2shStepStrategy';
 
 export type ScriptExecutionStatus = 'Success' | 'Failure' | 'Running' | 'Not Started';
 
@@ -41,6 +42,15 @@ export class ScriptExecutionEngine {
 
     // temporary
     this.stepStrategy = new StandardStepStrategy();
+    switch (script.type) {
+      case 'p2sh':
+        this.stepStrategy = new P2SHStepStrategy();
+        // this.stepStrategy = new StandardStepStrategy();
+        break;
+      default:
+        this.stepStrategy = new StandardStepStrategy();
+        break;
+    }
   }
 
   resetExecutionContext() {
