@@ -3,7 +3,8 @@ import { sha256 } from '@noble/hashes/sha2';
 import { hash160, hash256 } from '../hash/hashUtil';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { Script } from '../script/Script';
-import { ExecutionContext } from '../script/execution/executionContext';
+import { ExecutionContext, TxContext } from '../script/execution/executionContext';
+import { bytesToHex } from '../util/helper';
 
 export function encodeNumber(num: number) {
   if (num === 0) {
@@ -870,21 +871,27 @@ function op_hash256({ stack }: ExecutionContext) {
   return true;
 }
 
+// Pass in the txContext and spit out the sighash for the selected input...
+function calcp2pkhSighash(txContext: TxContext) {
+  const { txMetadata, selectedInputIndex, tx } = txContext!;
+  const prevScriptPubkey = txMetadata!.vin[selectedInputIndex].prevout!.scriptpubkey;
+  const sighash = tx?.sighash(selectedInputIndex, Script.fromHex(prevScriptPubkey));
+
+  return sighash;
+}
+
 function op_checksig({ stack, txContext }: ExecutionContext) {
   if (stack.length < 2) {
     return false;
   }
 
-  // Fill out the sighash
-  const { txMetadata, selectedInputIndex, tx } = txContext!;
-  const prevScriptPubkey = txMetadata!.vin[selectedInputIndex].prevout!.scriptpubkey;
-  const sighash = tx?.sighash(selectedInputIndex, Script.fromHex(prevScriptPubkey));
+  const sighash = calcp2pkhSighash(txContext!);
 
   const sec_pubkey = stack.pop()!;
   const der_signature = stack.pop()!.slice(0, -1);
 
   try {
-    const isValid = secp256k1.verify(der_signature, sighash!, sec_pubkey, { format: 'der' });
+    const isValid = secp256k1.verify(der_signature, sighash, sec_pubkey, { format: 'der' });
 
     if (isValid) {
       stack.push(encodeNumber(1));
@@ -905,15 +912,13 @@ function op_checksigverify({ stack, txContext }: ExecutionContext) {
     return false;
   }
 
-  const { txMetadata, selectedInputIndex, tx } = txContext!;
-  const prevScriptPubkey = txMetadata!.vin[selectedInputIndex].prevout!.scriptpubkey;
-  const sighash = tx?.sighash(selectedInputIndex, Script.fromHex(prevScriptPubkey));
+  const sighash = calcp2pkhSighash(txContext!);
 
   const sec_pubkey = stack.pop()!;
   const der_signature = stack.pop()!.slice(0, -1);
 
   try {
-    const isValid = secp256k1.verify(der_signature, sighash!, sec_pubkey, { format: 'der' });
+    const isValid = secp256k1.verify(der_signature, sighash, sec_pubkey, { format: 'der' });
 
     if (isValid) {
       stack.push(encodeNumber(1));
@@ -928,8 +933,58 @@ function op_checksigverify({ stack, txContext }: ExecutionContext) {
   }
 }
 
-function op_checkmultisig(ctx: ExecutionContext) {
+function calcP2shSighash(txContext: TxContext) {
+  const { txMetadata, selectedInputIndex, tx } = txContext!;
+  const scriptsig = Script.fromHex(txMetadata!.vin[selectedInputIndex].scriptsig, true);
+  const redeemScriptBytes = scriptsig.cmds[scriptsig.cmds.length - 1] as Uint8Array;
+  const redeemScript = Script.fromHex(bytesToHex(redeemScriptBytes));
 
+  const sighash = tx?.sighash(selectedInputIndex, redeemScript);
+
+  return sighash;
+}
+
+function op_checkmultisig({ stack, txContext }: ExecutionContext) {
+  if (stack.length < 1) return false;
+
+  const n = decodeNumber(stack.pop()!);
+  if (stack.length < n + 1) return false;
+
+  const pubkeys: Uint8Array[] = [];
+
+  for (let i = 0; i < n; i++) {
+    pubkeys.push(stack.pop()!);
+  }
+
+  const m = decodeNumber(stack.pop()!);
+  if (stack.length < m) return false;
+
+  const signatures: Uint8Array[] = [];
+  for (let i = 0; i < m; i++) {
+    signatures.push(stack.pop()!);
+  }
+
+  // Pop off the dummy value....
+  stack.pop();
+
+  // for each pubkey, check if the signature is valid
+  const sighash = calcP2shSighash(txContext!);
+
+  // Test every single signature against every single pubkey
+  let sigIdx = 0;
+  let keyIdx = 0;
+  while (sigIdx < m && keyIdx < n) {
+    const sigDER = signatures[sigIdx].slice(0, -1);
+    if (secp256k1.verify(sigDER, sighash, pubkeys[keyIdx], { format: 'der' })) sigIdx++;
+    keyIdx++;
+  }
+
+  const success = sigIdx === m;
+  if (success) {
+    stack.push(encodeNumber(1));
+  } else {
+    stack.push(encodeNumber(0));
+  }
 
   return true;
 }
