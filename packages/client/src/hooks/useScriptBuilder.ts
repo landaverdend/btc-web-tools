@@ -1,5 +1,7 @@
 import { TxMetadata, Vin } from '@/api/api';
+import { TxContext } from '@/crypto/script/execution/executionContext';
 import { Script } from '@/crypto/script/Script';
+import { UnlockingScriptBuilder } from '@/crypto/script/UnlockingScriptBuilder';
 import { bytesToHex } from '@/crypto/util/helper';
 
 const SCRIPT_SIG_DESCRIPTION = '-------SCRIPT SIG-------';
@@ -69,37 +71,47 @@ export function useScriptBuilder() {
     return result;
   };
 
-  const buildExecutionScript = (inputIndex: number, tx: TxMetadata) => {
-    const input = tx.vin[inputIndex];
+  const buildP2WPKH = (input: Vin, tx: TxMetadata) => {
+    return new Script();
+  };
 
-    // Coinbase transactions don't have unlocking scripts. Just return the scriptsig
-    if (input.is_coinbase) {
-      try {
-        return Script.fromHex(input.scriptsig, true);
-      } catch (error) {
-        console.log('Coinbase transaction with invalid script');
-        const script = new Script([]);
-        script.sections.push({
-          type: 'coinbase script',
-          description: 'This is a coinbase transaction with an invalid script',
-          startIndex: 0,
-          endIndex: 1,
-        });
-        return script;
-      }
-    }
+  const buildExecutionScript = (txContext: TxContext) => {
+    // const { tx, txMetadata, selectedInputIndex } = txContext;
+    const temp = UnlockingScriptBuilder.buildUnlockingScript(txContext);
+    return temp;
+    // const input = txMetadata.vin[selectedInputIndex];
 
-    const type = input.prevout!.scriptpubkey_type;
-    switch (type) {
-      case 'p2pkh':
-      case 'p2pk':
-        return buildP2PKH(input);
-      case 'p2sh':
-        return buildP2SH(input);
-      default:
-        throw new Error(`Unsupported script type ${type}`);
-    }
+    // if (tx.isCoinbase || input.is_coinbase) {
+    //   try {
+    //     return Script.fromHex(input.scriptsig, true);
+    //   } catch (error) {
+    //     const script = new Script([]);
+    //     script.sections.push({
+    //       type: 'coinbase script',
+    //       description: 'This is a coinbase transaction with an invalid script',
+    //       startIndex: 0,
+    //       endIndex: 1,
+    //     });
+    //     return script;
+    //   }
+    // }
+
+    // const type = stripVersionPrefix(input.prevout!.scriptpubkey_type);
+
+    // switch (type) {
+    //   case 'p2pkh':
+    //   case 'p2pk':
+    //     return buildP2PKH(input);
+    //   case 'p2sh':
+    //     return buildP2SH(input);
+    //   default:
+    //     throw new Error(`Unsupported script type ${type}`);
+    // }
   };
 
   return { buildExecutionScript };
+}
+
+function stripVersionPrefix(type: string) {
+  return type.replace(/^v\d+_/, '');
 }

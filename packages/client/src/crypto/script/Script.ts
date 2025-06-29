@@ -195,6 +195,10 @@ export class Script {
     return new Script(cmds);
   }
 
+  static fromBytes(bytes: Uint8Array) {
+    return Script.fromHex(bytesToHex(bytes));
+  }
+
   static fromHex(hex: string, includePushBytes = false) {
     const bytes = hexToBytes(hex);
     const stream = new ByteStream(new Uint8Array([...encodeVarInt(bytes.length), ...bytes]));

@@ -29,7 +29,7 @@ export function TxFetcher() {
 
     if (response) {
       const tx = Tx.fromHex(response.serializedTx);
-      const script = buildExecutionScript(0, response.txJson);
+      const script = buildExecutionScript({ tx: tx, txMetadata: response.txJson, selectedInputIndex: 0 });
 
       // Update the script editor textfields/object
       setScript(script);
@@ -97,7 +97,7 @@ function TxDetails({}: TxDetailsProps) {
   const handleSelectInput = (inputIndex: number) => {
     setSelectedInput(inputIndex);
 
-    const script = buildExecutionScript(inputIndex, txMetadata!);
+    const script = buildExecutionScript({ tx: tx!, txMetadata: txMetadata!, selectedInputIndex: inputIndex });
     // Update the script editor textfields/object
     setScript(script);
     setScriptASM(script.toString());
