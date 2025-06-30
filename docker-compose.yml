@@ -9,5 +9,7 @@ services:
       - '3000:3000'
     environment:
       NODE_ENV: production
-    # env_file:
-    #   - .env
+      BLOCKSTREAM_CLIENT_ID: ${BLOCKSTREAM_CLIENT_ID}
+      BLOCKSTREAM_CLIENT_SECRET: ${BLOCKSTREAM_CLIENT_SECRET}
+    networks:
+      - web
