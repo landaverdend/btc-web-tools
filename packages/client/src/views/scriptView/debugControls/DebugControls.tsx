@@ -6,21 +6,26 @@ import Reset from '@assets/icons/reset.svg?react';
 import './debug-controls.css';
 
 export function DebugControls() {
-  const { step, reset } = useScriptDebugger();
+  const { step, reset, run } = useScriptDebugger();
 
   return (
     <div className="flex-column debug-controls-container">
       <h3>Controls</h3>
       <div className="flex-row control-dock">
         <DebugTooltip tooltipContent="Run">
-          <Play onClick={() => {}} height={24} width={24} style={{ fill: 'var(--soft-green)' }} />
+          <Play
+            onClick={() => {
+              run();
+            }}
+            height={24}
+            width={24}
+            style={{ fill: 'var(--soft-green)' }}
+          />
         </DebugTooltip>
 
         <DebugTooltip tooltipContent="Step">
           <Stepover
             onClick={() => {
-              // const status = step();
-              // setStatus(status);
               step();
             }}
             height={20}

@@ -13,7 +13,6 @@ export function useScriptDebugger() {
 
   // Rebuild the execution engine whenever the script or tx context changes.
   // NOTE: this will be called multiple times since this hook is used in multiple places.
-  // TODO: figure out a better way to handle this.
   useEffect(() => {
     ScriptExecutionEngine.updateInstance(script, tx, txMetadata, selectedInput);
     setExecutionStatus(engine.executionStatus);
@@ -30,6 +29,20 @@ export function useScriptDebugger() {
     setExecutionStatus(engine.executionStatus);
   }
 
+  function run() {
+    const intervalId = setInterval(() => {
+      engine.step();
+
+      updateGlobalState();
+
+      if (engine.isDone()) {
+        clearInterval(intervalId);
+      }
+    }, 300);
+
+    updateGlobalState();
+  }
+
   function step() {
     engine.step();
 
@@ -44,6 +57,7 @@ export function useScriptDebugger() {
 
   return {
     step,
+    run,
     getNextArgument,
     reset,
   };

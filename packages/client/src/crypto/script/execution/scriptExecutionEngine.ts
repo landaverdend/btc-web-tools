@@ -106,6 +106,10 @@ export class ScriptExecutionEngine {
     }
   }
 
+  isDone() {
+    return this.executionStatus === 'Success' || this.executionStatus === 'Failure';
+  }
+
   checkEndConditions() {
     const { script, programCounter, stack } = this.context;
 

@@ -19,12 +19,11 @@ export function TxFetcher() {
 
   // Local State Variables
   const [txid, setTxid] = useState('');
-  const [testnet, setTestnet] = useState(false);
 
   const handleFetch = async () => {
     reset();
     resetTxStore();
-    const response = await fetchTransaction(txid, testnet);
+    const response = await fetchTransaction(txid, false);
 
     if (response) {
       const tx = Tx.fromHex(response.serializedTx);
@@ -59,10 +58,6 @@ export function TxFetcher() {
           {error && <p style={{ color: 'red' }}>{error}</p>}
         </label>
 
-        <label htmlFor="testnet" className="flex-row testnet-checkbox">
-          Testnet?
-          <input id="testnet" type="checkbox" checked={testnet} onChange={(e) => setTestnet(e.target.checked)} />
-        </label>
         <div className="flex-row tx-fetcher-buttons">
           <button onClick={handleFetch}>Fetch</button>
           <button
