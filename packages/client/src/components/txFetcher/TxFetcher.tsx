@@ -3,7 +3,6 @@ import './tx-fetcher.css';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
 import ColoredText from '@/components/coloredText/ColoredText';
-import { useScriptBuilder } from '@/hooks/useScriptBuilder';
 import Tx from '@/crypto/transaction/Tx';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';

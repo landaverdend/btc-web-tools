@@ -1,12 +1,17 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import { TokenFetcher } from './token';
-import { TxCache } from './TxCache';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { TokenFetcher } from './token.js';
+import { TxCache } from './TxCache.js';
 
 dotenv.config();
 
-const PORT = process.env['PORT'] || 3001;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const PORT = process.env['PORT'] || 3000;
 
 const app = express();
 
@@ -19,6 +24,14 @@ app.use(
     credentials: true,
   })
 );
+
+// Serve static files from the public directory
+app.use(express.static('public'));
+
+// Catch all other routes and return the index.html file
+app.get('/', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
@@ -42,8 +55,8 @@ app.get('/tx/:txid', async (req, res) => {
   // Check cache first
   const cachedResult = txCache.get(cacheKey);
   if (cachedResult) {
-    console.log('cache hit');
-    return res.status(200).send(cachedResult);
+    res.status(200).send(cachedResult);
+    return;
   }
 
   // If not in cache, fetch from API
@@ -85,8 +98,4 @@ app.get('/tx/:txid', async (req, res) => {
     const errortxt = error instanceof Error ? error.message : 'Generic error';
     res.status(500).send(errortxt);
   }
-});
-
-app.get('/', (_, res) => {
-  res.send('Hello World');
 });
