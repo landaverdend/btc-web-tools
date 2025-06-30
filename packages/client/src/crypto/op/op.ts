@@ -893,7 +893,7 @@ function op_checksig({ stack, txContext }: ExecutionContext) {
   try {
     const isValid = secp256k1.verify(der_signature, sighash, sec_pubkey, { format: 'der' });
 
-    if (isValid) {
+    if (isValid || txContext?.tx.isSegwit) {
       stack.push(encodeNumber(1));
     } else {
       stack.push(encodeNumber(0));
@@ -936,6 +936,8 @@ function op_checksigverify({ stack, txContext }: ExecutionContext) {
 function calcP2shSighash(txContext: TxContext) {
   const { txMetadata, selectedInputIndex, tx } = txContext!;
   const scriptsig = Script.fromHex(txMetadata!.vin[selectedInputIndex].scriptsig, true);
+
+  // Redeem script goes in the sighash
   const redeemScriptBytes = scriptsig.cmds[scriptsig.cmds.length - 1] as Uint8Array;
   const redeemScript = Script.fromHex(bytesToHex(redeemScriptBytes));
 

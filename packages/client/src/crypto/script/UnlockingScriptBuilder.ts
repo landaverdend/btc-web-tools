@@ -2,7 +2,6 @@ import { OP_CODES } from '../op/op';
 import { bytesToHex } from '../util/helper';
 import { TxContext } from './execution/executionContext';
 import { Script } from './Script';
-import { compileScript } from './scriptCompiler';
 
 export class UnlockingScriptBuilder {
   static buildUnlockingScript(txContext: TxContext) {
@@ -32,6 +31,8 @@ export class UnlockingScriptBuilder {
     lockingScript.type = lockingScriptType;
 
     switch (lockingScriptType) {
+      case 'p2wsh':
+        return this.buildP2WSH(lockingScript, txContext);
       case 'p2wpkh':
         return this.buildP2WPKH(lockingScript, txContext);
       case 'p2sh':
@@ -79,14 +80,33 @@ export class UnlockingScriptBuilder {
     return fullScript;
   }
 
+  /**
+   * Segwit p2wpkh is just a p2pkh but taking in the witness data. Fill in the template...
+   * @param witnessData
+   * @param pubkeyHash
+   * @returns
+   */
   static fillP2PKHTemplate(witnessData: Uint8Array[], pubkeyHash: Uint8Array) {
     let template = new Script();
 
     template = template.add(
-      new Script([...witnessData, OP_CODES.OP_DUP, OP_CODES.OP_HASH160, pubkeyHash, OP_CODES.OP_EQUALVERIFY, OP_CODES.OP_CHECKSIG])
+      new Script([
+        ...witnessData,
+        OP_CODES.OP_DUP,
+        OP_CODES.OP_HASH160,
+        pubkeyHash,
+        OP_CODES.OP_EQUALVERIFY,
+        OP_CODES.OP_CHECKSIG,
+      ])
     );
 
     return template;
+  }
+
+  static buildP2WSH(lockingScript: Script, txContext: TxContext) {
+    console.log(lockingScript);
+
+    return new Script();
   }
 
   static buildP2WPKH(lockingScript: Script, txContext: TxContext) {
@@ -98,10 +118,7 @@ export class UnlockingScriptBuilder {
       console.log(bytesToHex(item));
     });
 
-    // const witnessPubKey = Script.fromBytes(witnessItems[1]);
-
     // Combine them into a single script.
-
     // Grab the public key hash from the locking script.
     const pubkeyHash = lockingScript.cmds[lockingScript.cmds.length - 1] as Uint8Array;
 
