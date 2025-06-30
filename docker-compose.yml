@@ -13,3 +13,7 @@ services:
       BLOCKSTREAM_CLIENT_SECRET: ${BLOCKSTREAM_CLIENT_SECRET}
     networks:
       - web
+
+networks:
+  web:
+    external: true
