@@ -2,6 +2,8 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/theme-twilight';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/ext-language_tools';
+import * as ace from 'ace-builds/src-noconflict/ace';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScriptMode } from '../ace-modes/ScriptMode';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
@@ -14,6 +16,7 @@ import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useTxStore } from '@/state/txStore';
 import { useExecutionStore } from '@/state/executionStore';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
+import { scriptCompleter } from './scriptCompleter';
 
 const ASM_SCRIPT_MODE = new ScriptMode();
 const PC_MARKER_CLASS = 'debug-program-counter';
@@ -143,6 +146,13 @@ export function ScriptEditor({}: ScriptEditorProps) {
     }
   };
 
+  useEffect(() => {
+    if (editorRef.current) {
+      const langTools = ace.require('ace/ext/language_tools');
+      langTools.setCompleters([scriptCompleter]);
+    }
+  }, []);
+
   return (
     <div className="flex-column script-editor-container">
       <div className="flex-row script-debugger-header">
@@ -171,6 +181,9 @@ export function ScriptEditor({}: ScriptEditorProps) {
           showGutter: true,
           highlightActiveLine: true,
           enableSearch: true,
+          enableBasicAutocompletion: true,
+          enableLiveAutocompletion: true,
+          enableSnippets: true,
         }}
       />
     </div>

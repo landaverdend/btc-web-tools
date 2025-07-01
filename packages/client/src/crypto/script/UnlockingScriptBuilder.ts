@@ -103,10 +103,52 @@ export class UnlockingScriptBuilder {
     return template;
   }
 
+  // https://medium.com/@ackhor/ch10-5-something-on-p2wsh-unlocking-locking-script-4bced02fe575
   static buildP2WSH(lockingScript: Script, txContext: TxContext) {
-    console.log(lockingScript);
+    const { tx, selectedInputIndex } = txContext;
+    const witnessItems = tx.witnessData!.stack[selectedInputIndex];
 
-    return new Script();
+    // const signatures = new Script([...witnessItems.slice(1, -2)]);
+    // const witnessScript = Script.fromBytes(witnessItems[witnessItems.length - 1]);
+    // const redemptionScript = signatures.add(witnessScript);
+
+    // Locking script should start with OP_0 and be followed by the witness script hash
+    if (lockingScript.cmds[0] !== OP_CODES.OP_0) {
+      throw new Error('P2WSH locking script is not a valid p2wsh script');
+    }
+
+    const witnessScriptBytes = witnessItems[witnessItems.length - 1];
+
+    // First, check to make sure the witness script hash matches the locking script.
+    const firstUnlockingScript = new Script([
+      witnessScriptBytes,
+      OP_CODES.OP_SHA256,
+      ...lockingScript.cmds.slice(1),
+      OP_CODES.OP_EQUAL,
+    ]);
+
+    const redemptionScript = Script.fromBytes(witnessScriptBytes);
+    const secondUnlockingScript = new Script([...witnessItems.slice(0, -2)]).add(redemptionScript);
+
+    const result = firstUnlockingScript.add(secondUnlockingScript);
+
+    result.sections.push(
+      {
+        type: 'checkWitnessScriptHash',
+        description: '-------Check Witness Script Hash--------',
+        startIndex: 0,
+        endIndex: firstUnlockingScript.cmds.length,
+      },
+      {
+        type: 'witnessScript',
+        description: '-------Witness Script--------',
+        startIndex: firstUnlockingScript.cmds.length,
+        endIndex: firstUnlockingScript.cmds.length + secondUnlockingScript.cmds.length,
+      }
+    );
+
+    result.type = 'p2wsh';
+    return secondUnlockingScript;
   }
 
   static buildP2WPKH(lockingScript: Script, txContext: TxContext) {
@@ -114,9 +156,6 @@ export class UnlockingScriptBuilder {
 
     // Extract the sig/pubkey from the witness stack.
     const witnessItems = tx.witnessData!.stack[selectedInputIndex];
-    witnessItems.forEach((item) => {
-      console.log(bytesToHex(item));
-    });
 
     // Combine them into a single script.
     // Grab the public key hash from the locking script.
