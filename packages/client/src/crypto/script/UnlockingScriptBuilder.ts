@@ -1,5 +1,4 @@
 import { OP_CODES } from '../op/op';
-import { bytesToHex } from '../util/helper';
 import { TxContext } from './execution/executionContext';
 import { Script } from './Script';
 
@@ -70,7 +69,7 @@ export class UnlockingScriptBuilder {
     if (redeemScript) {
       fullScript.sections.push({
         type: 'redeem',
-        description: '-------REDEEM SCRIPT-------',
+        description: '-------REDEEM SCRIPT (Stack "Reset")-------',
         startIndex: scriptsig.cmds.length + pubkey.cmds.length,
         endIndex: scriptsig.cmds.length + pubkey.cmds.length + redeemScript.cmds.length,
       });
@@ -178,10 +177,31 @@ export class UnlockingScriptBuilder {
   }
 
   static buildP2SHWrapped(lockingScript: Script, txContext: TxContext) {
-    // add script sig section
-    const { tx, selectedInputIndex, txMetadata } = txContext;
+    const { tx, selectedInputIndex } = txContext;
 
-    // TODO: determine if this is a p2sh-wrapping a p2wpkh OR a p2wsh. Logic / impl will change significantly...
+    const inputScriptSig = tx.inputs[selectedInputIndex].scriptSig.cmds[0];
+
+    if (!(inputScriptSig instanceof Uint8Array) || inputScriptSig[0] !== OP_CODES.OP_0) {
+      throw new Error('Invalid Segwit Wrapping Script!');
+    }
+
+    const redeemScriptLength = inputScriptSig[1] as number;
+
+    // P2WPKH is 20 bytes, P2WSH is 32 bytes
+    if (redeemScriptLength === 20) {
+      return this.buildP2SHWrappedP2WPKH(lockingScript, txContext);
+    }
+    if (redeemScriptLength === 32) {
+      return this.buildP2SHWrappedP2WSH(lockingScript, txContext);
+    }
+
+    throw new Error('Invalid redeem script length');
+  }
+
+  static buildP2SHWrappedP2WPKH(lockingScript: Script, txContext: TxContext) {
+    const { tx, selectedInputIndex } = txContext;
+    // parse the scriptsig and stuff
+
     const scriptSig = tx.inputs[selectedInputIndex].scriptSig;
     const witnessItems = tx.witnessData!.stack[selectedInputIndex];
 
@@ -207,9 +227,58 @@ export class UnlockingScriptBuilder {
       },
       {
         type: 'redeem',
-        description: '-------WITNESS SCRIPT-------',
+        description: "-------P2PKH SCRIPT (Stack 'Reset') -------",
         startIndex: scriptSig.cmds.length + lockingScript.cmds.length,
         endIndex: scriptSig.cmds.length + lockingScript.cmds.length + witnessScript.cmds.length,
+      }
+    );
+
+    finalScript.type = 'p2sh';
+    return finalScript;
+  }
+
+  static buildP2SHWrappedP2WSH(lockingScript: Script, txContext: TxContext) {
+    const { tx, selectedInputIndex } = txContext;
+
+    // STEP 1: unlocking the first p2sh lock...
+    const scriptHash = tx.inputs[selectedInputIndex].scriptSig;
+    const witnessData = tx.witnessData!.stack[selectedInputIndex];
+    const firstUnlockingScript = scriptHash.add(lockingScript);
+
+    // STEP 2: unlocking the witness script
+    const witnessScriptBytes = witnessData[witnessData.length - 1];
+    // In actual bitcoin, the interpreter looks at the first two bytes to determine the script type. For here, just slice them off..
+    const strippedScriptHash = (scriptHash.cmds[0] as Uint8Array).slice(2); // 20 bytes
+    const secondUnlockingScript = new Script([witnessScriptBytes, OP_CODES.OP_SHA256, strippedScriptHash, OP_CODES.OP_EQUAL]);
+
+    // STEP 3: building the witness script
+    const witnessItemsWithoutScript = witnessData.slice(0, -2);
+    const witnessScript = new Script([...witnessItemsWithoutScript]).add(Script.fromBytes(witnessScriptBytes));
+    const finalScript = firstUnlockingScript.add(secondUnlockingScript).add(witnessScript);
+
+    // Get the lengths
+    const firstUnlockingScriptLength = firstUnlockingScript.cmds.length;
+    const secondUnlockingScriptLength = secondUnlockingScript.cmds.length;
+    const witnessScriptLength = witnessScript.cmds.length;
+
+    finalScript.sections.push(
+      {
+        type: 'scriptsig',
+        description: '-------UNLOCKING SCRIPT FOR P2SH-------',
+        startIndex: 0,
+        endIndex: firstUnlockingScriptLength,
+      },
+      {
+        type: 'scriptpubkey',
+        description: '-------UNLOCKING SCRIPT FOR P2WSH-------',
+        startIndex: firstUnlockingScriptLength,
+        endIndex: secondUnlockingScriptLength + firstUnlockingScriptLength,
+      },
+      {
+        type: 'redeem',
+        description: '-------REDEEM SCRIPT FOR P2WSH (Stack "Reset")-------',
+        startIndex: firstUnlockingScriptLength + secondUnlockingScriptLength,
+        endIndex: firstUnlockingScriptLength + secondUnlockingScriptLength + witnessScriptLength,
       }
     );
 
