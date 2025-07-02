@@ -35,7 +35,7 @@ export class UnlockingScriptBuilder {
         return this.buildP2WSH(lockingScript, txContext);
       case 'p2wpkh':
         return this.buildP2WPKH(lockingScript, txContext);
-      case 'p2sh':
+      case 'p2sh': // can also be wrapped segwit
         return this.buildP2SH(lockingScript, txContext);
       case 'p2pkh':
       case 'p2pk':
@@ -108,10 +108,6 @@ export class UnlockingScriptBuilder {
     const { tx, selectedInputIndex } = txContext;
     const witnessItems = tx.witnessData!.stack[selectedInputIndex];
 
-    // const signatures = new Script([...witnessItems.slice(1, -2)]);
-    // const witnessScript = Script.fromBytes(witnessItems[witnessItems.length - 1]);
-    // const redemptionScript = signatures.add(witnessScript);
-
     // Locking script should start with OP_0 and be followed by the witness script hash
     if (lockingScript.cmds[0] !== OP_CODES.OP_0) {
       throw new Error('P2WSH locking script is not a valid p2wsh script');
@@ -172,6 +168,56 @@ export class UnlockingScriptBuilder {
   }
 
   static buildP2SH(lockingScript: Script, txContext: TxContext) {
+    const isWrapped = txContext.tx.isSegwit;
+
+    if (isWrapped) {
+      return this.buildP2SHWrapped(lockingScript, txContext);
+    } else {
+      return this.buildP2SHUnwrapped(lockingScript, txContext);
+    }
+  }
+
+  static buildP2SHWrapped(lockingScript: Script, txContext: TxContext) {
+    // add script sig section
+    const { tx, selectedInputIndex, txMetadata } = txContext;
+
+    // TODO: determine if this is a p2sh-wrapping a p2wpkh OR a p2wsh. Logic / impl will change significantly...
+    const scriptSig = tx.inputs[selectedInputIndex].scriptSig;
+    const witnessItems = tx.witnessData!.stack[selectedInputIndex];
+
+    // In actual bitcoin, the interpreter looks at the first two bytes to determine the script type. For here, just slice them off..
+    const strippedScriptSig = (scriptSig.cmds[0] as Uint8Array).slice(2);
+    const witnessScript = this.fillP2PKHTemplate(witnessItems, strippedScriptSig);
+
+    // Build the final script.
+    const finalScript = scriptSig.add(lockingScript).add(witnessScript);
+
+    finalScript.sections.push(
+      {
+        type: 'scriptsig',
+        description: '-------SCRIPT SIG-------',
+        startIndex: 0,
+        endIndex: scriptSig.cmds.length,
+      },
+      {
+        type: 'scriptpubkey',
+        description: '-------PUBKEY-------',
+        startIndex: scriptSig.cmds.length,
+        endIndex: scriptSig.cmds.length + lockingScript.cmds.length,
+      },
+      {
+        type: 'redeem',
+        description: '-------WITNESS SCRIPT-------',
+        startIndex: scriptSig.cmds.length + lockingScript.cmds.length,
+        endIndex: scriptSig.cmds.length + lockingScript.cmds.length + witnessScript.cmds.length,
+      }
+    );
+
+    finalScript.type = 'p2sh';
+    return finalScript;
+  }
+
+  static buildP2SHUnwrapped(lockingScript: Script, txContext: TxContext) {
     const { tx, selectedInputIndex } = txContext;
     const txScriptSig = tx.inputs[selectedInputIndex].scriptSig;
 
