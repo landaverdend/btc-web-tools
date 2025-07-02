@@ -44,7 +44,7 @@ export function DebugControls() {
           />
         </DebugTooltip>
       </div>
-      <TxFetcher />
+      <TxFetcher includeDemoTxs={true} />
     </div>
   );
 }
