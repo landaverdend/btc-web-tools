@@ -1,6 +1,6 @@
 # Bitcoin Script Simulator
 
-A TypeScript implementation of Bitcoin's transaction and script system for learning and experimentation purposes. This project helps understand the internals of Bitcoin transactions, various script types, and how the Bitcoin scripting language works.
+A TypeScript implementation of Bitcoin's transaction and script system for learning and experimentation purposes.
 
 ## Features
 
