@@ -142,16 +142,28 @@ export function ScriptEditor({}: ScriptEditorProps) {
   };
 
   const beautifyASM = () => {
-    // Split on whitespace but preserve comments
-    const tokens = scriptASM
-      // Split on whitespace while keeping newlines
-      .split(/\s+/)
-      // Filter out empty tokens
-      .filter((token) => token.trim().length > 0)
-      // Join with newlines
-      .join('\n');
+    const lines = scriptASM.split('\n');
+    const beautifiedLines = lines.flatMap((line) => {
+      // Find if there's a comment in the line
+      const commentIndex = line.indexOf('//');
 
-    setScriptASM(tokens);
+      if (commentIndex === -1) {
+        // No comment - just handle code tokens
+        const tokens = line.split(/\s+/).filter((token) => token.trim().length > 0);
+        return tokens.length ? [tokens.join('\n')] : [];
+      } else {
+        // Split into code and comment
+        const code = line.substring(0, commentIndex).trim();
+        const comment = line.substring(commentIndex).trim();
+
+        const codeTokens = code.split(/\s+/).filter((token) => token.trim().length > 0);
+
+        // Return code tokens (if any) followed by comment on its own line
+        return [...(codeTokens.length ? [codeTokens.join('\n')] : []), comment];
+      }
+    });
+
+    setScriptASM(beautifiedLines.join('\n'));
   };
 
   const clearPCMarker = (editor: IAceEditor) => {
