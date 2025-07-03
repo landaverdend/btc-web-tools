@@ -32,11 +32,13 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
 
   // Local State Variables
   const [txid, setTxid] = useState('');
+  const [selectedDemoTx, setSelectedDemoTx] = useState<number | null>(null);
 
   const fetchDemo = (demoTx: number) => {
     const txid = DEMO_TX_IDS[demoTx];
     setTxid(txid);
     handleFetch(txid);
+    setSelectedDemoTx(demoTx);
   };
 
   const handleFetch = async (txidf?: string) => {
@@ -61,8 +63,36 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
 
   return (
     <div className="flex-column tx-fetcher-container">
-      <h3>Transaction Fetcher</h3>
+      {includeDemoTxs && (
+        <div className="flex-column demo-txs-container">
+          <div className="demo-txs-title">Demo Transactions</div>
+          <ul>
+            <li className={selectedDemoTx === 0 ? 'active' : ''} onClick={() => fetchDemo(0)}>
+              P2PK
+            </li>
+            <li className={selectedDemoTx === 1 ? 'active' : ''} onClick={() => fetchDemo(1)}>
+              P2PKH
+            </li>
+            <li className={selectedDemoTx === 2 ? 'active' : ''} onClick={() => fetchDemo(2)}>
+              P2SH
+            </li>
+            <li className={selectedDemoTx === 3 ? 'active' : ''} onClick={() => fetchDemo(3)}>
+              P2WPKH
+            </li>
+            <li className={selectedDemoTx === 4 ? 'active' : ''} onClick={() => fetchDemo(4)}>
+              P2WSH
+            </li>
+            <li className={selectedDemoTx === 5 ? 'active' : ''} onClick={() => fetchDemo(5)}>
+              P2SH-P2WPKH
+            </li>
+            <li className={selectedDemoTx === 6 ? 'active' : ''} onClick={() => fetchDemo(6)}>
+              P2SH-P2WSH
+            </li>
+          </ul>
+        </div>
+      )}
 
+      <h3>Transaction Fetcher</h3>
       <div className="flex-column tx-fetcher-input-container">
         <label htmlFor="txid" className="flex-column">
           Transaction ID
@@ -83,28 +113,15 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
             onClick={() => {
               reset();
               resetTxStore();
+              setSelectedDemoTx(null);
             }}
             id="reset">
             Reset
           </button>
         </div>
       </div>
-      <TxDetails />
 
-      {includeDemoTxs && (
-        <div className="flex-column demo-txs-container">
-          <div className="demo-txs-title">Demo Transactions</div>
-          <ul>
-            <li onClick={() => fetchDemo(0)}>P2PK</li>
-            <li onClick={() => fetchDemo(1)}>P2PKH</li>
-            <li onClick={() => fetchDemo(2)}>P2SH</li>
-            <li onClick={() => fetchDemo(3)}>P2WPKH</li>
-            <li onClick={() => fetchDemo(4)}>P2WSH</li>
-            <li onClick={() => fetchDemo(5)}>P2SH-P2WPKH</li>
-            <li onClick={() => fetchDemo(6)}>P2SH-P2WSH</li>
-          </ul>
-        </div>
-      )}
+      <TxDetails />
     </div>
   );
 }
