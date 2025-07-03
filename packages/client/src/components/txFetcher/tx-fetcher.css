@@ -11,6 +11,8 @@
   h3 {
     font-size: 1.2rem;
     user-select: none;
+    align-items: center;
+    gap: 5px;
   }
 }
 
@@ -112,7 +114,6 @@
 .demo-txs-container {
   align-items: center;
 
-  border: 1px solid var(--soft-purple);
   border-radius: 5px;
   padding: 10px;
 

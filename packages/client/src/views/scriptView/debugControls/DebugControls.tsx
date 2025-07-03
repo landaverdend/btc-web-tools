@@ -12,7 +12,7 @@ export function DebugControls() {
     <div className="flex-column debug-controls-container">
       <h3>Controls</h3>
       <div className="flex-row control-dock">
-        <DebugTooltip tooltipContent="Run">
+        <SvgTooltip tooltipContent="Run">
           <Play
             onClick={() => {
               run();
@@ -21,9 +21,9 @@ export function DebugControls() {
             width={24}
             style={{ fill: 'var(--soft-green)' }}
           />
-        </DebugTooltip>
+        </SvgTooltip>
 
-        <DebugTooltip tooltipContent="Step">
+        <SvgTooltip tooltipContent="Step">
           <Stepover
             onClick={() => {
               step();
@@ -32,9 +32,9 @@ export function DebugControls() {
             width={20}
             style={{ fill: 'var(--sky-blue)' }}
           />
-        </DebugTooltip>
+        </SvgTooltip>
 
-        <DebugTooltip tooltipContent="Reset">
+        <SvgTooltip tooltipContent="Reset">
           <Reset
             onClick={() => {
               reset();
@@ -42,7 +42,7 @@ export function DebugControls() {
             height={22}
             width={22}
           />
-        </DebugTooltip>
+        </SvgTooltip>
       </div>
       <TxFetcher includeDemoTxs={true} />
     </div>
@@ -53,7 +53,7 @@ type DTProps = {
   children: React.ReactNode;
   tooltipContent: string;
 };
-const DebugTooltip = ({ children, tooltipContent }: DTProps) => {
+export const SvgTooltip = ({ children, tooltipContent }: DTProps) => {
   return (
     <a data-tooltip-id="debug" data-tooltip-place="bottom" data-tooltip-content={tooltipContent} data-tooltip-delay-show={100}>
       {children}

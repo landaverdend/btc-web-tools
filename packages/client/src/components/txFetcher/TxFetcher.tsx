@@ -7,6 +7,8 @@ import Tx from '@/crypto/transaction/Tx';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { UnlockingScriptBuilder } from '@/crypto/script/UnlockingScriptBuilder';
+import AlertIcon from '@assets/icons/alert.svg?react';
+import { SvgTooltip } from '@/views/scriptView/debugControls/DebugControls';
 
 const DEMO_TX_IDS = [
   'e827a366ad4fc9a305e0901fe1eefc7e9fb8d70655a079877cf1ead0c3618ec0', // P2PK
@@ -92,7 +94,12 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
         </div>
       )}
 
-      <h3>Transaction Fetcher</h3>
+      <h3 className="flex-row">
+        Transaction Fetcher
+        <SvgTooltip tooltipContent="Taproot Transactions not currently supported">
+          <AlertIcon height={16} width={16} />
+        </SvgTooltip>
+      </h3>
       <div className="flex-column tx-fetcher-input-container">
         <label htmlFor="txid" className="flex-column">
           Transaction ID
