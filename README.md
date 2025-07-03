@@ -1,10 +1,12 @@
-# Bitcoin Script Simulator
+# Bitcoin Web Tools
 
-A TypeScript implementation of Bitcoin's transaction and script system for learning and experimentation purposes.
+A quick and dirty visualizer for various details of Bitcoin transactions.
+
+https://bitcointools.landaverde.io/
 
 ## Features
 
-- Full implementation of Bitcoin transaction parsing and serialization
+- Implementation of Bitcoin transaction parsing and serialization
 - Support for different transaction types:
   - Legacy transactions (P2PKH)
   - SegWit transactions (P2WPKH, P2WSH)
