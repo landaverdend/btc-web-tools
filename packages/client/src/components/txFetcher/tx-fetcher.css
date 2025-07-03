@@ -145,3 +145,7 @@
     }
   }
 }
+
+.alert-icon:hover {
+  fill: var(--soft-orange);
+}

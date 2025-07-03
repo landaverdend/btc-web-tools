@@ -97,7 +97,7 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
       <h3 className="flex-row">
         Transaction Fetcher
         <SvgTooltip tooltipContent="Taproot Transactions not currently supported">
-          <AlertIcon height={16} width={16} />
+          <AlertIcon height={16} width={16} className="alert-icon" />
         </SvgTooltip>
       </h3>
       <div className="flex-column tx-fetcher-input-container">

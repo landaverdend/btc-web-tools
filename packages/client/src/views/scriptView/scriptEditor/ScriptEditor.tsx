@@ -17,6 +17,8 @@ import { useTxStore } from '@/state/txStore';
 import { useExecutionStore } from '@/state/executionStore';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { scriptCompleter } from './scriptCompleter';
+import BeautifyIcon from '@assets/icons/beautify.svg?react';
+import { SvgTooltip } from '../debugControls/DebugControls';
 
 const ASM_SCRIPT_MODE = new ScriptMode();
 const PC_MARKER_CLASS = 'debug-program-counter';
@@ -108,7 +110,7 @@ export function ScriptEditor({}: ScriptEditorProps) {
     if (activeTab !== 'hex' && compileError === null) {
       highlightCurrentToken(editor);
     }
-  }, [programCounter, script, activeTab]);
+  }, [programCounter, script, activeTab, scriptASM]);
 
   const highlightCurrentToken = (editor: IAceEditor) => {
     const session = editor.session;
@@ -139,6 +141,19 @@ export function ScriptEditor({}: ScriptEditorProps) {
     }
   };
 
+  const beautifyASM = () => {
+    // Split on whitespace but preserve comments
+    const tokens = scriptASM
+      // Split on whitespace while keeping newlines
+      .split(/\s+/)
+      // Filter out empty tokens
+      .filter((token) => token.trim().length > 0)
+      // Join with newlines
+      .join('\n');
+
+    setScriptASM(tokens);
+  };
+
   const clearPCMarker = (editor: IAceEditor) => {
     if (pcMarkerRef.current) {
       editor.session.removeMarker(pcMarkerRef.current);
@@ -146,10 +161,21 @@ export function ScriptEditor({}: ScriptEditorProps) {
     }
   };
 
+  const setupEditorCommands = (editor: IAceEditor) => {
+    editor.commands.addCommand({
+      name: 'beautifyASM',
+      bindKey: { win: 'Alt-Shift-F', mac: 'Alt-Shift-F' },
+      exec: beautifyASM,
+      readOnly: false,
+    });
+  };
+
   useEffect(() => {
     if (editorRef.current) {
+      const editor = editorRef.current.editor;
       const langTools = ace.require('ace/ext/language_tools');
       langTools.setCompleters([scriptCompleter]);
+      setupEditorCommands(editor);
     }
   }, []);
 
@@ -166,6 +192,9 @@ export function ScriptEditor({}: ScriptEditorProps) {
         </div>
 
         {compileError && <div className="error-message">{compileError.message}</div>}
+        <SvgTooltip tooltipContent="Format ASM: Alt+Shift+F">
+          <BeautifyIcon height={24} width={24} className="beautify-icon" onClick={beautifyASM} />
+        </SvgTooltip>
       </div>
 
       <AceEditor
