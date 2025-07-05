@@ -36,7 +36,6 @@ export function ScriptEditor({}: ScriptEditorProps) {
     useScriptEditorStore();
 
   const { tx } = useTxStore();
-
   const { reset } = useScriptDebugger();
   // Local State
   const [activeTab, setActiveTab] = useState<'asm' | 'hex'>('asm');

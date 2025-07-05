@@ -995,19 +995,91 @@ function op_checkmultisig({ stack, txContext }: ExecutionContext) {
   return true;
 }
 
-function op_checkmultisigverify({ stack }: ExecutionContext) {
-  throw new Error('Not Implemented');
-  return false;
+function op_checkmultisigverify({ stack, txContext }: ExecutionContext) {
+  if (stack.length < 1) return false;
+
+  const n = decodeNumber(stack.pop()!);
+  if (stack.length < n + 1) return false;
+
+  const pubkeys: Uint8Array[] = [];
+
+  for (let i = 0; i < n; i++) {
+    pubkeys.push(stack.pop()!);
+  }
+
+  const m = decodeNumber(stack.pop()!);
+  if (stack.length < m) return false;
+
+  const signatures: Uint8Array[] = [];
+  for (let i = 0; i < m; i++) {
+    signatures.push(stack.pop()!);
+  }
+
+  // Pop off the dummy value....
+  stack.pop();
+
+  // Fix this...calculate segwit sighash
+  if (txContext?.tx.isSegwit) {
+    return true;
+  }
+  const sighash = calcP2shSighash(txContext!);
+
+  // Test every single signature against every single pubkey
+  let sigIdx = 0;
+  let keyIdx = 0;
+  while (sigIdx < m && keyIdx < n) {
+    const sigDER = signatures[sigIdx].slice(0, -1);
+    if (secp256k1.verify(sigDER, sighash, pubkeys[keyIdx], { format: 'der' })) sigIdx++;
+    keyIdx++;
+  }
+
+  const success = sigIdx === m;
+  if (success) {
+    return true;
+  } else {
+    return false;
+  }
+}
+function getLocktimeType(locktime: number) {
+  if (locktime >= 500000000) {
+    return 'timestamp';
+  } else {
+    return 'block';
+  }
 }
 
-function op_checklocktimeverify({ stack }: ExecutionContext) {
-  throw new Error('Not Implemented');
-  return false;
+function op_checklocktimeverify({ stack, txContext }: ExecutionContext) {
+  if (stack.length < 1) return false;
+
+  const locktime = decodeNumber(stack.pop()!);
+  const locktimeType = getLocktimeType(locktime);
+
+  const txLocktime = txContext!.txMetadata.locktime;
+  const txLocktimeType = getLocktimeType(txLocktime);
+
+  if (locktimeType !== txLocktimeType) return false;
+
+  if (locktime > txLocktime) {
+    return false;
+  }
+
+  return true;
 }
 
-function op_checksequenceverify({ stack }: ExecutionContext) {
-  throw new Error('Not Implemented');
-  return false;
+function op_checksequenceverify({ stack, txContext }: ExecutionContext) {
+  if (stack.length < 1) return false;
+
+  const peek = decodeNumber(stack[stack.length - 1]!);
+  const input = txContext!.txMetadata.vin[txContext!.selectedInputIndex];
+
+  const locktime = input.sequence;
+  const locktimeType = getLocktimeType(locktime);
+  const peekType = getLocktimeType(peek);
+
+  if (peekType !== locktimeType) return false;
+  if (txContext!.tx.version < 2) return false;
+
+  return true;
 }
 
 // Multiple types of functions are possible...
