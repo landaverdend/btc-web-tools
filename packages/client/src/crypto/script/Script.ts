@@ -71,8 +71,6 @@ export class Script {
         } else if (len >= 0x100 && len <= 520) {
           res.write(integerToLittleEndian(77, 1));
           res.write(integerToLittleEndian(len, 2));
-        } else {
-          throw new Error('Script length is too long.');
         }
         res.write(cmd);
       }
