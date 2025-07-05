@@ -1,6 +1,6 @@
-import { ExecutionContext } from '@/crypto/script/execution/executionContext';
-import { ScriptExecutionStatus } from '@/crypto/script/execution/scriptExecutionEngine';
-import { Script } from '@/crypto/script/Script';
+import { ExecutionContext } from '@/btclib/script/execution/executionContext';
+import { ScriptExecutionStatus } from '@/btclib/script/execution/scriptExecutionEngine';
+import { Script } from '@/btclib/script/Script';
 import { create } from 'zustand';
 
 interface ExecutionState {

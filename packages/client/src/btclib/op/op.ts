@@ -1,6 +1,6 @@
 import { ripemd160, sha1 } from '@noble/hashes/legacy';
 import { sha256 } from '@noble/hashes/sha2';
-import { hash160, hash256 } from '../hash/hashUtil';
+import { hash160, hash256 } from '../../btclib/hash/hashUtil';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { Script } from '../script/Script';
 import { ExecutionContext, TxContext } from '../script/execution/executionContext';

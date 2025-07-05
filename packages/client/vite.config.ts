@@ -25,7 +25,7 @@ export default defineConfig({
       '@service': path.resolve(__dirname, './src/service'),
       '@assets': path.resolve(__dirname, './public/'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@crypto': path.resolve(__dirname, './src/crypto'),
+      '@btclib': path.resolve(__dirname, './src/btclib'),
       '@api': path.resolve(__dirname, './src/api'),
     },
   },

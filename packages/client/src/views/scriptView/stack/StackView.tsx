@@ -1,6 +1,6 @@
 import { ScriptDebuggerResult } from '@/state/debugStore';
 import './stack-view.css';
-import { bytesToHex } from '@/crypto/util/helper';
+import { bytesToHex } from '@/btclib/util/helper';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import ColoredText from '@/components/coloredText/ColoredText';
 import { useExecutionStore } from '@/state/executionStore';

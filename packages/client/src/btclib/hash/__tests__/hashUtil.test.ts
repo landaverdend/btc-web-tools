@@ -1,4 +1,4 @@
-import { bytesToHex } from '@/crypto/util/helper';
+import { bytesToHex } from '@/btclib/util/helper';
 import { hash160, hash256 } from '../hashUtil';
 
 describe('hash functions are working', () => {

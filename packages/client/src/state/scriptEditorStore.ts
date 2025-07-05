@@ -1,4 +1,4 @@
-import { Script } from '@/crypto/script/Script';
+import { Script } from '@/btclib/script/Script';
 import { create } from 'zustand';
 
 type CompileError = {

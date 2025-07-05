@@ -6,7 +6,7 @@ import 'ace-builds/src-noconflict/theme-twilight';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
 import { validateFormattedTx } from './validation';
-import Tx from '@/crypto/transaction/Tx';
+import Tx from '@/btclib/transaction/Tx';
 import { useEffect, useRef, useState } from 'react';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 

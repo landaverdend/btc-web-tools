@@ -1,4 +1,4 @@
-import { OP_CODE_FUNCTIONS } from '@/crypto/op/op';
+import { OP_CODE_FUNCTIONS } from '@/btclib/op/op';
 import { ExecutionContext } from '../executionContext';
 import { StepStrategy } from '../scriptExecutionEngine';
 

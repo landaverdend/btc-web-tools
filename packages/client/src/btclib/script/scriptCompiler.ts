@@ -1,6 +1,6 @@
-import { OP_CODES } from '@/crypto/op/op';
-import { Script } from '@/crypto/script/Script';
-import { hexToBytes } from '@/crypto/util/helper';
+import { OP_CODES } from '@/btclib/op/op';
+import { Script } from '@/btclib/script/Script';
+import { hexToBytes } from '@/btclib/util/helper';
 
 export function compileScript(scriptText: string, txInContext = false) {
   scriptText = removeComments(scriptText);

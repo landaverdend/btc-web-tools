@@ -1,4 +1,4 @@
-import Tx from '@/crypto/transaction/Tx';
+import Tx from '@/btclib/transaction/Tx';
 import './tx-hex-view.css';
 import { useState } from 'react';
 import { PlacesType, Tooltip } from 'react-tooltip';

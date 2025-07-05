@@ -1,5 +1,5 @@
-import { ByteStream } from '@/crypto/util/ByteStream';
-import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
+import { ByteStream } from '@/btclib/util/ByteStream';
+import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/btclib/util/helper';
 import { OP_CODE_NAMES, OP_CODES } from '../op/op';
 import { FormattedScript, ScriptLE } from '@/types/tx';
 
@@ -243,11 +243,6 @@ export class Script {
         cmds.push(opcode);
       }
     }
-
-    // I think this isn't needed
-    // if (count !== length) {
-    //   throw new Error('Parsing script failed. Mismatched length');
-    // }
 
     return new Script(cmds);
   }

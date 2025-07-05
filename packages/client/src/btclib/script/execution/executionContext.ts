@@ -1,5 +1,5 @@
 import { TxMetadata } from '@/api/api';
-import Tx from '@/crypto/transaction/Tx';
+import Tx from '@/btclib/transaction/Tx';
 import { Script } from '../Script';
 
 export interface JumpTable {

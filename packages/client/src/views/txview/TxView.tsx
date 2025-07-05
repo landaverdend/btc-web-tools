@@ -1,4 +1,4 @@
-import Tx from '@/crypto/transaction/Tx';
+import Tx from '@/btclib/transaction/Tx';
 import TextEditor from './textEditor/TextEditor';
 import TxHexView from './txHexView/TxHexView';
 

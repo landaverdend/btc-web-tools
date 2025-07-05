@@ -1,6 +1,6 @@
-import { ByteStream } from '@/crypto/util/ByteStream';
-import { Script } from '../script/Script';
-import { bytesToHex, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
+import { ByteStream } from '@/btclib/util/ByteStream';
+import { Script } from '../../btclib/script/Script';
+import { bytesToHex, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/btclib/util/helper';
 import { FormattedTxIn, TxInLE } from '@/types/tx';
 
 export default class TxIn {

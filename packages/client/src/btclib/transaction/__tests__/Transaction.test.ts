@@ -1,4 +1,4 @@
-import { hexToBytes } from '@/crypto/util/helper';
+import { hexToBytes } from '@/btclib/util/helper';
 import Tx from '../Tx';
 // Transactions can be decoded here: https://www.blockchain.com/explorer/assets/btc/decode-transaction
 

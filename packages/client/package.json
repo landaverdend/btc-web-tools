@@ -11,14 +11,15 @@
     "test": "jest"
   },
   "dependencies": {
+    "@noble/curves": "^1.9.2",
     "@noble/hashes": "^1.8.0",
     "ace-builds": "^1.42.0",
+    "antd": "^5.26.3",
     "react": "^18.2.0",
     "react-ace": "^14.0.1",
     "react-dom": "^18.2.0",
     "react-tooltip": "^5.28.1",
-    "zustand": "^5.0.5",
-    "@noble/curves": "^1.9.2"
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

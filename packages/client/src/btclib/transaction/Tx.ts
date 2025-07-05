@@ -1,10 +1,10 @@
-import { ByteStream } from '@/crypto/util/ByteStream';
-import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/crypto/util/helper';
+import { ByteStream } from '@/btclib/util/ByteStream';
+import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/btclib/util/helper';
 import { FormattedTx, FormattedWitnessStack, TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
-import { Script } from '../script/Script';
-import { hash256 } from '../hash/hashUtil';
+import { Script } from '../../btclib/script/Script';
+import { hash256 } from '../../btclib/hash/hashUtil';
 
 const SIGHASH_ALL = 0x01;
 const SIGHASH_NONE = 0x02;

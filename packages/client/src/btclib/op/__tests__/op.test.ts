@@ -1,4 +1,4 @@
-import { hexToBytes } from '@/crypto/util/helper';
+import { hexToBytes } from '@/btclib/util/helper';
 import { decodeNumber, encodeNumber } from '../op';
 
 describe('encode_number works', () => {

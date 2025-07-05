@@ -1,4 +1,4 @@
-import { ScriptExecutionEngine } from '@/crypto/script/execution/scriptExecutionEngine';
+import { ScriptExecutionEngine } from '@/btclib/script/execution/scriptExecutionEngine';
 import { useExecutionStore } from '@/state/executionStore';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useTxStore } from '@/state/txStore';

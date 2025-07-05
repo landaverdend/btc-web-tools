@@ -1,8 +1,8 @@
-import Tx from '@/crypto/transaction/Tx';
+import Tx from '@/btclib/transaction/Tx';
 import { Script } from '../Script';
 import { TxMetadata } from '@/api/api';
-import { decodeNumber, OP_CODE_NAMES } from '@/crypto/op/op';
-import { bytesToHex } from '@/crypto/util/helper';
+import { decodeNumber, OP_CODE_NAMES } from '@/btclib/op/op';
+import { bytesToHex } from '@/btclib/util/helper';
 import { ExecutionContext, TxContext } from './executionContext';
 import { StandardStepStrategy } from './strategy/standardStepStrategy';
 import { P2SHStepStrategy } from './strategy/p2shStepStrategy';

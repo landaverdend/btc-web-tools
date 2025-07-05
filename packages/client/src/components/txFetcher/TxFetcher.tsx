@@ -3,12 +3,13 @@ import './tx-fetcher.css';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
 import ColoredText from '@/components/coloredText/ColoredText';
-import Tx from '@/crypto/transaction/Tx';
+import Tx from '@/btclib/transaction/Tx';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
-import { UnlockingScriptBuilder } from '@/crypto/script/UnlockingScriptBuilder';
+import { UnlockingScriptBuilder } from '@/btclib/script/UnlockingScriptBuilder';
 import AlertIcon from '@assets/icons/alert.svg?react';
 import { SvgTooltip } from '@/views/scriptView/debugControls/DebugControls';
+import { Spin } from 'antd';
 
 const DEMO_TX_IDS = [
   'e827a366ad4fc9a305e0901fe1eefc7e9fb8d70655a079877cf1ead0c3618ec0', // P2PK
@@ -29,7 +30,7 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
   const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
 
   // Hooks
-  const { fetchTransaction, error } = useFetchTx();
+  const { fetchTransaction, error, isLoading } = useFetchTx();
   const { reset } = useScriptDebugger();
 
   // Local State Variables
@@ -46,6 +47,7 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
   const handleFetch = async (txidf?: string) => {
     reset();
     resetTxStore();
+
     const response = await fetchTransaction(txidf || txid, false);
 
     if (response) {
@@ -127,6 +129,8 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
           </button>
         </div>
       </div>
+
+      {isLoading && <Spin />}
 
       <TxDetails />
     </div>
