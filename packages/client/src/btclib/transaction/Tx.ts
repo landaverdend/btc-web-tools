@@ -1,6 +1,6 @@
 import { ByteStream } from '@/btclib/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/btclib/util/helper';
-import { FormattedTx, FormattedWitnessStack, TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
+import { FormattedWitnessStack, TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
 import { Script } from '../../btclib/script/Script';
@@ -156,18 +156,6 @@ export default class Tx {
     return new Tx(this.version, this.inputs, this.outputs, this.locktime);
   }
 
-  static fromJson(json: FormattedTx) {
-    const tx = new Tx(
-      json.version,
-      json.inputs.map((i) => TxIn.fromJson(i)),
-      json.outputs.map((o) => TxOut.fromJson(o)),
-      json.locktime,
-      json.witnesses ? true : false,
-      json.witnesses ? { marker: json.marker!, flag: json.flag!, witnessData: TxWitnessData.fromJson(json.witnesses) } : undefined
-    );
-    return tx;
-  }
-
   /**
    * Format the tx in hex and little endian format.
    **/
@@ -186,25 +174,6 @@ export default class Tx {
       locktime: bytesToHex(integerToLittleEndian(this.locktime, 4)),
 
       witnesses: this.witnessData?.formatLE(),
-    };
-  }
-
-  /**
-   * Format the tx in a json-friendly readable format
-   * @returns
-   */
-  format(): FormattedTx {
-    return {
-      version: this.version,
-
-      marker: this.witnessMarker,
-      flag: this.witnessFlag,
-
-      inputs: this.inputs.map((i) => i.format()),
-      outputs: this.outputs.map((o) => o.format()),
-      locktime: this.locktime,
-
-      witnesses: this.witnessData?.format(),
     };
   }
 

@@ -1,13 +1,10 @@
 .tx-hex-view-container {
-  flex: 1;
-  align-items: center;
-
   background-color: #141414;
 
   /* Match font to ace editor */
   font: 12px / normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Source Code Pro', 'source-code-pro', monospace;
+  width: 40vw;
 
-  width: 50%;
   .tx-bytes {
     font-size: 1.1rem;
 

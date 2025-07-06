@@ -1,7 +1,7 @@
 import { ByteStream } from '@/btclib/util/ByteStream';
 import { Script } from '../../btclib/script/Script';
 import { bytesToHex, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/btclib/util/helper';
-import { FormattedTxIn, TxInLE } from '@/types/tx';
+import { TxInLE } from '@/types/tx';
 
 export default class TxIn {
   txid: Uint8Array;
@@ -46,16 +46,6 @@ export default class TxIn {
     };
   }
 
-  format(): FormattedTxIn {
-    const copy = new Uint8Array(this.txid);
-    return {
-      txid: bytesToHex(copy.reverse()),
-      vout: this.vout,
-      sequence: this.sequence,
-      scriptSig: this.scriptSig.format(),
-    };
-  }
-
   toBytes() {
     const stream = new ByteStream();
     const copy = new Uint8Array(this.txid);
@@ -70,14 +60,5 @@ export default class TxIn {
 
   clone() {
     return new TxIn(this.txid, this.vout, this.sequence, this.scriptSig.clone());
-  }
-
-  static fromJson(json: FormattedTxIn) {
-    const txid = hexToBytes(json.txid);
-    const vout = json.vout;
-    const sequence = json.sequence;
-    const scriptSig = Script.fromJson(json.scriptSig);
-
-    return new TxIn(txid, vout, sequence, scriptSig);
   }
 }

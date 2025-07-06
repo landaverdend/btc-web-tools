@@ -1,7 +1,7 @@
 import { ByteStream } from '@/btclib/util/ByteStream';
 import { Script } from '../../btclib/script/Script';
 import { bytesToHex, integerToLittleEndian, littleEndianToInteger } from '@/btclib/util/helper';
-import { FormattedTxOut, TxOutLE } from '@/types/tx';
+import { TxOutLE } from '@/types/tx';
 
 export default class TxOut {
   amount: number;
@@ -26,20 +26,6 @@ export default class TxOut {
       amount: bytesToHex(integerToLittleEndian(this.amount, 8)),
       scriptPubkey: this.scriptPubkey.formatLE(),
     };
-  }
-
-  format() {
-    return {
-      amount: this.amount,
-      scriptPubkey: this.scriptPubkey.format(),
-    };
-  }
-
-  static fromJson(json: FormattedTxOut) {
-    const amount = json.amount;
-    const scriptPubkey = Script.fromJson(json.scriptPubkey);
-
-    return new TxOut(amount, scriptPubkey);
   }
 
   static fromStream(stream: ByteStream) {

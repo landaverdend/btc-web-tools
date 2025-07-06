@@ -7,13 +7,6 @@ export type ScriptLE = {
   cmds: string;
 };
 
-export type FormattedTxIn = {
-  txid: string;
-  vout: number;
-  scriptSig: FormattedScript;
-  sequence: number;
-};
-
 export type TxInLE = {
   txid: string;
   vout: string;
@@ -22,10 +15,6 @@ export type TxInLE = {
   scriptSig: ScriptLE;
 };
 
-export type FormattedTxOut = {
-  amount: number;
-  scriptPubkey: FormattedScript;
-};
 export type TxOutLE = {
   amount: string;
   scriptPubkey: ScriptLE;
@@ -44,19 +33,6 @@ export type WitnessDataLE = {
 export type WitnessItemLE = {
   itemLength: string; // varint
   item: string; // bytes
-};
-
-export type FormattedTx = {
-  version: number;
-
-  marker?: number;
-  flag?: number;
-  witnesses?: FormattedWitnessStack[];
-
-  inputs: FormattedTxIn[];
-  outputs: FormattedTxOut[];
-
-  locktime: number;
 };
 
 export type TxLE = {
