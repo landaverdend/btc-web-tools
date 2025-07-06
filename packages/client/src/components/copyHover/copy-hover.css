@@ -1,0 +1,14 @@
+.copy-hover-container {
+  position: relative;
+
+  .copy-icon {
+    /* position: absolute;  */
+    /* left: 0; */
+    z-index: 100;
+    color: white;
+  }
+
+  .copy-icon:hover {
+    cursor: pointer;
+  }
+}

@@ -22,6 +22,7 @@ const DEMO_TX_IDS = [
 ];
 
 import type { SelectProps } from 'antd';
+import { CopyHover } from '../copyHover/CopyHover';
 
 type LabelRender = SelectProps['labelRender'];
 const labelRender: LabelRender = (props) => {
@@ -209,7 +210,10 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
       {txMetadata && (
         <div className="flex-column tx-metadata-container">
           <div className="tx-metadata">
-            Tx ID: <ColoredText color="var(--soft-green)">{txid}</ColoredText>
+            Tx ID:{' '}
+            <CopyHover>
+              <ColoredText color="var(--soft-green)">{txid}</ColoredText>
+            </CopyHover>
           </div>
 
           {isCoinbase && (
@@ -221,16 +225,17 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
       )}
 
       {showInputs && (
-        <div className="flex-column input-selection">
+        <Flex vertical className="input-selection" gap={5}>
           Input Select
           {txMetadata.vin.map((input, i) => {
             return (
               <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => handleSelectInput(i)}>
-                <ColoredText color="var(--soft-purple)">{input.prevout?.scriptpubkey_type}</ColoredText>: {input.txid}
+                <ColoredText color="var(--soft-purple)">{input.prevout?.scriptpubkey_type}</ColoredText>:{' '}
+                <CopyHover>{input.txid}</CopyHover>
               </div>
             );
           })}
-        </div>
+        </Flex>
       )}
     </div>
   );
