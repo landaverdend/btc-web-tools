@@ -9,6 +9,8 @@ export default function Navbar({}: NavbarProps) {
   const location = useLocation();
   const currentView = location.pathname.substring(1) || 'script';
 
+  console.log(currentView);
+
   return (
     <Flex align="center" justify="space-between" className="navbar-container">
       <div className="navbar-logo">
@@ -16,10 +18,10 @@ export default function Navbar({}: NavbarProps) {
       </div>
 
       <Flex className="navbar-list" gap={10}>
-        <Link to={APP_ROUTES.Tx} className={`navbar-list-item ${currentView === 'tx' ? 'active' : ''}`}>
+        <Link to={APP_ROUTES.Tx} className={`navbar-list-item ${currentView === APP_ROUTES.Tx ? 'active' : ''}`}>
           TX Viewer
         </Link>
-        <Link to={APP_ROUTES.Script} className={`navbar-list-item ${currentView === 'script' ? 'active' : ''}`}>
+        <Link to={APP_ROUTES.Script} className={`navbar-list-item ${currentView === APP_ROUTES.Script ? 'active' : ''}`}>
           Script Debugger
         </Link>
       </Flex>

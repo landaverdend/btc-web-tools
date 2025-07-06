@@ -5,7 +5,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 export const APP_ROUTES = {
   Script: '/script',
-  Tx: '/tx',
+  Tx: '/txview',
   Home: '/',
 };
 
@@ -15,9 +15,9 @@ export default function App() {
       <div>
         <Navbar />
         <Routes>
-          <Route path="/script" element={<ScriptView />} />
-          <Route path="/tx" element={<TxView />} />
-          <Route path="/" element={<Navigate to="/script" replace />} />
+          <Route path={APP_ROUTES.Script} element={<ScriptView />} />
+          <Route path={APP_ROUTES.Tx} element={<TxView />} />
+          <Route path={APP_ROUTES.Home} element={<Navigate to={APP_ROUTES.Script} replace />} />
         </Routes>
       </div>
     </BrowserRouter>
