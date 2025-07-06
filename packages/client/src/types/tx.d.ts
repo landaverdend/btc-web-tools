@@ -20,11 +20,6 @@ export type TxOutLE = {
   scriptPubkey: ScriptLE;
 };
 
-export type FormattedWitnessStack = {
-  stackLength: number;
-  stack: string[];
-};
-
 export type WitnessDataLE = {
   stackLength: string; // varint
   stack: WitnessItemLE[];

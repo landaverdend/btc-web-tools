@@ -1,15 +1,15 @@
 import { ByteStream } from '@/btclib/util/ByteStream';
 import { bytesToHex, encodeVarInt, hexToBytes, integerToLittleEndian, littleEndianToInteger } from '@/btclib/util/helper';
-import { FormattedWitnessStack, TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
+import { TxLE, WitnessDataLE, WitnessItemLE } from '@/types/tx';
 import TxIn from './TxIn';
 import TxOut from './TxOut';
 import { Script } from '../../btclib/script/Script';
 import { hash256 } from '../../btclib/hash/hashUtil';
 
 const SIGHASH_ALL = 0x01;
-const SIGHASH_NONE = 0x02;
-const SIGHASH_SINGLE = 0x03;
-const SIGHASH_ANYONECANPAY = 0x80;
+// const SIGHASH_NONE = 0x02;
+// const SIGHASH_SINGLE = 0x03;
+// const SIGHASH_ANYONECANPAY = 0x80;
 
 export default class Tx {
   version: number;
@@ -241,13 +241,6 @@ export class TxWitnessData {
     return toRet;
   }
 
-  format(): FormattedWitnessStack[] {
-    return this.stack.map((witness) => ({
-      stackLength: witness.length,
-      stack: witness.map((item) => bytesToHex(item)),
-    }));
-  }
-
   static fromStream(stream: ByteStream, inputCount: number) {
     const witnessStacks: Uint8Array[][] = [];
 
@@ -266,10 +259,6 @@ export class TxWitnessData {
     }
 
     return new TxWitnessData(witnessStacks);
-  }
-
-  static fromJson(json: FormattedWitnessStack[]) {
-    return new TxWitnessData(json.map((item) => item.stack.map((item) => hexToBytes(item))));
   }
 
   toBytes() {
