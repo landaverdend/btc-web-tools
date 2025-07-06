@@ -44,7 +44,7 @@ export function DebugControls() {
           />
         </SvgTooltip>
       </div>
-      <TxFetcher includeDemoTxs={true} />
+      <TxFetcher includeDemoTxs includeTaprootWarning includeInputSelector/>
     </div>
   );
 }

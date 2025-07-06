@@ -86,8 +86,10 @@ function DemoTxsDropdown({ fetchDemo }: DemoTxsDropdownProps) {
 
 type TxFetcherProps = {
   includeDemoTxs?: boolean;
+  includeTaprootWarning?: boolean;
+  includeInputSelector?: boolean;
 };
-export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
+export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputSelector }: TxFetcherProps) {
   // Global State variables
   const { reset: resetTxStore, setSelectedInput, setTxMetadata, setTx } = useTxStore();
   const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
@@ -134,9 +136,11 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
 
       <h3 className="flex-row">
         Transaction Fetcher
-        <SvgTooltip tooltipContent="Taproot Transactions not currently supported">
-          <AlertIcon height={16} width={16} className="alert-icon" />
-        </SvgTooltip>
+        {includeTaprootWarning && (
+          <SvgTooltip tooltipContent="Taproot Transactions not currently supported">
+            <AlertIcon height={16} width={16} className="alert-icon" />
+          </SvgTooltip>
+        )}
       </h3>
 
       <div className="flex-column tx-fetcher-input-container">
@@ -169,13 +173,13 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
 
       {isLoading && <Spin />}
 
-      <TxDetails />
+      <TxDetails includeInputSelector={includeInputSelector} />
     </div>
   );
 }
 
-type TxDetailsProps = {};
-function TxDetails({}: TxDetailsProps) {
+type TxDetailsProps = { includeInputSelector?: boolean };
+function TxDetails({ includeInputSelector }: TxDetailsProps) {
   // Global state imports
   const { tx, selectedInput, txMetadata, setSelectedInput } = useTxStore();
   const { txid } = txMetadata || {};
@@ -183,7 +187,7 @@ function TxDetails({}: TxDetailsProps) {
 
   // Hooks
   const isCoinbase = tx?.isCoinbase;
-  const showInputs = txMetadata && !isCoinbase;
+  const showInputs = txMetadata && !isCoinbase && includeInputSelector;
 
   const handleSelectInput = (inputIndex: number) => {
     setSelectedInput(inputIndex);

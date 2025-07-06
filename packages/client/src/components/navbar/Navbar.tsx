@@ -19,7 +19,7 @@ export default function Navbar({ view, setView }: NavbarProps) {
           onClick={() => {
             setView('tx');
           }}>
-          TX Parser
+          TX Viewer 
         </span>
         <span className={`navbar-list-item ${view === 'script' ? 'active' : ''}`} onClick={() => setView('script')}>
           Script Debugger
