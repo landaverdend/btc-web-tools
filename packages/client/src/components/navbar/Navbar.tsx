@@ -7,7 +7,7 @@ import { APP_ROUTES } from '@/App';
 type NavbarProps = {};
 export default function Navbar({}: NavbarProps) {
   const location = useLocation();
-  const currentView = location.pathname.substring(1) || 'script';
+  const currentView = '/' + location.pathname.substring(1) || 'script';
 
   console.log(currentView);
 
@@ -17,12 +17,15 @@ export default function Navbar({}: NavbarProps) {
         <img src={logo} alt="logo" />
       </div>
 
-      <Flex className="navbar-list" gap={10}>
+      <Flex className="navbar-list" gap={15}>
         <Link to={APP_ROUTES.Tx} className={`navbar-list-item ${currentView === APP_ROUTES.Tx ? 'active' : ''}`}>
-          TX Viewer
+          Tx Viewer
         </Link>
         <Link to={APP_ROUTES.Script} className={`navbar-list-item ${currentView === APP_ROUTES.Script ? 'active' : ''}`}>
           Script Debugger
+        </Link>
+        <Link to={APP_ROUTES.TxBuilder} className={`navbar-list-item ${currentView === APP_ROUTES.TxBuilder ? 'active' : ''}`}>
+          Tx Builder
         </Link>
       </Flex>
     </Flex>

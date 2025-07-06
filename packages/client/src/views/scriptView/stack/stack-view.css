@@ -4,7 +4,7 @@
   justify-content: flex-start;
   gap: 40px;
 
-  background-color: #141414;
+  background-color: var(--background-slate);
 }
 
 .stack-details-container {

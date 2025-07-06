@@ -1,5 +1,5 @@
 .tx-hex-view-container {
-  background-color: #141414;
+  background-color: var(--background-slate);
 
   /* Match font to ace editor */
   font: 12px / normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Source Code Pro', 'source-code-pro', monospace;

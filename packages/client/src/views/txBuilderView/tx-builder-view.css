@@ -1,0 +1,6 @@
+.tx-builder-view-container {
+  background-color: var(--background-slate);
+  height: 100vh;
+
+  color: white;
+}

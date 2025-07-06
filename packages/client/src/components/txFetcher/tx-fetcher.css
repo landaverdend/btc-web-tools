@@ -116,7 +116,7 @@
 }
 
 .demo-tx-dropdown {
-  background-color: #141414;
+  background-color: var(--background-slate);
   color: white;
   border-radius: 5px;
   padding: 5px;
