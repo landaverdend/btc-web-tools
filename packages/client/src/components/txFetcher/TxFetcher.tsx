@@ -9,7 +9,7 @@ import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { UnlockingScriptBuilder } from '@/btclib/script/UnlockingScriptBuilder';
 import AlertIcon from '@assets/icons/alert.svg?react';
 import { SvgTooltip } from '@/views/scriptView/debugControls/DebugControls';
-import { Spin } from 'antd';
+import { Flex, Select, Spin } from 'antd';
 
 const DEMO_TX_IDS = [
   'e827a366ad4fc9a305e0901fe1eefc7e9fb8d70655a079877cf1ead0c3618ec0', // P2PK
@@ -20,6 +20,69 @@ const DEMO_TX_IDS = [
   'a55bd4d4ebd319ab2990c356e16cab1eeb52a93c414b869a606dc0add61d725a', // P2SH-P2WPKH
   '55c7c71c63b87478cd30d401e7ca5344a2e159dc8d6990df695c7e0cb2f82783', // P2SH-P2WSH
 ];
+
+import type { SelectProps } from 'antd';
+
+type LabelRender = SelectProps['labelRender'];
+const labelRender: LabelRender = (props) => {
+  const { label, value } = props;
+
+  if (label) {
+    return value;
+  }
+
+  return <span>None Selected</span>;
+};
+
+type DemoTxsDropdownProps = {
+  fetchDemo: (demoTx: number) => void;
+};
+function DemoTxsDropdown({ fetchDemo }: DemoTxsDropdownProps) {
+  const handleSelect = (value: string) => {
+    switch (value) {
+      case 'P2PK':
+        fetchDemo(0);
+        break;
+      case 'P2PKH':
+        fetchDemo(1);
+        break;
+      case 'P2SH':
+        fetchDemo(2);
+        break;
+      case 'P2WPKH':
+        fetchDemo(3);
+        break;
+      case 'P2WSH':
+        fetchDemo(4);
+        break;
+      case 'P2SH-P2WPKH':
+        fetchDemo(5);
+        break;
+      case 'P2SH-P2WSH':
+        fetchDemo(6);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const options = [
+    { value: 'P2PK', label: 'P2PK' },
+    { value: 'P2PKH', label: 'P2PKH' },
+    { value: 'P2SH', label: 'P2SH' },
+    { value: 'P2WPKH', label: 'P2WPKH' },
+    { value: 'P2WSH', label: 'P2WSH' },
+    { value: 'P2SH-P2WPKH', label: 'P2SH-P2WPKH' },
+    { value: 'P2SH-P2WSH', label: 'P2SH-P2WSH' },
+  ];
+
+  return (
+    <Flex vertical justify="center" align="center" gap={5}>
+      <span style={{ fontSize: '14px', color: 'var(--soft-orange)' }}>Demo Transactions</span>
+      <Select style={{ width: '100%' }} options={options} labelRender={labelRender} onSelect={handleSelect}></Select>{' '}
+    </Flex>
+  );
+}
 
 type TxFetcherProps = {
   includeDemoTxs?: boolean;
@@ -35,7 +98,7 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
 
   // Local State Variables
   const [txid, setTxid] = useState('');
-  const [selectedDemoTx, setSelectedDemoTx] = useState<number | null>(null);
+  const [_, setSelectedDemoTx] = useState<number | null>(null);
 
   const fetchDemo = (demoTx: number) => {
     const txid = DEMO_TX_IDS[demoTx];
@@ -67,34 +130,7 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
 
   return (
     <div className="flex-column tx-fetcher-container">
-      {includeDemoTxs && (
-        <div className="flex-column demo-txs-container">
-          <div className="demo-txs-title">Demo Transactions</div>
-          <ul>
-            <li className={selectedDemoTx === 0 ? 'active' : ''} onClick={() => fetchDemo(0)}>
-              P2PK
-            </li>
-            <li className={selectedDemoTx === 1 ? 'active' : ''} onClick={() => fetchDemo(1)}>
-              P2PKH
-            </li>
-            <li className={selectedDemoTx === 2 ? 'active' : ''} onClick={() => fetchDemo(2)}>
-              P2SH
-            </li>
-            <li className={selectedDemoTx === 3 ? 'active' : ''} onClick={() => fetchDemo(3)}>
-              P2WPKH
-            </li>
-            <li className={selectedDemoTx === 4 ? 'active' : ''} onClick={() => fetchDemo(4)}>
-              P2WSH
-            </li>
-            <li className={selectedDemoTx === 5 ? 'active' : ''} onClick={() => fetchDemo(5)}>
-              P2SH-P2WPKH
-            </li>
-            <li className={selectedDemoTx === 6 ? 'active' : ''} onClick={() => fetchDemo(6)}>
-              P2SH-P2WSH
-            </li>
-          </ul>
-        </div>
-      )}
+      {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} />}
 
       <h3 className="flex-row">
         Transaction Fetcher
@@ -102,6 +138,7 @@ export function TxFetcher({ includeDemoTxs }: TxFetcherProps) {
           <AlertIcon height={16} width={16} className="alert-icon" />
         </SvgTooltip>
       </h3>
+
       <div className="flex-column tx-fetcher-input-container">
         <label htmlFor="txid" className="flex-column">
           Transaction ID

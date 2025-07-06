@@ -111,41 +111,15 @@
   }
 }
 
-.demo-txs-container {
-  align-items: center;
-
-  border-radius: 5px;
-  padding: 10px;
-
-  .demo-txs-title {
-    font-size: 14px;
-    font-weight: bold;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-
-    li {
-      font-size: 12px;
-      padding: 10px;
-      text-align: center;
-      border-radius: 5px;
-    }
-
-    li.active {
-      color: var(--soft-orange);
-    }
-
-    li:hover {
-      color: var(--soft-orange);
-      cursor: pointer;
-      background-color: var(--input-gray);
-    }
-  }
-}
-
 .alert-icon:hover {
   fill: var(--soft-orange);
+}
+
+.demo-tx-dropdown {
+  background-color: #141414;
+  color: white;
+  border-radius: 5px;
+  padding: 5px;
+
+  cursor: pointer;
 }
