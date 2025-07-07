@@ -4,7 +4,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { TokenFetcher } from './token.js';
-import { TxCache } from './TxCache.js';
+import { ResponseCache } from './ResponseCache.js';
 
 dotenv.config();
 
@@ -41,7 +41,7 @@ const BASE_URL = 'https://blockstream.info/api/';
 const BASE_TESTNET_URL = 'https://blockstream.info/testnet/api/';
 
 // Initialize the FIFO cache with a reasonable size limit
-const txCache = new TxCache(1000);
+const responseCache = new ResponseCache(1000);
 
 app.get('/tx/:txid', async (req, res) => {
   const { txid } = req.params;
@@ -50,10 +50,10 @@ app.get('/tx/:txid', async (req, res) => {
   const useTestnet = testnet === 'true';
 
   // Generate cache key that includes testnet flag
-  const cacheKey = `${txid}-${useTestnet ? 'testnet' : 'mainnet'}`;
+  const cacheKey = txid;
 
   // Check cache first
-  const cachedResult = txCache.get(cacheKey);
+  const cachedResult = responseCache.get(cacheKey);
   if (cachedResult) {
     res.status(200).send(cachedResult);
     return;
@@ -91,11 +91,48 @@ app.get('/tx/:txid', async (req, res) => {
     };
 
     // Cache the result
-    txCache.set(cacheKey, result);
+    responseCache.set(cacheKey, result);
 
     res.status(200).send(result);
   } catch (error) {
     const errortxt = error instanceof Error ? error.message : 'Generic error';
     res.status(500).send(errortxt);
+  }
+});
+
+app.get('/address/:address/utxo', async (req, res) => {
+  const { address } = req.params;
+  const { testnet } = req.query;
+
+  const useTestnet = testnet === 'true';
+  const accessToken = await TokenFetcher.getToken();
+
+  const url = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}address/${address}/utxo`;
+
+  const options = {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+
+  console.log(url);
+
+  try {
+    const response = await fetch(url, options);
+
+    if (response.status !== 200) {
+      console.log(response);
+      throw new Error(`Fetch failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    console.log(data);
+    res.status(200).send(data);
+  } catch (error) {
+    const errortext = error instanceof Error ? error.message : 'Generic Error';
+    console.error(errortext);
+    res.status(500).send(errortext);
   }
 });

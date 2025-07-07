@@ -16,3 +16,13 @@
   padding: 10px;
   border-radius: 5px;
 }
+
+.error-text {
+  font-size: 12px;
+}
+
+.utxo-item {
+  border: 1px solid var(--soft-red);
+  padding: 10px;
+  border-radius: 5px;
+}

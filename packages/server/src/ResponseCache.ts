@@ -1,9 +1,6 @@
-export interface CacheEntry {
-  serializedTx: string;
-  txJson: any;
-}
+export type CacheEntry = any;
 
-export class TxCache {
+export class ResponseCache {
   private cache = new Map<string, CacheEntry>();
   private insertionOrder: string[] = [];
   private maxSize: number;
@@ -62,7 +59,7 @@ export class TxCache {
   // Private helper methods
   private evictOldest(): void {
     if (this.insertionOrder.length === 0) return;
-    
+
     const oldestKey = this.insertionOrder.shift()!;
     this.cache.delete(oldestKey);
   }

@@ -1,8 +1,10 @@
-import { Button, Flex, Select } from 'antd';
+import { Button, Flex, Select, Spin } from 'antd';
 import './tx-builder-view.css';
 import { InputNumber } from 'antd';
 import { useState } from 'react';
 import { Input } from 'antd';
+import { fetchUtxo, Utxo } from '@/api/api';
+import ColoredText from '@/components/coloredText/ColoredText';
 
 interface TIFProps {
   onAdd: () => void;
@@ -10,14 +12,67 @@ interface TIFProps {
 
   index: number;
 }
-
 function TxInputForm({ index }: TIFProps) {
+  const [addr, setAddr] = useState('');
+
+  const [utxos, setUtxos] = useState<Utxo[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   return (
     <Flex vertical gap={10} className="tx-input-form">
-      <Input placeholder="TXID" />
-      <InputNumber placeholder="Output Index (vout)" />
-      <InputNumber placeholder="Amount" />
-      <Input placeholder="Signature" />
+      <Flex gap={10} vertical>
+        {error && (
+          <ColoredText color="red" className="error-text">
+            {error}
+          </ColoredText>
+        )}
+
+        <Input placeholder="Address" value={addr} onChange={(e) => setAddr(e.target.value)} />
+        {utxos.length > 0 && (
+          <Flex vertical gap={10} align="center">
+            <h3>
+              UTXOs for <br /> {addr}
+            </h3>
+            {utxos.map((utxo, i) => (
+              <Flex key={utxo.txid} vertical gap={5} className="utxo-item">
+                <span>UTXO #{i + 1}</span>
+                <span>Sats: {utxo.value}</span>
+                <span>Block Height: {utxo.status.block_height}</span>
+                <span>Block Time:{utxo.status.block_time}</span>
+              </Flex>
+            ))}
+          </Flex>
+        )}
+
+        <Button
+          onClick={() => {
+            if (isLoading) return;
+
+            setIsLoading(true);
+            if (!addr) {
+              setError('Address is required');
+              setIsLoading(false);
+              return;
+            }
+
+            fetchUtxo(addr, true)
+              .then((data) => {
+                setUtxos(data);
+                setError(null);
+              })
+              .catch((err) => {
+                setError(err instanceof Error ? err.message : 'An error occurred');
+                console.error(err);
+              })
+              .finally(() => {
+                setIsLoading(false);
+              });
+          }}>
+          Fetch UTXO(s)
+          {isLoading && <Spin />}
+        </Button>
+      </Flex>
     </Flex>
   );
 }
@@ -55,7 +110,9 @@ export default function TxBuilderView() {
   ];
 
   return (
-    <Flex className="tx-builder-view-container" vertical>
+    <Flex className="tx-builder-view-container" vertical align="center">
+      <h2>Testnet Transaction Builder/Broadcaster </h2>
+
       <Flex gap={10} align="center" vertical>
         <Flex vertical>
           Transaction Type:
@@ -64,7 +121,7 @@ export default function TxBuilderView() {
 
         <Flex vertical>
           TX Version:
-          <InputNumber value={version} onChange={(value) => setVersion(value ?? 0)} />
+          <InputNumber value={version} onChange={(value) => setVersion(value ?? 0)} min={1} />
         </Flex>
 
         <Flex gap={10} align="center" vertical>
@@ -88,7 +145,6 @@ export default function TxBuilderView() {
             {outputCount > 1 && <Button onClick={() => setOutputCount(outputCount - 1)}>Remove -</Button>}
           </Flex>
         </Flex>
-
       </Flex>
     </Flex>
   );

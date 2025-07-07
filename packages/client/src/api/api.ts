@@ -54,4 +54,30 @@ async function fetchTx(txid: string, testnet = false): Promise<APIResponse> {
   return data;
 }
 
-export { fetchTx };
+export type Utxo = {
+  txid: string;
+  value: number;
+  vout: number;
+  status: {
+    confirmed: boolean;
+    block_height: number;
+    block_time: number;
+    block_hash: string;
+  };
+};
+
+async function fetchUtxo(address: string, testnet = false) {
+  const url = `/address/${address}/utxo${testnet ? '?testnet=true' : ''}`;
+
+  const response = await fetch(url);
+
+  if (response.status !== 200) {
+    const errorText = await response.text();
+    throw new Error(`${errorText ? `${errorText}` : ''}`);
+  }
+
+  const data = (await response.json()) as Utxo[];
+  return data;
+}
+
+export { fetchTx, fetchUtxo };
