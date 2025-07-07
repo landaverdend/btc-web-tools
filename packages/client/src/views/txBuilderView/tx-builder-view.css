@@ -4,3 +4,15 @@
 
   color: white;
 }
+
+.tx-input-form {
+  border: 1px solid var(--soft-purple);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.tx-output-form {
+  border: 1px solid var(--soft-orange);
+  padding: 10px;
+  border-radius: 5px;
+}
