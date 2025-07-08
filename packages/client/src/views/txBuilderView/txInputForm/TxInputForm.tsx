@@ -3,21 +3,21 @@ import ColoredText from '@/components/coloredText/ColoredText';
 import { Button, Flex, Input, Spin } from 'antd';
 import { useState } from 'react';
 import './tx-input-form.css';
+import { useTxBuilderStore } from '@/state/txBuilderStore';
 
-/**
- * TODO:
- * - Add the recipient address/change address and amount to send for each...
- *    - state logic for this
- *    - amount to send from each utxo w/ validation...
- */
+export interface TxInputFormData {
+  utxo: Utxo;
+  outputs: Output[];
+}
 
 interface TIFProps {
-  onAdd: () => void;
   onRemove: () => void;
 
   index: number;
 }
-export default function TxInputForm({ index }: TIFProps) {
+export default function TxInputForm({}: TIFProps) {
+  const { formData, setFormData } = useTxBuilderStore();
+
   const [addr, setAddr] = useState('');
 
   const [utxos, setUtxos] = useState<Utxo[]>([]);
@@ -26,12 +26,17 @@ export default function TxInputForm({ index }: TIFProps) {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Add the form data to global state
   const handleSelectUtxo = (utxo: Utxo) => {
     if (selectedUtxos.has(utxo.txid)) {
+      formData.delete(utxo.txid);
       selectedUtxos.delete(utxo.txid);
     } else {
+      formData.set(utxo.txid, { utxo, outputs: [{ amount: utxo.value }] });
       selectedUtxos.add(utxo.txid);
     }
+
+    setFormData(new Map(formData));
     setSelectedUtxos(new Set(selectedUtxos));
   };
 
@@ -111,16 +116,36 @@ interface UtxoItemProps {
   onSelect: (utxo: Utxo) => void;
 }
 function UtxoItem({ index, utxo, selected, onSelect }: UtxoItemProps) {
-  const [outputs, setOutputs] = useState<Output[]>([]);
+  const { formData, setFormData } = useTxBuilderStore();
+
+  const outputs = formData.get(utxo.txid)?.outputs || [];
 
   const handleOutputChange = (i: number, key: keyof Output, value: string) => {
-    const newOutputs = [...outputs];
+    const newFormData = new Map(formData);
+
     if (key === 'amount') {
-      newOutputs[i] = { ...newOutputs[i], [key]: Number(value) };
+      const num = Number(value) > utxo.value ? utxo.value : Number(value);
+      newFormData.set(utxo.txid, {
+        utxo,
+        outputs: outputs.map((output, j) => (j === i ? { ...output, [key]: num } : output)),
+      });
     } else {
-      newOutputs[i] = { ...newOutputs[i], [key]: value };
+      newFormData.set(utxo.txid, { utxo, outputs: outputs.map((output, j) => (j === i ? { ...output, [key]: value } : output)) });
     }
-    setOutputs(newOutputs);
+
+    setFormData(newFormData);
+  };
+
+  const handleAddOutput = () => {
+    const newFormData = new Map(formData);
+    newFormData.set(utxo.txid, { utxo, outputs: [...outputs, {}] });
+    setFormData(newFormData);
+  };
+
+  const handleRemoveOutput = (i: number) => {
+    const newFormData = new Map(formData);
+    newFormData.set(utxo.txid, { utxo, outputs: outputs.filter((_, j) => j !== i) });
+    setFormData(newFormData);
   };
 
   return (
@@ -131,7 +156,6 @@ function UtxoItem({ index, utxo, selected, onSelect }: UtxoItemProps) {
         className={`utxo-item ${selected ? 'selected' : ''}`}
         onClick={() => {
           onSelect(utxo);
-          setOutputs([{ amount: utxo.value }]);
         }}>
         <span>UTXO #{index + 1}</span>
         <span>Sats: {utxo.value}</span>
@@ -150,13 +174,7 @@ function UtxoItem({ index, utxo, selected, onSelect }: UtxoItemProps) {
                 value={output.amount}
                 min={0}
                 max={utxo.value}
-                onChange={(e) => {
-                  if (Number(e.target.value) <= utxo.value) {
-                    handleOutputChange(i, 'amount', e.target.value);
-                  } else {
-                    handleOutputChange(i, 'amount', utxo.value.toString());
-                  }
-                }}
+                onChange={(e) => handleOutputChange(i, 'amount', e.target.value)}
               />
               <Input
                 placeholder="Recipient/Change Address"
@@ -170,10 +188,15 @@ function UtxoItem({ index, utxo, selected, onSelect }: UtxoItemProps) {
               />
             </Flex>
           ))}
-          <Button onClick={() => setOutputs([...outputs, {}])}>Add Output</Button>
           <Button
             onClick={() => {
-              if (outputs.length > 1) setOutputs(outputs.slice(0, -1));
+              handleAddOutput();
+            }}>
+            Add Output
+          </Button>
+          <Button
+            onClick={() => {
+              handleRemoveOutput(outputs.length - 1);
             }}>
             Remove Output
           </Button>

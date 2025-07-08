@@ -2,26 +2,19 @@ import { Button, Flex, Select, Spin } from 'antd';
 import './tx-builder-view.css';
 import { InputNumber } from 'antd';
 import { useState } from 'react';
-import { Input } from 'antd';
 import TxInputForm from './txInputForm/TxInputForm';
 import Tx from '@/btclib/transaction/Tx';
-import { Utxo } from '@/api/api';
-
-interface TOFProps {
-  onAdd: () => void;
-  onRemove: () => void;
-
-  index: number;
-}
+import { useTxBuilderStore } from '@/state/txBuilderStore';
 
 export default function TxBuilderView() {
+  const { formData } = useTxBuilderStore();
+
   const [tx, setTx] = useState<null | Tx>(null);
 
   const [version, setVersion] = useState(1);
   const [txType, setTxType] = useState('P2PK');
 
   const [inputCount, setInputCount] = useState(1);
-
 
   const options = [
     { value: 'P2PK', label: 'P2PK' },
@@ -35,9 +28,7 @@ export default function TxBuilderView() {
 
   const inputForms: React.ReactNode[] = [];
   for (let i = 0; i < inputCount; i++) {
-    inputForms.push(<TxInputForm key={i} onAdd={(utxo: Utxo) => {
-
-    }} index={i} onRemove={() => {}} />);
+    inputForms.push(<TxInputForm key={i} index={i} onRemove={() => {}} />);
   }
 
   return (
@@ -68,6 +59,7 @@ export default function TxBuilderView() {
       <Button
         onClick={() => {
           // TODO: pass in inputs/outputs
+          console.log(formData);
           // setTx(new Tx(version, [], [], 0, false));
         }}>
         Build TX
