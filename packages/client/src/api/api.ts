@@ -58,6 +58,7 @@ export type Utxo = {
   txid: string;
   value: number;
   vout: number;
+  scriptpubkey: string;
   status: {
     confirmed: boolean;
     block_height: number;

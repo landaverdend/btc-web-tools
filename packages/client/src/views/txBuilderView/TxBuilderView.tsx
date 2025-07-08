@@ -2,9 +2,13 @@ import { Button, Flex, Select, Spin } from 'antd';
 import './tx-builder-view.css';
 import { InputNumber } from 'antd';
 import { useState } from 'react';
-import TxInputForm from './txInputForm/TxInputForm';
+import TxInputForm, { TxFormData } from './txInputForm/TxInputForm';
 import Tx from '@/btclib/transaction/Tx';
 import { useTxBuilderStore } from '@/state/txBuilderStore';
+import TxOut from '@/btclib/transaction/TxOut';
+import TxIn from '@/btclib/transaction/TxIn';
+import { hexToBytes } from '@/btclib/util/helper';
+import { Script } from '@/btclib/script/Script';
 
 export default function TxBuilderView() {
   const { formData } = useTxBuilderStore();
@@ -15,6 +19,28 @@ export default function TxBuilderView() {
   const [txType, setTxType] = useState('P2PK');
 
   const [inputCount, setInputCount] = useState(1);
+
+  const buildTx = () => {
+    // TODO: pass in inputs/outputs
+    console.log(formData);
+
+    try {
+      const inputs: TxIn[] = [];
+      const outputs: TxOut[] = [];
+      for (const [prevTxId, theData] of formData) {
+        const { utxo } = theData;
+        // TODO: add the unlocking script...
+        const txin = new TxIn(hexToBytes(prevTxId), utxo.vout, 0xffffffff, new Script());
+        inputs.push(txin);
+      }
+
+      // TODO: build the outputs
+
+      const tx = new Tx(version, inputs, outputs, 0, false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const options = [
     { value: 'P2PK', label: 'P2PK' },
@@ -56,14 +82,9 @@ export default function TxBuilderView() {
         </Flex>
       </Flex>
 
-      <Button
-        onClick={() => {
-          // TODO: pass in inputs/outputs
-          console.log(formData);
-          // setTx(new Tx(version, [], [], 0, false));
-        }}>
-        Build TX
-      </Button>
+      <Button onClick={() => buildTx()}>Build TX</Button>
     </Flex>
   );
 }
+
+function validateFormData(formData: Map<string, TxFormData>) {}

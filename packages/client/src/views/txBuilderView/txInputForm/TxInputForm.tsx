@@ -4,11 +4,18 @@ import { Button, Flex, Input, Spin } from 'antd';
 import { useState } from 'react';
 import './tx-input-form.css';
 import { useTxBuilderStore } from '@/state/txBuilderStore';
+import { Script } from '@/btclib/script/Script';
 
-export interface TxInputFormData {
+export interface TxFormData {
   utxo: Utxo;
   outputs: Output[];
 }
+
+type Output = {
+  amount?: number;
+  address?: string;
+  scriptsig?: string;
+};
 
 interface TIFProps {
   onRemove: () => void;
@@ -103,12 +110,6 @@ export default function TxInputForm({}: TIFProps) {
   );
 }
 
-type Output = {
-  amount?: number;
-  address?: string;
-  signature?: string;
-};
-
 interface UtxoItemProps {
   index: number;
   utxo: Utxo;
@@ -183,8 +184,8 @@ function UtxoItem({ index, utxo, selected, onSelect }: UtxoItemProps) {
               />
               <Input
                 placeholder="Signature"
-                onChange={(e) => handleOutputChange(i, 'signature', e.target.value)}
-                value={output.signature}
+                onChange={(e) => handleOutputChange(i, 'scriptsig', e.target.value)}
+                value={output.scriptsig}
               />
             </Flex>
           ))}

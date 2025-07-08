@@ -43,6 +43,28 @@ const BASE_TESTNET_URL = 'https://blockstream.info/testnet/api/';
 // Initialize the FIFO cache with a reasonable size limit
 const responseCache = new ResponseCache(1000);
 
+type Config = {
+  type: 'hex' | 'json';
+  testnet?: boolean;
+};
+async function fetchTx(txid: string, { type, testnet }: Config) {
+  const accessToken = await TokenFetcher.getToken();
+  let url = `${testnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}`;
+
+  if (type === 'hex') {
+    url += '/hex';
+  }
+
+  const options = {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+
+  return fetch(url, options);
+}
+
 app.get('/tx/:txid', async (req, res) => {
   const { txid } = req.params;
   const { testnet } = req.query;
@@ -59,21 +81,9 @@ app.get('/tx/:txid', async (req, res) => {
     return;
   }
 
-  // If not in cache, fetch from API
-  const accessToken = await TokenFetcher.getToken();
-  const jsonUrl = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}`;
-  const hexUrl = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}/hex`;
-
-  const options = {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
-
   try {
-    const jsonResponse = await fetch(jsonUrl, options);
-    const hexResponse = await fetch(hexUrl, options);
+    const jsonResponse = await fetchTx(txid, { type: 'json', testnet: useTestnet });
+    const hexResponse = await fetchTx(txid, { type: 'hex', testnet: useTestnet });
 
     if (jsonResponse.status !== 200) {
       throw new Error(`Fetch failed: ${jsonResponse.statusText}`);
@@ -116,8 +126,6 @@ app.get('/address/:address/utxo', async (req, res) => {
     },
   };
 
-  console.log(url);
-
   try {
     const response = await fetch(url, options);
 
@@ -128,8 +136,17 @@ app.get('/address/:address/utxo', async (req, res) => {
 
     const data = await response.json();
 
-    console.log(data);
-    res.status(200).send(data);
+    // add scriptpubkey to data each utxo...
+    const toRet = [];
+    for (const utxo of data) {
+      const txJson = await fetchTx(utxo.txid, { type: 'json', testnet: useTestnet });
+      const txJsonData = await txJson.json();
+
+      const scriptpubkey = txJsonData.vout[utxo.vout].scriptpubkey;
+      toRet.push({ ...utxo, scriptpubkey });
+    }
+
+    res.status(200).send(toRet);
   } catch (error) {
     const errortext = error instanceof Error ? error.message : 'Generic Error';
     console.error(errortext);
