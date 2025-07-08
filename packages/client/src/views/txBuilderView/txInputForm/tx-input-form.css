@@ -1,0 +1,27 @@
+.tx-input-form {
+  border: 1px solid var(--soft-purple);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.utxo-item {
+  border: 1px solid var(--soft-red);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.utxo-item:hover {
+  cursor: pointer;
+  background-color: var(--input-gray);
+  border: 1px solid var(--soft-green);
+}
+
+.utxo-item.selected {
+  border: 1px solid var(--soft-green);
+}
+
+.utxo-output {
+  border: 1px solid var(--sky-blue);
+  padding: 10px;
+  border-radius: 5px;
+}

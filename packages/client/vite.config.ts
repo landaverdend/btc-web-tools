@@ -1,10 +1,23 @@
-import { defineConfig } from 'vite';
+import { defineConfig, ViteDevServer } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import svgr from 'vite-plugin-svgr';
 
+// Stupid workaround to get SPA
+const spaFallback = () => ({
+  name: 'spa-fallback',
+  configureServer(server: ViteDevServer) {
+    server.middlewares.use((req, _, next) => {
+      if (req.url?.startsWith('/txbuilder')) {
+        req.url = '/';
+      }
+      next();
+    });
+  },
+});
+
 export default defineConfig({
-  plugins: [react(), svgr()],
+  plugins: [react(), svgr(), spaFallback()],
   server: {
     port: 3000,
     proxy: {
@@ -19,6 +32,7 @@ export default defineConfig({
         secure: false,
       },
     },
+    middlewareMode: false,
   },
   envDir: path.resolve(__dirname, './'),
   resolve: {
