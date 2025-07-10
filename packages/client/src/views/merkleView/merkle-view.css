@@ -1,0 +1,4 @@
+.merkle-view-container {
+  background-color: var(--background-slate);
+  min-height: 100vh;
+}

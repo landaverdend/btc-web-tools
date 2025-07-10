@@ -24,6 +24,9 @@ export default function Navbar({}: NavbarProps) {
         <Link to={APP_ROUTES.Script} className={`navbar-list-item ${currentView === APP_ROUTES.Script ? 'active' : ''}`}>
           Script Debugger
         </Link>
+        <Link to={APP_ROUTES.Merkle} className={`navbar-list-item ${currentView === APP_ROUTES.Merkle ? 'active' : ''}`}>
+          Merkle Tree
+        </Link>
       </Flex>
     </Flex>
   );
