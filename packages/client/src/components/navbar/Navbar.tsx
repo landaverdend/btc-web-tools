@@ -24,9 +24,6 @@ export default function Navbar({}: NavbarProps) {
         <Link to={APP_ROUTES.Script} className={`navbar-list-item ${currentView === APP_ROUTES.Script ? 'active' : ''}`}>
           Script Debugger
         </Link>
-        <Link to={APP_ROUTES.TxBuilder} className={`navbar-list-item ${currentView === APP_ROUTES.TxBuilder ? 'active' : ''}`}>
-          Tx Broadcaster 
-        </Link>
       </Flex>
     </Flex>
   );
