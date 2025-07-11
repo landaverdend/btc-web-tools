@@ -42,7 +42,7 @@ scp -i "${SSH_KEY_PATH}" -o PreferredAuthentications=publickey -o StrictHostKeyC
 # Execute remote commands to reload the container
 echo "Deploying on remote server..."
 
-ssh -i "${SSH_KEY_PATH}" -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no "${LINODE_USERNAME}@${LINODE_SERVER}"
+ssh -i "${SSH_KEY_PATH}" -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no "${LINODE_USERNAME}@${LINODE_SERVER}" "
     sudo mkdir -p $TARGET_PATH && \
     sudo mv ~/$TAR_FILE_NAME $TARGET_PATH && \
     sudo mv ~/docker-compose.yml $TARGET_PATH && \
@@ -50,8 +50,9 @@ ssh -i "${SSH_KEY_PATH}" -o PreferredAuthentications=publickey -o StrictHostKeyC
     sudo docker load < $TAR_FILE_NAME && \
     sudo docker-compose down && \
     sudo docker-compose up -d && \
-    sudo rm $TAR_FILE_NAME
-"
+    sudo rm $TAR_FILE_NAME"
 
 # Clean up local tar file
+echo "Deployment complete! Cleaning up.." 
 rm $TAR_FILE_NAME
+docker rmi $IMAGE_NAME:latest
