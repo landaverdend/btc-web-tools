@@ -120,27 +120,30 @@ export default function MerkleView() {
   // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
   return (
     <Flex className="merkle-view-container" style={{ width: '100vw', height: '100vh' }} vertical justify="center" align="center">
-      <Flex className="merkle-view-header" vertical justify="center" align="center" gap={10}>
-        <span className="merkle-root-text">
-          Merkle Root: <ColoredText color="var(--sky-blue)">{tree.name}</ColoredText>
-        </span>
-
+      <Flex className="merkle-view-header" vertical justify="center" align="center" gap={20}>
         <p>
-          A merkle tree is a binary tree where each node is a hash of its children. In Bitcoin, merkle trees are used to create a
-          compact and easily verifiable fingerprint of a block and its transactions.
+          A <ColoredText color="var(--soft-orange)">Merkle Tree</ColoredText> is a binary tree where each node is a hash of its
+          children. In Bitcoin, merkle trees are used to create a compact and easily verifiable fingerprint of a block and its
+          transactions.
+          <br /> <br />
+          Changing any of the leaf nodes below will update the merkle root.
         </p>
 
         <Flex gap={5}>
           <Button onClick={() => setInputs([...inputs, `TX Data ${inputs.length + 1}`])}>Add Leaf Node</Button>
           <Button onClick={() => setInputs(inputs.slice(0, -1))}>Remove Leaf Node</Button>
         </Flex>
+
+        <span className="merkle-root-text">
+          Merkle Root: <ColoredText color="var(--sky-blue)">{tree.name}</ColoredText>
+        </span>
       </Flex>
 
       <Tree
         data={tree}
         orientation="vertical"
         depthFactor={-100}
-        pathClassFunc={(path) => {
+        pathClassFunc={() => {
           return 'merkle-tree-path';
         }}
         translate={{ x: window.innerWidth * 0.5, y: window.innerHeight * 0.5 }}

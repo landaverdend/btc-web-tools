@@ -8,6 +8,9 @@
   }
 
   .merkle-view-header {
+    margin-top: 25px;
+    width: 50%;
+
     margin-bottom: 20px;
     color: white;
     font-size: 18px;

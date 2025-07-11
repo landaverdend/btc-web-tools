@@ -16,6 +16,9 @@ export default function Navbar({}: NavbarProps) {
       </div>
 
       <Flex className="navbar-list" gap={15}>
+        <Link to={APP_ROUTES.About} className={`navbar-list-item ${currentView === APP_ROUTES.About ? 'active' : ''}`}>
+          About
+        </Link>
         <Link to={APP_ROUTES.Tx} className={`navbar-list-item ${currentView === APP_ROUTES.Tx ? 'active' : ''}`}>
           Tx Viewer
         </Link>
