@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 # Load environment variables at the start
 if [ -f .env ]; then
@@ -9,6 +7,26 @@ else
     exit 1
 fi
 
+# Add this after the .env loading and before the docker build command
+check_required_vars() {
+    local required_vars=("IMAGE_NAME" "SSH_KEY_PATH" "LINODE_USERNAME" "LINODE_SERVER" "TARGET_PATH")
+    local missing_vars=()
+    
+    for var in "${required_vars[@]}"; do
+        if [ -z "${!var}" ]; then
+            missing_vars+=("$var")
+        fi
+    done
+    
+    if [ ${#missing_vars[@]} -ne 0 ]; then
+        echo "Error: Missing required environment variables:"
+        printf '%s\n' "${missing_vars[@]}"
+        exit 1
+    fi
+}
+
+# Check for required environment variables
+check_required_vars
 
 docker build --platform linux/amd64 --no-cache -t $IMAGE_NAME:latest .
 
@@ -24,7 +42,7 @@ scp -i "${SSH_KEY_PATH}" -o PreferredAuthentications=publickey -o StrictHostKeyC
 # Execute remote commands to reload the container
 echo "Deploying on remote server..."
 
-ssh -i "${SSH_KEY_PATH}" -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no "${LINODE_USERNAME}@194.195.214.234" "
+ssh -i "${SSH_KEY_PATH}" -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no "${LINODE_USERNAME}@${LINODE_SERVER}"
     sudo mkdir -p $TARGET_PATH && \
     sudo mv ~/$TAR_FILE_NAME $TARGET_PATH && \
     sudo mv ~/docker-compose.yml $TARGET_PATH && \
