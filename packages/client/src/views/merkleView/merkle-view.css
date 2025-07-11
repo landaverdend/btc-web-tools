@@ -2,3 +2,13 @@
   background-color: var(--background-slate);
   min-height: 100vh;
 }
+
+.hash-text {
+  display: inline-block;
+  max-width: 300px; /* Set a max width for the hash */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  width: 100%;
+}

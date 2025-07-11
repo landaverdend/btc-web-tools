@@ -9,8 +9,6 @@ export default function Navbar({}: NavbarProps) {
   const location = useLocation();
   const currentView = '/' + location.pathname.substring(1) || 'script';
 
-  console.log(currentView);
-
   return (
     <Flex align="center" justify="space-between" className="navbar-container">
       <div className="navbar-logo">
