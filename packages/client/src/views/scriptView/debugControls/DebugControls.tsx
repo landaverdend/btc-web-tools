@@ -6,7 +6,7 @@ import Reset from '@assets/icons/reset.svg?react';
 import './debug-controls.css';
 
 export function DebugControls() {
-  const { step, reset, run } = useScriptDebugger();
+  const { step, reset, run, stopDebugger } = useScriptDebugger();
 
   return (
     <div className="flex-column debug-controls-container">
@@ -38,13 +38,14 @@ export function DebugControls() {
           <Reset
             onClick={() => {
               reset();
+              stopDebugger();
             }}
             height={22}
             width={22}
           />
         </SvgTooltip>
       </div>
-      <TxFetcher includeDemoTxs includeTaprootWarning includeInputSelector/>
+      <TxFetcher includeDemoTxs includeTaprootWarning includeInputSelector />
     </div>
   );
 }

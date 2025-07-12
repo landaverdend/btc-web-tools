@@ -8,6 +8,8 @@ interface ExecutionState {
   updateFromEngine: (ctx: ExecutionContext) => void;
   executionStatus: ScriptExecutionStatus;
   setExecutionStatus: (status: ScriptExecutionStatus) => void;
+  debuggerIntervalId: NodeJS.Timeout | null;
+  setDebuggerIntervalId: (intervalId: NodeJS.Timeout | null) => void;
 }
 
 export const useExecutionStore = create<ExecutionState>((set) => ({
@@ -25,5 +27,9 @@ export const useExecutionStore = create<ExecutionState>((set) => ({
   },
   setExecutionStatus: (status: ScriptExecutionStatus) => {
     set({ executionStatus: status });
+  },
+  debuggerIntervalId: null,
+  setDebuggerIntervalId: (intervalId: NodeJS.Timeout | null) => {
+    set({ debuggerIntervalId: intervalId });
   },
 }));

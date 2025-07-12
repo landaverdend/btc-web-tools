@@ -25,18 +25,6 @@ app.use(
   })
 );
 
-// Serve static files from the public directory
-app.use(express.static('public'));
-
-// Catch all other routes and return the index.html file
-app.get('/', (_, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
 const BASE_URL = 'https://blockstream.info/api/';
 const BASE_TESTNET_URL = 'https://blockstream.info/testnet/api/';
 
@@ -152,4 +140,16 @@ app.get('/address/:address/utxo', async (req, res) => {
     console.error(errortext);
     res.status(500).send(errortext);
   }
+});
+
+// Serve static files from the public directory
+app.use(express.static('public'));
+
+// Catch all other routes and return the index.html file
+app.get('*', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

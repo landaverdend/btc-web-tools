@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 export function useScriptDebugger() {
   const { script } = useScriptEditorStore();
   const { tx, txMetadata, selectedInput } = useTxStore();
-  const { updateFromEngine, setExecutionStatus } = useExecutionStore();
+  const { updateFromEngine, setExecutionStatus, setDebuggerIntervalId, debuggerIntervalId } = useExecutionStore();
 
   const engine = ScriptExecutionEngine.getInstance();
 
@@ -30,17 +30,26 @@ export function useScriptDebugger() {
   }
 
   function run() {
-    const intervalId = setInterval(() => {
+    const interval = setInterval(() => {
       engine.step();
 
       updateGlobalState();
 
       if (engine.isDone()) {
-        clearInterval(intervalId);
+        clearInterval(interval);
+        setDebuggerIntervalId(null);
       }
     }, 300);
 
+    setDebuggerIntervalId(interval);
     updateGlobalState();
+  }
+
+  function stopDebugger() {
+    if (debuggerIntervalId) {
+      clearInterval(debuggerIntervalId);
+      setDebuggerIntervalId(null);
+    }
   }
 
   function step() {
@@ -60,5 +69,6 @@ export function useScriptDebugger() {
     run,
     getNextArgument,
     reset,
+    stopDebugger,
   };
 }

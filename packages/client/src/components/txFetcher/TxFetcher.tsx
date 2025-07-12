@@ -97,7 +97,7 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
 
   // Hooks
   const { fetchTransaction, error, isLoading } = useFetchTx();
-  const { reset } = useScriptDebugger();
+  const { reset, stopDebugger } = useScriptDebugger();
 
   // Local State Variables
   const [txid, setTxid] = useState('');
@@ -111,6 +111,7 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
   };
 
   const handleFetch = async (txidf?: string) => {
+    stopDebugger();
     reset();
     resetTxStore();
 
