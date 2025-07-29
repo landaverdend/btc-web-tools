@@ -2,6 +2,7 @@ import { defineConfig, ViteDevServer } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import svgr from 'vite-plugin-svgr';
+import tailwindcss from '@tailwindcss/vite';
 
 // Stupid workaround to get SPA
 const spaFallback = () => ({
@@ -17,7 +18,7 @@ const spaFallback = () => ({
 });
 
 export default defineConfig({
-  plugins: [react(), svgr(), spaFallback()],
+  plugins: [react(), svgr(), spaFallback(), tailwindcss()],
   server: {
     port: 3000,
     proxy: {

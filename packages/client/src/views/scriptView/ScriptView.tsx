@@ -5,6 +5,7 @@ import { Tooltip } from 'react-tooltip';
 import { DebugControls } from './debugControls/DebugControls';
 
 export default function ScriptView() {
+  
   return (
     <div>
       <div className="flex-row script-view-container">

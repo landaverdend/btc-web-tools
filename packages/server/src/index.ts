@@ -15,7 +15,24 @@ const PORT = process.env['PORT'] || 3000;
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+// Environment-based CORS configuration
+function getAllowedOrigins(): string[] {
+  const isDev = process.env['NODE_ENV'] === 'development';
+
+  console.log('isDev', isDev);
+  // Base origins for landaverde.io
+  const baseOrigins = ['https://landaverde.io', 'http://landaverde.io'];
+
+  // Add localhost origins for development
+  const developmentOrigins = isDev ? ['http://localhost:3000', 'http://127.0.0.1:3000'] : [];
+  console.log('developmentOrigins', developmentOrigins);
+
+  // Combine all origins and remove duplicates
+  const allOrigins = [...baseOrigins, ...developmentOrigins];
+  return [...new Set(allOrigins)];
+}
+
+const allowedOrigins = getAllowedOrigins();
 
 app.use(express.json());
 app.use(

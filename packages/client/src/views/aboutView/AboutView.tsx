@@ -1,4 +1,3 @@
-import { Flex } from 'antd';
 import './about-view.css';
 import ColoredText from '@/components/coloredText/ColoredText';
 import bitcoinStandard from '@assets/bookRecs/bitcoinStandard.webp';
@@ -7,13 +6,12 @@ import historyOfMoneyAndBanking from '@assets/bookRecs/historyOfMoneyAndBanking.
 
 export default function AboutView() {
   return (
-    <Flex className="about-view-container" vertical align="center">
-      <h1>
-        {' '}
-        <ColoredText color="var(--soft-orange)">About this site</ColoredText>
+    <div className="flex flex-col justify-center items-center gap-10 text-zinc-50 bg-(--header-gray) p-5">
+      <h1 className="text-2xl font-bold">
+        <ColoredText color="var(--soft-orange-light)">About this site</ColoredText>
       </h1>
 
-      <p color="white">
+      <p className="text-lg w-4/5">
         This is mostly just a collection of little tools and visual-aids for my own learning. Maybe some day I'll add more stuff
         and build out a proper educational site for learning about the Bitcoin protocol.
         <br /> <br />
@@ -25,12 +23,13 @@ export default function AboutView() {
         <br /> <br />
         For understanding Bitcoin from an economic perspective, I have found the following books to be great resources:
         <br /> <br />
-        <Flex gap={16} justify="center" align="center">
-          <img src={bitcoinStandard}></img>
-          <img src={brokenMoney}></img>
-          <img src={historyOfMoneyAndBanking}></img>
-        </Flex>
       </p>
-    </Flex>
+
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-5 w-4/5">
+        <img src={bitcoinStandard} className="w-[300px] h-[450px]"></img>
+        <img src={brokenMoney} className="w-[300px] h-[450px]"></img>
+        <img src={historyOfMoneyAndBanking} className="w-[300px] h-[450px]"></img>
+      </div>
+    </div>
   );
 }
