@@ -1,4 +1,3 @@
-import './about-view.css';
 import ColoredText from '@/components/coloredText/ColoredText';
 import bitcoinStandard from '@assets/bookRecs/bitcoinStandard.webp';
 import brokenMoney from '@assets/bookRecs/brokenMoney.webp';

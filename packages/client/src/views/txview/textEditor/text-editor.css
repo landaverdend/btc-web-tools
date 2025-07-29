@@ -1,6 +1,10 @@
-.text-editor-container {
-  flex: 1;
-  align-items: center;
-  min-height: 100vh;
+.ace_editor {
+  width: 100vw !important;
 }
 
+@media (min-width: 768px) {
+  .ace_editor {
+    width: 40vw !important;
+    height: 100vh !important;
+  }
+}

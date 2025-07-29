@@ -1,4 +1,3 @@
-import './tx-hex-view.css';
 import { PlacesType, Tooltip } from 'react-tooltip';
 import { createPortal } from 'react-dom';
 import { TxInLE, TxOutLE, WitnessDataLE } from '@/types/tx';

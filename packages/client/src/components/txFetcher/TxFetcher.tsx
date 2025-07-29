@@ -128,12 +128,12 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
 
       setSelectedInput(0);
       setTxMetadata(response.txJson);
-      setTx(tx); // Set the global tx state
+      setTx(tx);
     }
   };
 
   return (
-    <div className="flex-column tx-fetcher-container">
+    <div className="flex flex-col tx-fetcher-container">
       {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} />}
 
       <h3 className="flex-row">

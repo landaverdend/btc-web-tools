@@ -1,5 +1,4 @@
 import { Link, useLocation } from 'react-router-dom';
-import './navbar.css';
 import logo from '@assets/btc.png';
 import { APP_ROUTES } from '@/App';
 
