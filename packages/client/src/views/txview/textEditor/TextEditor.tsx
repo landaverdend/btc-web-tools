@@ -10,7 +10,7 @@ export default function TextEditor() {
 
   return (
     <div className="flex flex-col sm:w-auto">
-      <div className="flex-row header-panel relative">Parsed JSON</div>
+      <div className="flex flex-row items-center justify-center relative text-white bg-(--header-gray)">Parsed JSON</div>
       <AceEditor
         mode="json"
         theme="twilight"

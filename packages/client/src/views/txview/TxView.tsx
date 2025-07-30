@@ -5,7 +5,7 @@ import { TxFetcher } from '@/components/txFetcher/TxFetcher';
 
 export default function TxView() {
   return (
-    <div className="flex flex-col md:flex-row gap-10 bg-(--input-gray) w-screen h-screen">
+    <div className="flex flex-col md:flex-row gap-10 bg-(--input-gray) w-screen">
       <TextEditor />
       <TxFetcher includeDemoTxs={true} />
       <TxHexView />

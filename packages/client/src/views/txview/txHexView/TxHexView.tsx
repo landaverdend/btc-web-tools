@@ -25,12 +25,12 @@ function Bytefield({ bytes, color, toolTips }: TBProps) {
   const id = crypto.randomUUID();
 
   const tooltips = toolTips.map(({ content, place }, i) => {
-    return <Tooltip key={i} id={id} style={{ zIndex: 1000 }} place={place ? place : 'left'} content={content} />;
+    return <Tooltip key={content} id={id} style={{ zIndex: 1000 }} place={place ? place : 'left'} content={content} />;
   });
 
   return (
     <>
-      <a id={id} data-tooltip-id={id} style={{ color }}>
+      <a id={id} data-tooltip-id={id} style={{ color }} className="break-all">
         {bytes}
       </a>
       {/* Stupid fucking hack */}
@@ -47,10 +47,9 @@ export default function TxHexView({}: TXHVProps) {
 
   // Only build the tx if we don't have an active error on that string
   return (
-    <Flex vertical id="test" className="tx-hex-view-container" align="center">
-      <div className="flex-row header-panel">Byte Encoding</div>
-
-      <p className="tx-bytes">
+    <div className="flex flex-col items-center justify-start bg-(--background-slate)">
+      <div className="flex flex-row items-center justify-center w-full text-white bg-(--header-gray) break-all">Byte Encoding</div>
+      <p className="text-wrap w-9/10 text-left pt-3">
         {txLE && (
           <>
             <Bytefield
@@ -79,7 +78,7 @@ export default function TxHexView({}: TXHVProps) {
           </>
         )}
       </p>
-    </Flex>
+    </div>
   );
 }
 

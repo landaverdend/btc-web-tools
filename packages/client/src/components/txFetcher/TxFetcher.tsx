@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import './tx-fetcher.css';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
 import ColoredText from '@/components/coloredText/ColoredText';
@@ -78,10 +77,10 @@ function DemoTxsDropdown({ fetchDemo }: DemoTxsDropdownProps) {
   ];
 
   return (
-    <Flex vertical justify="center" align="center" gap={5}>
-      <span style={{ fontSize: '14px', color: 'var(--soft-orange)' }}>Demo Transactions</span>
-      <Select style={{ width: '100%' }} options={options} labelRender={labelRender} onSelect={handleSelect}></Select>{' '}
-    </Flex>
+    <div className="flex flex-col justify-center items-center gap-5">
+      <span className="text-(--soft-orange) text-lg">Demo Transactions</span>
+      <Select className="w-4/5" options={options} labelRender={labelRender} onSelect={handleSelect}></Select>{' '}
+    </div>
   );
 }
 
@@ -133,10 +132,10 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
   };
 
   return (
-    <div className="flex flex-col tx-fetcher-container">
+    <div className="flex flex-col items-center p-2 gap-5 h-fit w-full sm:w-auto rounded-md bg-(--header-gray)">
       {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} />}
 
-      <h3 className="flex-row">
+      <h3 className="flex flex-col items-center text-white text-lg font-bold">
         Transaction Fetcher
         {includeTaprootWarning && (
           <SvgTooltip tooltipContent="Taproot Transactions not currently supported">
@@ -145,29 +144,34 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
         )}
       </h3>
 
-      <div className="flex-column tx-fetcher-input-container">
-        <label htmlFor="txid" className="flex-column">
-          Transaction ID
+      <div className="flex flex-col gap-3  items-center">
+        <label htmlFor="txid" className="flex flex-col items-start gap-2 w-full">
+          <span className="text-white text-md">Transaction ID</span>
           <input
             id="txid"
             placeholder="Transaction ID"
             type="text"
             value={txid}
             onChange={(e) => setTxid(e.target.value)}
-            style={{ border: error ? '1px solid red' : 'none' }}
+            className={` bg-white rounded-md p-[5px] w-full  ${error ? 'border-red-500' : 'border-gray-300'}`}
           />
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+          {error && <p className="text-red-500">{error}</p>}
         </label>
 
-        <div className="flex-row tx-fetcher-buttons">
-          <button onClick={() => handleFetch()}>Fetch</button>
+        <div className="flex flex-row gap-2 w-full">
+          <button
+            onClick={() => handleFetch()}
+            className="flex-1 bg-amber-500 rounded-md text-white p-0.5 hover:opacity-80 cursor-pointer">
+            Fetch
+          </button>
           <button
             onClick={() => {
               reset();
               resetTxStore();
               setSelectedDemoTx(null);
             }}
-            id="reset">
+            id="reset"
+            className="flex-1 bg-(--soft-red) rounded-md p-0.5 text-white hover:opacity-80 cursor-pointer">
             Reset
           </button>
         </div>
@@ -207,13 +211,13 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
   };
 
   return (
-    <div className="flex-column tx-details-container">
+    <div className="flex flex-col items-start gap-1 w-full">
       {txMetadata && (
-        <div className="flex-column tx-metadata-container">
-          <div className="tx-metadata">
-            Tx ID:{' '}
+        <div className="flex flex-col">
+          <div className="flex flex-row items-center justify-center w-full gap-2 truncate">
+            <span className="text-white">Tx ID: </span>
             <CopyHover>
-              <ColoredText color="var(--soft-green)">{txid}</ColoredText>
+              <span className="text-(--soft-green) truncate max-w-[300px] inline-block">{txid}</span>
             </CopyHover>
           </div>
 

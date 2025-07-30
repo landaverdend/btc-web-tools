@@ -34,7 +34,7 @@ export function CopyHover({ children }: CopyHoverProps) {
 
   return (
     <span
-      className="copy-hover-container"
+      className="copy-hover-container flex flex-row items-center justify-center"
       onMouseOver={() => {
         setIsHovered(true);
       }}
