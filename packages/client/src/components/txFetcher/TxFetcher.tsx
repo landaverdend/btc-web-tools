@@ -132,7 +132,7 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
   };
 
   return (
-    <div className="flex flex-0.5 flex-col items-center p-2 gap-5 h-fit w-full sm:w-auto rounded-md bg-(--header-gray)">
+    <div className="flex flex-0.5 flex-col items-center p-2 gap-5 h-fit md:w-[25vw] sm:w-auto rounded-md bg-(--header-gray)">
       {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} />}
 
       <h3 className="flex flex-col items-center text-white text-lg font-bold">
@@ -211,13 +211,13 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
   };
 
   return (
-    <div className="flex flex-col items-start gap-1 w-full">
+    <div className="flex flex-col items-center gap-1 ">
       {txMetadata && (
-        <div className="flex flex-col">
+        <div className="flex flex-col items-center justify-center">
           <div className="flex flex-row items-center justify-center w-full gap-2 truncate">
             <span className="text-white">Tx ID: </span>
             <CopyHover>
-              <span className="text-(--soft-green) truncate max-w-[300px] inline-block">{txid}</span>
+              <span className="text-(--soft-green) truncate w-[200px] inline-block">{txid}</span>
             </CopyHover>
           </div>
 
