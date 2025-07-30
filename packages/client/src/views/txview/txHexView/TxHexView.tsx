@@ -47,7 +47,7 @@ export default function TxHexView({}: TXHVProps) {
 
   // Only build the tx if we don't have an active error on that string
   return (
-    <div className="flex flex-col items-center justify-start bg-(--background-slate)">
+    <div className="flex flex-1 flex-col items-center justify-start bg-(--background-slate) w-full min-h-[200px]">
       <div className="flex flex-row items-center justify-center w-full text-white bg-(--header-gray) break-all">Byte Encoding</div>
       <p className="text-wrap w-9/10 text-left pt-3">
         {txLE && (

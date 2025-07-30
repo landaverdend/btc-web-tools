@@ -9,8 +9,8 @@ export default function TextEditor() {
   const { txMetadata } = useTxStore();
 
   return (
-    <div className="flex flex-col sm:w-auto">
-      <div className="flex flex-row items-center justify-center relative text-white bg-(--header-gray)">Parsed JSON</div>
+    <div className="flex flex-1 flex-col sm:w-auto">
+      <div className="flex flex-row items-center justify-center text-white bg-(--header-gray)">Parsed JSON</div>
       <AceEditor
         mode="json"
         theme="twilight"

@@ -132,7 +132,7 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
   };
 
   return (
-    <div className="flex flex-col items-center p-2 gap-5 h-fit w-full sm:w-auto rounded-md bg-(--header-gray)">
+    <div className="flex flex-0.5 flex-col items-center p-2 gap-5 h-fit w-full sm:w-auto rounded-md bg-(--header-gray)">
       {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} />}
 
       <h3 className="flex flex-col items-center text-white text-lg font-bold">
