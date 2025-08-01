@@ -29,7 +29,7 @@ function Bytefield({ bytes, color, toolTips }: TBProps) {
 
   return (
     <>
-      <a id={id} data-tooltip-id={id} style={{ color }} className="break-all">
+      <a id={id} data-tooltip-id={id} style={{ color }} className="break-all hover:bg-(--soft-orange)/30">
         {bytes}
       </a>
       {/* Stupid fucking hack */}

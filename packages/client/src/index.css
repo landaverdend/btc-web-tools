@@ -5,15 +5,10 @@ body {
   margin: 0;
 }
 
-.flex-column {
-  display: flex;
-  flex-direction: column;
+.svg-hover {
+  @apply hover:bg-(--soft-orange)/10 rounded-md p-2 cursor-pointer h-10 w-10;
 }
 
-.flex-row {
-  display: flex;
-  flex-direction: row;
-}
 
 :root {
   --sky-blue: rgb(56, 189, 248);

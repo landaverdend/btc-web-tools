@@ -3,23 +3,21 @@ import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import Stepover from '@assets/icons/stepover.svg?react';
 import Play from '@assets/icons/play.svg?react';
 import Reset from '@assets/icons/reset.svg?react';
-import './debug-controls.css';
 
 export function DebugControls() {
   const { step, reset, run, stopDebugger } = useScriptDebugger();
 
   return (
-    <div className="flex-column debug-controls-container">
-      <h3>Controls</h3>
-      <div className="flex-row control-dock">
+    <div className="flex flex-0.25 flex-col items-center gap-10">
+      <h3 className="text-white text-lg font-bold mt-5">Controls</h3>
+      <div className="flex flex-row items-center justify-center gap-1 p-2 rounded-md bg-(--header-gray)">
         <SvgTooltip tooltipContent="Run">
           <Play
             onClick={() => {
               run();
             }}
-            height={24}
-            width={24}
             style={{ fill: 'var(--soft-green)' }}
+            className="svg-hover"
           />
         </SvgTooltip>
 
@@ -28,9 +26,8 @@ export function DebugControls() {
             onClick={() => {
               step();
             }}
-            height={20}
-            width={20}
             style={{ fill: 'var(--sky-blue)' }}
+            className="svg-hover"
           />
         </SvgTooltip>
 
@@ -40,8 +37,7 @@ export function DebugControls() {
               reset();
               stopDebugger();
             }}
-            height={22}
-            width={22}
+            className="svg-hover"
           />
         </SvgTooltip>
       </div>

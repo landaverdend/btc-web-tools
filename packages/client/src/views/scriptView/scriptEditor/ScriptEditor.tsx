@@ -7,7 +7,6 @@ import * as ace from 'ace-builds/src-noconflict/ace';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScriptMode } from '../ace-modes/ScriptMode';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
-import './script-editor.css';
 import { Range } from 'ace-builds';
 import { compileScript } from '@/btclib/script/scriptCompiler';
 import { IAceEditor } from 'react-ace/lib/types';
@@ -19,6 +18,7 @@ import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { scriptCompleter } from './scriptCompleter';
 import BeautifyIcon from '@assets/icons/beautify.svg?react';
 import { SvgTooltip } from '../debugControls/DebugControls';
+import './script-editor.css';
 
 const ASM_SCRIPT_MODE = new ScriptMode();
 const PC_MARKER_CLASS = 'debug-program-counter';
@@ -190,21 +190,31 @@ export function ScriptEditor({}: ScriptEditorProps) {
     }
   }, []);
 
+  const activeTabClass = 'text-(--soft-orange-light) bg-(--input-gray)';
+
   return (
-    <div className="flex-column script-editor-container">
-      <div className="flex-row script-debugger-header">
-        <div className="script-tabs">
-          <span className={`script-tab ${activeTab === 'asm' ? 'active-tab' : ''}`} onClick={() => setActiveTab('asm')}>
+    <div className="flex flex-1 flex-col">
+      <div className="flex flex-row justify-between items-center bg-(--header-gray)">
+        <div className="flex flex-row gap-2 ml-10">
+          <span
+            className={`text-lg font-bold p-2.5 cursor-pointer hover:bg-(--input-gray)/50 ${
+              activeTab === 'asm' ? activeTabClass : 'text-white'
+            }`}
+            onClick={() => setActiveTab('asm')}>
             ASM
           </span>
-          <span className={`script-tab ${activeTab === 'hex' ? 'active-tab' : ''}`} onClick={() => setActiveTab('hex')}>
+          <span
+            className={`text-lg font-bold p-2.5 cursor-pointer hover:bg-(--input-gray)/50 ${
+              activeTab === 'hex' ? activeTabClass : 'text-white'
+            }`}
+            onClick={() => setActiveTab('hex')}>
             HEX
           </span>
         </div>
 
-        {compileError && <div className="error-message">{compileError.message}</div>}
+        {compileError && <div className="text-red-500 font-bold">{compileError.message}</div>}
         <SvgTooltip tooltipContent="Format ASM: Alt+Shift+F">
-          <BeautifyIcon height={24} width={24} className="beautify-icon" onClick={beautifyASM} />
+          <BeautifyIcon className="cursor-pointer hover:bg-(--input-gray)/50 mr-5 p-1 h-12 w-12" onClick={beautifyASM} />
         </SvgTooltip>
       </div>
 
@@ -213,8 +223,6 @@ export function ScriptEditor({}: ScriptEditorProps) {
         mode={ASM_SCRIPT_MODE}
         theme="twilight"
         value={activeTab === 'asm' ? scriptASM : scriptHex}
-        height="100%"
-        width="100%"
         onChange={handleChange}
         setOptions={{
           showPrintMargin: false,

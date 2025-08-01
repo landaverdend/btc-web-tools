@@ -1,8 +1,12 @@
-.script-editor-container {
-  flex: 1;
-  align-items: center;
+.ace-editor {
+  width: 100vw !important;
+}
 
-  height: 100vh;
+@media (min-width: 768px) {
+  .ace-editor {
+    width: 100% !important;
+    height: 100vh !important;
+  }
 }
 
 .debug-active {
@@ -12,58 +16,4 @@
 .debug-program-counter {
   background-color: rgba(39, 102, 238, 0.488) !important;
   position: absolute;
-}
-
-.script-debugger-header {
-  gap: 10px;
-  align-items: center;
-  justify-content: flex-start;
-
-  height: 25px;
-  padding: 10px 0 10px 0;
-
-  font-family: Arial, sans-serif !important;
-  font-size: 1.1rem;
-  background-color: var(--header-gray);
-
-  color: white;
-  width: 100%;
-}
-
-.beautify-icon {
-  margin: 5px 2.5px 0 0;
-}
-
-.beautify-icon:hover {
-  background-color: var(--input-gray);
-  cursor: pointer;
-}
-
-.error-message {
-  color: red;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.script-tabs {
-  display: flex;
-  flex-direction: row;
-
-  margin-left: 50px;
-
-  .script-tab {
-    cursor: pointer;
-    padding: 15px;
-    border-radius: 5px 5px 0 0;
-    background-color: var(--header-gray);
-
-    &:hover {
-      background-color: var(--input-gray);
-    }
-  }
-
-  .active-tab {
-    color: var(--soft-orange-light);
-    background-color: var(--input-gray);
-  }
 }

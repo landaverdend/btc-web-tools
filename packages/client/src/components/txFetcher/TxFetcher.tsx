@@ -132,10 +132,10 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
   };
 
   return (
-    <div className="flex flex-0.5 flex-col items-center p-2 gap-5 h-fit md:w-[25vw] sm:w-auto rounded-md bg-(--header-gray)">
+    <div className="flex flex-0.25 flex-col items-center p-2 gap-5 h-fit md:w-[15vw] sm:w-auto rounded-md bg-(--header-gray)">
       {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} />}
 
-      <h3 className="flex flex-col items-center text-white text-lg font-bold">
+      <h3 className="flex flex-row gap-2 items-center text-white text-lg font-bold">
         Transaction Fetcher
         {includeTaprootWarning && (
           <SvgTooltip tooltipContent="Taproot Transactions not currently supported">
@@ -153,7 +153,7 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
             type="text"
             value={txid}
             onChange={(e) => setTxid(e.target.value)}
-            className={` bg-white rounded-md p-[5px] w-full  ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={` text-black bg-white rounded-md p-[5px] w-full  ${error ? 'border-red-500' : 'border-gray-300'}`}
           />
           {error && <p className="text-red-500">{error}</p>}
         </label>
@@ -217,7 +217,7 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
           <div className="flex flex-row items-center justify-center w-full gap-2 truncate">
             <span className="text-white">Tx ID: </span>
             <CopyHover>
-              <span className="text-(--soft-green) truncate w-[200px] inline-block">{txid}</span>
+              <span className="text-(--soft-green) truncate w-[175px] inline-block">{txid}</span>
             </CopyHover>
           </div>
 
@@ -230,17 +230,24 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
       )}
 
       {showInputs && (
-        <Flex vertical className="input-selection" gap={5}>
+        <div className="flex flex-col items-center text-white">
           Input Select
           {txMetadata.vin.map((input, i) => {
+            const isActive = i === selectedInput;
+
             return (
-              <div key={i} className={`txin-item ${i === selectedInput ? 'active' : ''}`} onClick={() => handleSelectInput(i)}>
-                <ColoredText color="var(--soft-purple)">{input.prevout?.scriptpubkey_type}</ColoredText>:{' '}
-                <CopyHover>{input.txid}</CopyHover>
+              <div
+                key={i}
+                className={`flex flex-row gap-1 p-2 ${isActive ? 'bg-(--soft-orange)/10 p-1 rounded-md' : ''} cursor-pointer`}
+                onClick={() => handleSelectInput(i)}>
+                <span className="text-(--soft-purple)">{input.prevout?.scriptpubkey_type}</span>:{' '}
+                <CopyHover>
+                  <span className={`text-${isActive ? '(--soft-green)' : 'white'} truncate w-[150px] `}>{input.txid}</span>
+                </CopyHover>
               </div>
             );
           })}
-        </Flex>
+        </div>
       )}
     </div>
   );
