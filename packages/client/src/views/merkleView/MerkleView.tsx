@@ -1,10 +1,9 @@
-import { Button, Flex, Input } from 'antd';
+import { Button, Input } from 'antd';
 import './merkle-view.css';
 import Tree, { CustomNodeElementProps, RawNodeDatum } from 'react-d3-tree';
 import { hash256 } from '@/btclib/hash/hashUtil';
 import { bytesToHex } from '@/btclib/util/helper';
 import { useState } from 'react';
-import ColoredText from '@/components/coloredText/ColoredText';
 
 // Build a merkle tree from a list of input strings
 function generateTree(inputs: string[]): RawNodeDatum {
@@ -119,38 +118,42 @@ export default function MerkleView() {
 
   // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
   return (
-    <Flex className="merkle-view-container" style={{ width: '100vw', height: '100vh' }} vertical justify="center" align="center">
-      <Flex className="merkle-view-header" vertical justify="center" align="center" gap={20}>
+    <div className="flex flex-col justify-center items-center text-white bg-(--background-slate) md:h-screen">
+      <div className="flex flex-col justify-center items-center gap-5 text-lg w-3/4 mt-20 ">
         <p>
-          A <ColoredText color="var(--soft-orange)">Merkle Tree</ColoredText> is a binary tree where each node is a hash of its
-          children. In Bitcoin, merkle trees are used to create a compact and easily verifiable fingerprint of a block and its
-          transactions.
+          A <span className="text-(--soft-orange)">Merkle Tree</span> is a binary tree where each node is a hash of its children.
+          In Bitcoin, merkle trees are used to create a compact and easily verifiable fingerprint of a block and its transactions.
           <br /> <br />
           Changing any of the leaf nodes below will update the merkle root.
         </p>
 
-        <Flex gap={5}>
+        <div className="flex flex-row gap-5">
           <Button onClick={() => setInputs([...inputs, `TX Data ${inputs.length + 1}`])}>Add Leaf Node</Button>
-          <Button onClick={() => setInputs(inputs.slice(0, -1))}>Remove Leaf Node</Button>
-        </Flex>
+          {inputs.length > 1 && <Button onClick={() => setInputs(inputs.slice(0, -1))}>Remove Leaf Node</Button>}
+        </div>
 
-        <span className="merkle-root-text">
-          Merkle Root: <ColoredText color="var(--sky-blue)">{tree.name}</ColoredText>
+        <span className="flex flex-col items-center md:flex-row gap-1">
+          Merkle Root: <span className="text-(--sky-blue) max-w-[90vw] truncate">{tree.name}</span>
         </span>
-      </Flex>
+      </div>
 
       <Tree
         data={tree}
         orientation="vertical"
         depthFactor={-100}
+        zoom={window.innerWidth > 768 ? 1 : 0.75}
         pathClassFunc={() => {
           return 'merkle-tree-path';
         }}
-        translate={{ x: window.innerWidth * 0.5, y: window.innerHeight * 0.5 }}
+        translate={
+          window.innerWidth > 768
+            ? { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5 }
+            : { x: window.innerWidth * 0.8, y: window.innerHeight * 0.35 }
+        }
         renderCustomNodeElement={(rd3tProps) => {
           return InputNode(rd3tProps, onLeafChange);
         }}
       />
-    </Flex>
+    </div>
   );
 }
