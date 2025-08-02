@@ -8,7 +8,7 @@ import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { UnlockingScriptBuilder } from '@/btclib/script/UnlockingScriptBuilder';
 import AlertIcon from '@assets/icons/alert.svg?react';
 import { SvgTooltip } from '@/views/scriptView/debugControls/DebugControls';
-import { Flex, Select, Spin } from 'antd';
+import { Select, Spin } from 'antd';
 
 const DEMO_TX_IDS = [
   'e827a366ad4fc9a305e0901fe1eefc7e9fb8d70655a079877cf1ead0c3618ec0', // P2PK
