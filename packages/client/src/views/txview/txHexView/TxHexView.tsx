@@ -2,6 +2,7 @@ import { PlacesType, Tooltip } from 'react-tooltip';
 import { createPortal } from 'react-dom';
 import { TxInLE, TxOutLE, WitnessDataLE } from '@/types/tx';
 import { useTxStore } from '@/state/txStore';
+import React from 'react';
 
 const COLORS = {
   version: 'var(--soft-purple)',
@@ -89,7 +90,7 @@ function InputBytes({ inputs }: { inputs: TxInLE[] }) {
       {inputs.map(({ txid, vout, scriptSig, sequence }, i) => {
         const txnum = { content: `Input ${i}` };
         return (
-          <>
+          <React.Fragment key={`input-${i}`}>
             <Bytefield
               key={txid}
               bytes={txid}
@@ -119,7 +120,7 @@ function InputBytes({ inputs }: { inputs: TxInLE[] }) {
               color={COLORS.inputs}
               toolTips={[txnum, { content: 'Sequence Number', place: 'top' }]}
             />
-          </>
+          </React.Fragment>
         );
       })}
     </>
@@ -130,7 +131,7 @@ function OutputBytes({ outputs }: { outputs: TxOutLE[] }) {
   return (
     <>
       {outputs.map(({ amount, scriptPubkey }, i) => (
-        <>
+        <React.Fragment key={`output-${i}`}>
           <Bytefield
             key={amount}
             bytes={amount}
@@ -158,7 +159,7 @@ function OutputBytes({ outputs }: { outputs: TxOutLE[] }) {
               { content: `Script Pubkey`, place: 'bottom' },
             ]}
           />
-        </>
+        </React.Fragment>
       ))}
     </>
   );
@@ -173,7 +174,7 @@ function WitnessBytes({ witnesses }: { witnesses?: WitnessDataLE[] }) {
             const witnessNum = { content: `Witness ${i}` };
 
             return (
-              <>
+              <React.Fragment key={`witness-${i}`}>
                 <Bytefield
                   bytes={witness.stackLength}
                   color={COLORS.witnesses}
@@ -195,7 +196,7 @@ function WitnessBytes({ witnesses }: { witnesses?: WitnessDataLE[] }) {
                     </>
                   );
                 })}
-              </>
+              </React.Fragment>
             );
           })}
         </>

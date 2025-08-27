@@ -15,7 +15,7 @@ export default function AboutView() {
         and build out a proper educational site for learning about the Bitcoin protocol.
         <br /> <br />
         For learning more about Bitcoin from a technical perspective, I highly reccomend going through{' '}
-        <a href="https://learnmeabitcoin.com/" target="_blank">
+        <a href="https://learnmeabitcoin.com/" target="_blank" className="text-blue-300 hover:text-blue-400">
           Learn Me a Bitcoin
         </a>
         . In terms of learning the nitty-gritty details of the protocol in a non-academic context, I havent found anything better.
@@ -24,7 +24,7 @@ export default function AboutView() {
         <br /> <br />
       </p>
 
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-5 w-4/5">
+      <div className="flex flex-col lg:flex-row justify-center items-center gap-5 w-4/5">
         <img src={bitcoinStandard} className="w-[300px] h-[450px]"></img>
         <img src={brokenMoney} className="w-[300px] h-[450px]"></img>
         <img src={historyOfMoneyAndBanking} className="w-[300px] h-[450px]"></img>
