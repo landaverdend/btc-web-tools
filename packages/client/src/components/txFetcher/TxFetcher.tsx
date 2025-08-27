@@ -211,10 +211,10 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-1 ">
+    <div className="flex flex-col items-center gap-1 w-full overflow-x-hidden truncate">
       {txMetadata && (
-        <div className="flex flex-col items-center justify-center">
-          <div className="flex flex-row items-center justify-center w-full gap-2 truncate">
+        <div className="flex flex-col items-start justify-center">
+          <div className="flex flex-col items-start justify-center w-full gap-2 truncate">
             <span className="text-white">Tx ID: </span>
             <CopyHover>
               <span className="text-(--soft-green) truncate w-[175px] inline-block">{txid}</span>
