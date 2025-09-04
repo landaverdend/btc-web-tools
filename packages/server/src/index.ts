@@ -135,7 +135,6 @@ app.get('/address/:address/utxo', async (req, res) => {
     const response = await fetch(url, options);
 
     if (response.status !== 200) {
-      console.log(response);
       throw new Error(`Fetch failed: ${response.statusText}`);
     }
 
