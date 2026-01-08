@@ -190,50 +190,72 @@ export function ScriptEditor({}: ScriptEditorProps) {
     }
   }, []);
 
-  const activeTabClass = 'text-(--soft-orange-light) bg-(--input-gray)';
-
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-row justify-between items-center bg-(--header-gray)">
-        <div className="flex flex-row gap-2 ml-10">
-          <span
-            className={`text-lg font-bold p-2.5 cursor-pointer hover:bg-(--input-gray)/50 ${
-              activeTab === 'asm' ? activeTabClass : 'text-white'
+      {/* Editor Header */}
+      <div className="flex flex-row justify-between items-center px-4 py-2 bg-gradient-to-r from-[#1a1a1a] via-[#1f1f1f] to-[#1a1a1a] border-b border-[#2a2a2a]">
+        {/* Tabs */}
+        <div className="flex flex-row items-center gap-1">
+          <button
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${
+              activeTab === 'asm'
+                ? 'text-[#f7931a] bg-[#f7931a]/10 border border-[#f7931a]/30'
+                : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
             }`}
-            onClick={() => setActiveTab('asm')}>
+            onClick={() => setActiveTab('asm')}
+          >
             ASM
-          </span>
-          <span
-            className={`text-lg font-bold p-2.5 cursor-pointer hover:bg-(--input-gray)/50 ${
-              activeTab === 'hex' ? activeTabClass : 'text-white'
+          </button>
+          <button
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${
+              activeTab === 'hex'
+                ? 'text-[#f7931a] bg-[#f7931a]/10 border border-[#f7931a]/30'
+                : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
             }`}
-            onClick={() => setActiveTab('hex')}>
+            onClick={() => setActiveTab('hex')}
+          >
             HEX
-          </span>
+          </button>
         </div>
 
-        {compileError && <div className="text-red-500 font-bold">{compileError.message}</div>}
-        <SvgTooltip tooltipContent="Format ASM: Alt+Shift+F">
-          <BeautifyIcon className="cursor-pointer hover:bg-(--input-gray)/50 mr-5 p-1 h-12 w-12" onClick={beautifyASM} />
+        {/* Error Message */}
+        {compileError && (
+          <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <span className="text-red-400 text-xs font-medium">{compileError.message}</span>
+          </div>
+        )}
+
+        {/* Beautify Button */}
+        <SvgTooltip tooltipContent="Format ASM (Alt+Shift+F)">
+          <button
+            onClick={beautifyASM}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-150 cursor-pointer"
+          >
+            <BeautifyIcon className="w-4 h-4" />
+            <span className="text-xs font-medium hidden sm:inline">Format</span>
+          </button>
         </SvgTooltip>
       </div>
 
-      <AceEditor
-        ref={editorRef}
-        mode={ASM_SCRIPT_MODE}
-        theme="twilight"
-        value={activeTab === 'asm' ? scriptASM : scriptHex}
-        onChange={handleChange}
-        setOptions={{
-          showPrintMargin: false,
-          showGutter: true,
-          highlightActiveLine: true,
-          enableSearch: true,
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: true,
-          enableSnippets: true,
-        }}
-      />
+      {/* Ace Editor */}
+      <div className="flex-1 relative">
+        <AceEditor
+          ref={editorRef}
+          mode={ASM_SCRIPT_MODE}
+          theme="twilight"
+          value={activeTab === 'asm' ? scriptASM : scriptHex}
+          onChange={handleChange}
+          setOptions={{
+            showPrintMargin: false,
+            showGutter: true,
+            highlightActiveLine: true,
+            enableSearch: true,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true,
+          }}
+        />
+      </div>
     </div>
   );
 }

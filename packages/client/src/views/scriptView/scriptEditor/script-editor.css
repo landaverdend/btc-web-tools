@@ -1,5 +1,6 @@
 .ace-editor {
-  width: 100vw !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 @media (min-width: 768px) {
@@ -9,11 +10,95 @@
   }
 }
 
+/* Program counter highlight */
 .debug-active {
   background-color: rgba(55, 98, 255, 0.261) !important;
 }
 
 .debug-program-counter {
-  background-color: rgba(39, 102, 238, 0.488) !important;
+  background-color: rgba(247, 147, 26, 0.3) !important;
   position: absolute;
+  border-radius: 2px;
+}
+
+/* Autocomplete popup styling */
+.ace_autocomplete {
+  max-width: 320px !important;
+  width: auto !important;
+  background: #1a1a1a !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+}
+
+.ace_autocomplete .ace_line {
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+}
+
+.ace_autocomplete .ace_line-hover,
+.ace_autocomplete .ace_selected {
+  background: #f7931a20 !important;
+}
+
+.ace_autocomplete .ace_completion-highlight {
+  color: #f7931a !important;
+  font-weight: 600 !important;
+}
+
+/* Scrollbar styling for autocomplete */
+.ace_autocomplete .ace_scroller {
+  background: #1a1a1a !important;
+}
+
+.ace_autocomplete::-webkit-scrollbar,
+.ace_autocomplete .ace_scroller::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.ace_autocomplete::-webkit-scrollbar-track,
+.ace_autocomplete .ace_scroller::-webkit-scrollbar-track {
+  background: #1a1a1a !important;
+}
+
+.ace_autocomplete::-webkit-scrollbar-thumb,
+.ace_autocomplete .ace_scroller::-webkit-scrollbar-thumb {
+  background: #333 !important;
+  border-radius: 3px !important;
+}
+
+.ace_autocomplete::-webkit-scrollbar-thumb:hover,
+.ace_autocomplete .ace_scroller::-webkit-scrollbar-thumb:hover {
+  background: #444 !important;
+}
+
+/* Editor gutter styling */
+.ace_gutter {
+  background: #151515 !important;
+  border-right: 1px solid #2a2a2a !important;
+}
+
+.ace_gutter-cell {
+  color: #555 !important;
+  font-size: 11px !important;
+}
+
+.ace_gutter-active-line {
+  background: #1f1f1f !important;
+}
+
+/* Active line highlight */
+.ace_marker-layer .ace_active-line {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Selection styling */
+.ace_marker-layer .ace_selection {
+  background: rgba(247, 147, 26, 0.15) !important;
+}
+
+/* Cursor styling */
+.ace_cursor {
+  border-left-color: #f7931a !important;
 }
