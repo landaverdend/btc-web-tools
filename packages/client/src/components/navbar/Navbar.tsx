@@ -16,38 +16,49 @@ export default function Navbar({}: NavbarProps) {
     resetScriptEditor();
   };
 
-  return (
-    <div className="flex flex-row place-content-between items-center p-5 bg-(--input-gray)">
-      <div className="hidden sm:block">
-        <img src={logo} alt="logo" className="w-20 h-20 rounded-sm border-1 border-[#a85d03]" />
-      </div>
+  const navItems = [
+    { to: APP_ROUTES.About, label: 'About' },
+    { to: APP_ROUTES.Tx, label: 'Tx Viewer' },
+    { to: APP_ROUTES.Script, label: 'Script Debugger' },
+    { to: APP_ROUTES.Merkle, label: 'Merkle Tree' },
+  ];
 
-      <div className="flex flex-row gap-5">
-        <Link
-          to={APP_ROUTES.About}
-          onClick={handleClick}
-          className={`text-sm sm:text-lg ${currentView === APP_ROUTES.About ? 'text-(--soft-orange-light)' : 'text-white'}`}>
-          About
-        </Link>
-        <Link
-          to={APP_ROUTES.Tx}
-          onClick={handleClick}
-          className={`text-sm sm:text-lg ${currentView === APP_ROUTES.Tx ? 'text-(--soft-orange-light)' : 'text-white'}`}>
-          Tx Viewer
-        </Link>
-        <Link
-          to={APP_ROUTES.Script}
-          onClick={handleClick}
-          className={`text-sm sm:text-lg  ${currentView === APP_ROUTES.Script ? 'text-(--soft-orange-light)' : 'text-white'}`}>
-          Script Debugger
-        </Link>
-        <Link
-          onClick={handleClick}
-          to={APP_ROUTES.Merkle}
-          className={`text-sm sm:text-lg  ${currentView === APP_ROUTES.Merkle ? 'text-(--soft-orange-light)' : 'text-white'}`}>
-          Merkle Tree
-        </Link>
+  return (
+    <nav className="flex flex-row justify-between items-center px-6 py-4 bg-gradient-to-r from-[#1a1a1a] via-[#1f1f1f] to-[#1a1a1a] border-b border-[#2a2a2a]">
+      {/* Logo */}
+      <Link to={APP_ROUTES.About} onClick={handleClick} className="hidden sm:block group">
+        <div className="relative">
+          <img
+            src={logo}
+            alt="logo"
+            className="w-16 h-16 rounded-lg border-2 border-[#f7931a]/30 group-hover:border-[#f7931a]/60 transition-all duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 rounded-lg bg-[#f7931a]/0 group-hover:bg-[#f7931a]/10 transition-all duration-300" />
+        </div>
+      </Link>
+
+      {/* Nav Links */}
+      <div className="flex flex-row items-center gap-1 sm:gap-2">
+        {navItems.map(({ to, label }) => {
+          const isActive = currentView === to;
+          return (
+            <Link
+              key={to}
+              to={to}
+              onClick={handleClick}
+              className={`
+                relative px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200
+                ${isActive
+                  ? 'text-[#f7931a] bg-[#f7931a]/10'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }
+              `}
+            >
+              {label}
+            </Link>
+          );
+        })}
       </div>
-    </div>
+    </nav>
   );
 }
