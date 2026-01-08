@@ -1,4 +1,69 @@
+/* Tree path styling */
 .merkle-tree-path {
-  stroke: var(--soft-orange-light) !important;
+  stroke: #f7931a !important;
   stroke-width: 2;
+  stroke-opacity: 0.6;
+}
+
+/* Leaf node input */
+.merkle-leaf-input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f7931a;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.merkle-leaf-input:focus {
+  color: #fff;
+}
+
+.merkle-leaf-input::placeholder {
+  color: #666;
+}
+
+/* Hash text in non-leaf nodes */
+.hash-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: #9ca3af;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 12px;
+}
+
+/* Tree container */
+#treeWrapper {
+  overflow: visible;
+}
+
+#treeWrapper > svg {
+  overflow: visible;
+}
+
+.rd3t-tree-container {
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+/* Node styling */
+.rd3t-node {
+  cursor: pointer;
+}
+
+/* Link/path hover effect */
+.rd3t-link:hover {
+  stroke-opacity: 1 !important;
 }

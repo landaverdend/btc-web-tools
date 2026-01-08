@@ -1,4 +1,3 @@
-import { Button, Input } from 'antd';
 import './merkle-view.css';
 import Tree, { CustomNodeElementProps, RawNodeDatum } from 'react-d3-tree';
 import { hash256 } from '@/btclib/hash/hashUtil';
@@ -39,39 +38,46 @@ const InputNode = (rd3tProps: CustomNodeElementProps, onLeafChange: (str: string
   const isLeaf = nodeDatum.children === undefined || nodeDatum.children.length === 0;
 
   // Input Leaf dims
-  const width = 115;
-  const height = 30;
+  const width = 130;
+  const height = 32;
   const x = -width / 2;
   const y = -height / 2;
 
   // outer rect dims
-  const hashWidth = 300; // increased to accommodate hash length
-  const hashX = -hashWidth * 0.55; // This will be our reference point for both rect and foreignObject
+  const hashWidth = 320;
+  const hashX = -hashWidth * 0.55;
 
-  const rectHeight = height * 1.2;
+  const rectHeight = height * 1.3;
   const rectY = -rectHeight / 2;
 
   return (
     <g>
       {isLeaf && (
-        <foreignObject width={width} height={height} x={x} y={y}>
-          <Input
-            type="text"
-            style={{
-              width: '100%',
-              height: '100%',
-              zIndex: 1000,
-              border: '2px solid var(--sky-blue)',
-            }}
-            value={nodeDatum.name}
-            onChange={(e) => {
-              const leafIndex = (nodeDatum as any)?.leafIndex;
-              if (typeof leafIndex === 'number') {
-                onLeafChange(e.target.value, leafIndex);
-              }
-            }}
+        <>
+          <rect
+            x={x - 4}
+            y={y - 4}
+            width={width + 8}
+            height={height + 8}
+            rx={8}
+            fill="#1a1a1a"
+            stroke="#f7931a"
+            strokeWidth={2}
           />
-        </foreignObject>
+          <foreignObject width={width} height={height} x={x} y={y}>
+            <input
+              type="text"
+              className="merkle-leaf-input"
+              value={nodeDatum.name}
+              onChange={(e) => {
+                const leafIndex = (nodeDatum as any)?.leafIndex;
+                if (typeof leafIndex === 'number') {
+                  onLeafChange(e.target.value, leafIndex);
+                }
+              }}
+            />
+          </foreignObject>
+        </>
       )}
 
       {!isLeaf && (
@@ -81,8 +87,9 @@ const InputNode = (rd3tProps: CustomNodeElementProps, onLeafChange: (str: string
             y={rectY}
             width={hashWidth * 1.1}
             height={rectHeight}
-            fill="var(--input-gray)"
-            stroke="white"
+            rx={8}
+            fill="#1a1a1a"
+            stroke="#2a2a2a"
             strokeWidth={2}
           />
           <foreignObject width={hashWidth} height={height} x={hashX * 0.95} y={y}>
@@ -95,13 +102,10 @@ const InputNode = (rd3tProps: CustomNodeElementProps, onLeafChange: (str: string
 };
 
 const initialInputs = (numInputs: number) => {
-  // build the initial tree
   const inputs = [];
-
   for (let i = 0; i < numInputs; i++) {
     inputs.push(`TX Data ${i + 1}`);
   }
-
   return inputs;
 };
 
@@ -116,44 +120,75 @@ export default function MerkleView() {
     setInputs(newInputs);
   };
 
-  // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
   return (
-    <div className="flex flex-col justify-center items-center text-white bg-(--background-slate) md:h-screen">
-      <div className="flex flex-col justify-center items-center gap-5 text-lg w-3/4 mt-20 ">
-        <p>
-          A <span className="text-(--soft-orange)">Merkle Tree</span> is a binary tree where each node is a hash of its children.
-          In Bitcoin, merkle trees are used to create a compact and easily verifiable fingerprint of a block and its transactions.
-          <br /> <br />
-          Changing any of the leaf nodes below will update the merkle root.
-        </p>
-
-        <div className="flex flex-row gap-5">
-          <Button onClick={() => setInputs([...inputs, `TX Data ${inputs.length + 1}`])}>Add Leaf Node</Button>
-          {inputs.length > 1 && <Button onClick={() => setInputs(inputs.slice(0, -1))}>Remove Leaf Node</Button>}
+    <div className="flex flex-col items-center bg-(--background-slate) h-screen">
+      {/* Header Section */}
+      <div className="flex flex-col items-center gap-4 px-6 py-6 w-full max-w-3xl">
+        {/* Title */}
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-[#f7931a]" />
+          <h1 className="text-xl font-semibold text-white">Merkle Tree Visualizer</h1>
         </div>
 
-        <span className="flex flex-col items-center md:flex-row gap-1">
-          Merkle Root: <span className="text-(--sky-blue) max-w-[90vw] truncate">{tree.name}</span>
-        </span>
+        {/* Description */}
+        <p className="text-gray-400 text-sm text-center leading-relaxed">
+          A <span className="text-[#f7931a] font-medium">Merkle Tree</span> is a binary tree where each node is a hash of its children.
+          Edit any leaf node below to see the tree update in real-time.
+        </p>
+
+        {/* Controls & Root */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+          <div className="flex flex-row items-center gap-2">
+            <button
+              onClick={() => setInputs([...inputs, `TX Data ${inputs.length + 1}`])}
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#f7931a] hover:bg-[#f7931a]/90 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add
+            </button>
+            {inputs.length > 2 && (
+              <button
+                onClick={() => setInputs(inputs.slice(0, -1))}
+                className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#3a3a3a] rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+                Remove
+              </button>
+            )}
+          </div>
+
+          {/* Merkle Root Display */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg flex-1 min-w-0">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 shrink-0">
+              Root:
+            </span>
+            <span className="text-[#0ea5e9] font-mono text-xs truncate">
+              {tree.name}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <Tree
-        data={tree}
-        orientation="vertical"
-        depthFactor={-100}
-        zoom={window.innerWidth > 768 ? 1 : 0.75}
-        pathClassFunc={() => {
-          return 'merkle-tree-path';
-        }}
-        translate={
-          window.innerWidth > 768
-            ? { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5 }
-            : { x: window.innerWidth * 0.8, y: window.innerHeight * 0.35 }
-        }
-        renderCustomNodeElement={(rd3tProps) => {
-          return InputNode(rd3tProps, onLeafChange);
-        }}
-      />
+      {/* Tree Visualization */}
+      <div id="treeWrapper" style={{ width: '100vw', height: 'calc(100vh - 180px)' }}>
+        <Tree
+          data={tree}
+          orientation="vertical"
+          depthFactor={-75}
+          zoom={0.7}
+          scaleExtent={{ min: 0.2, max: 2 }}
+          pathClassFunc={() => 'merkle-tree-path'}
+          translate={{
+            x: typeof window !== 'undefined' ? window.innerWidth / 2 : 500,
+            y: 200
+          }}
+          renderCustomNodeElement={(rd3tProps) => InputNode(rd3tProps, onLeafChange)}
+        />
+      </div>
     </div>
   );
 }
