@@ -111,9 +111,10 @@ type TxFetcherProps = {
   includeDemoTxs?: boolean;
   includeTaprootWarning?: boolean;
   includeInputSelector?: boolean;
+  standalone?: boolean;
 };
 
-export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputSelector }: TxFetcherProps) {
+export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputSelector, standalone }: TxFetcherProps) {
   const { reset: resetTxStore, setSelectedInput, setTxMetadata, setTx } = useTxStore();
   const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
   const { fetchTransaction, error, isLoading } = useFetchTx();
@@ -157,12 +158,12 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
     setTxid('');
   };
 
-  return (
+  const content = (
     <div className="flex flex-col gap-4">
       {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} selectedDemo={selectedDemoTx} />}
 
       {/* Divider */}
-      <div className="h-px bg-[#2a2a2a]" />
+      {includeDemoTxs && <div className="h-px bg-[#2a2a2a]" />}
 
       {/* Transaction Fetcher */}
       <div className="flex flex-col gap-3">
@@ -212,6 +213,20 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
       <TxDetails includeInputSelector={includeInputSelector} />
     </div>
   );
+
+  if (standalone) {
+    return (
+      <div className="flex flex-col p-4 min-w-[280px] max-w-[320px] bg-gradient-to-b from-[#1a1a1a] to-[#151515] rounded-xl border border-[#2a2a2a] h-fit">
+        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#2a2a2a]">
+          <div className="w-2 h-2 rounded-full bg-[#f7931a]" />
+          <span className="text-sm font-semibold text-white">Transaction Fetcher</span>
+        </div>
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 }
 
 type TxDetailsProps = { includeInputSelector?: boolean };
