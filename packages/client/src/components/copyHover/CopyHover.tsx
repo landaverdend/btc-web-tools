@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CopyOutlined, CheckOutlined } from '@ant-design/icons';
 import './copy-hover.css';
 import React from 'react';
 
@@ -17,6 +16,44 @@ const getTextContent = (children: React.ReactNode): string => {
     })
     .join('');
 };
+
+function CopyIcon({ className, onClick }: { className?: string; onClick?: () => void }) {
+  return (
+    <svg
+      className={className}
+      onClick={onClick}
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
 
 export function CopyHover({ children }: CopyHoverProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -43,14 +80,14 @@ export function CopyHover({ children }: CopyHoverProps) {
         setCopied(false);
       }}>
       {isHovered && !copied && (
-        <CopyOutlined
+        <CopyIcon
           className="copy-icon"
           onClick={() => {
             handleCopy();
           }}
         />
       )}
-      {copied && <CheckOutlined className="copy-icon copied" />}
+      {copied && <CheckIcon className="copy-icon copied" />}
       {children}
     </span>
   );
