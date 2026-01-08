@@ -8,41 +8,61 @@ export function DebugControls() {
   const { step, reset, run, stopDebugger } = useScriptDebugger();
 
   return (
-    <div className="flex flex-0.25 flex-col items-center gap-10">
-      <h3 className="text-white text-lg font-bold mt-5">Controls</h3>
-      <div className="flex flex-row items-center justify-center gap-1 p-2 rounded-md bg-(--header-gray)">
-        <SvgTooltip tooltipContent="Run">
-          <Play
-            onClick={() => {
-              run();
-            }}
-            style={{ fill: 'var(--soft-green)' }}
-            className="svg-hover"
+    <div className="flex flex-col gap-4 p-4 min-w-[280px]">
+      {/* Debug Toolbar */}
+      <div className="flex flex-col gap-3">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+          Debugger
+        </span>
+        <div className="flex flex-row items-center gap-2">
+          <ControlButton
+            onClick={run}
+            icon={<Play style={{ fill: 'var(--soft-green)' }} className="w-5 h-5" />}
+            label="Run"
+            shortcut="F5"
           />
-        </SvgTooltip>
-
-        <SvgTooltip tooltipContent="Step">
-          <Stepover
-            onClick={() => {
-              step();
-            }}
-            style={{ fill: 'var(--sky-blue)' }}
-            className="svg-hover"
+          <ControlButton
+            onClick={step}
+            icon={<Stepover style={{ fill: 'var(--sky-blue)' }} className="w-5 h-5" />}
+            label="Step"
+            shortcut="F10"
           />
-        </SvgTooltip>
-
-        <SvgTooltip tooltipContent="Reset">
-          <Reset
+          <ControlButton
             onClick={() => {
               reset();
               stopDebugger();
             }}
-            className="svg-hover"
+            icon={<Reset className="w-5 h-5" style={{ fill: '#9ca3af' }} />}
+            label="Reset"
           />
-        </SvgTooltip>
+        </div>
       </div>
+
+      {/* Tx Fetcher */}
       <TxFetcher includeDemoTxs includeTaprootWarning includeInputSelector />
     </div>
+  );
+}
+
+type ControlButtonProps = {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  shortcut?: string;
+};
+
+function ControlButton({ onClick, icon, label, shortcut }: ControlButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="group flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#3a3a3a] hover:bg-[#222] transition-all duration-150 cursor-pointer"
+      title={shortcut ? `${label} (${shortcut})` : label}
+    >
+      {icon}
+      <span className="text-[10px] text-gray-500 group-hover:text-gray-400 transition-colors">
+        {label}
+      </span>
+    </button>
   );
 }
 

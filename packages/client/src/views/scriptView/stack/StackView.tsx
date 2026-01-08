@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef, useEffect, useState } from 'react';
 import { bytesToHex } from '@/btclib/util/helper';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { useExecutionStore } from '@/state/executionStore';
@@ -83,6 +83,29 @@ type SProps = {
 };
 function Stack({ stack, title, isPrimary }: SProps) {
   const accentColor = isPrimary ? 'var(--sky-blue)' : 'var(--soft-purple)';
+  const prevLengthRef = useRef(stack.length);
+  const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const prevLength = prevLengthRef.current;
+    const currentLength = stack.length;
+
+    // Detect push (stack grew)
+    if (currentLength > prevLength) {
+      const newItemIndex = currentLength - 1;
+      setAnimatingIndex(newItemIndex);
+
+      // Clear animation after it completes
+      const timer = setTimeout(() => {
+        setAnimatingIndex(null);
+      }, 300);
+
+      prevLengthRef.current = currentLength;
+      return () => clearTimeout(timer);
+    }
+
+    prevLengthRef.current = currentLength;
+  }, [stack.length]);
 
   return (
     <div className="flex flex-col items-stretch max-w-[300px] w-full">
@@ -124,6 +147,7 @@ function Stack({ stack, title, isPrimary }: SProps) {
           ) : (
             stack.map((item, index) => {
               const isTop = index === stack.length - 1;
+              const isAnimating = index === animatingIndex;
               const hexValue = item.length === 0 ? '00' : bytesToHex(item);
               return (
                 <div
@@ -133,7 +157,12 @@ function Stack({ stack, title, isPrimary }: SProps) {
                       ? 'bg-[#1f2937] border-[#374151]'
                       : 'bg-[#1c1c1c] border-transparent hover:bg-[#222] hover:border-[#333]'
                   }`}
-                  style={isTop ? { borderColor: `${accentColor}40` } : {}}
+                  style={{
+                    ...(isTop ? { borderColor: `${accentColor}40` } : {}),
+                    ...(isAnimating ? {
+                      animation: 'stackPush 0.3s ease-out',
+                    } : {}),
+                  }}
                 >
                   {/* Stack Index */}
                   <span className={`text-[10px] font-mono w-5 text-center rounded px-1 ${
@@ -171,6 +200,23 @@ function Stack({ stack, title, isPrimary }: SProps) {
           <span className="opacity-50">▼</span>
         </div>
       </div>
+
+      {/* Animation keyframes */}
+      <style>{`
+        @keyframes stackPush {
+          0% {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.95);
+          }
+          50% {
+            transform: translateY(2px) scale(1.02);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 }

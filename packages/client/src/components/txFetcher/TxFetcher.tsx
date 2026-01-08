@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTxStore } from '@state/txStore';
 import { useFetchTx } from '@/hooks/useFetchTx';
 import ColoredText from '@/components/coloredText/ColoredText';
@@ -8,7 +8,7 @@ import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { UnlockingScriptBuilder } from '@/btclib/script/UnlockingScriptBuilder';
 import AlertIcon from '@assets/icons/alert.svg?react';
 import { SvgTooltip } from '@/views/scriptView/debugControls/DebugControls';
-import { Select, Spin } from 'antd';
+import { CopyHover } from '../copyHover/CopyHover';
 
 const DEMO_TX_IDS = [
   'e827a366ad4fc9a305e0901fe1eefc7e9fb8d70655a079877cf1ead0c3618ec0', // P2PK
@@ -20,66 +20,89 @@ const DEMO_TX_IDS = [
   '55c7c71c63b87478cd30d401e7ca5344a2e159dc8d6990df695c7e0cb2f82783', // P2SH-P2WSH
 ];
 
-import type { SelectProps } from 'antd';
-import { CopyHover } from '../copyHover/CopyHover';
-
-type LabelRender = SelectProps['labelRender'];
-const labelRender: LabelRender = (props) => {
-  const { label, value } = props;
-
-  if (label) {
-    return value;
-  }
-
-  return <span>None Selected</span>;
-};
+const DEMO_OPTIONS = [
+  { value: 0, label: 'P2PK' },
+  { value: 1, label: 'P2PKH' },
+  { value: 2, label: 'P2SH' },
+  { value: 3, label: 'P2WPKH' },
+  { value: 4, label: 'P2WSH' },
+  { value: 5, label: 'P2SH-P2WPKH' },
+  { value: 6, label: 'P2SH-P2WSH' },
+];
 
 type DemoTxsDropdownProps = {
   fetchDemo: (demoTx: number) => void;
+  selectedDemo: number | null;
 };
-function DemoTxsDropdown({ fetchDemo }: DemoTxsDropdownProps) {
-  const handleSelect = (value: string) => {
-    switch (value) {
-      case 'P2PK':
-        fetchDemo(0);
-        break;
-      case 'P2PKH':
-        fetchDemo(1);
-        break;
-      case 'P2SH':
-        fetchDemo(2);
-        break;
-      case 'P2WPKH':
-        fetchDemo(3);
-        break;
-      case 'P2WSH':
-        fetchDemo(4);
-        break;
-      case 'P2SH-P2WPKH':
-        fetchDemo(5);
-        break;
-      case 'P2SH-P2WSH':
-        fetchDemo(6);
-        break;
-      default:
-        break;
-    }
-  };
 
-  const options = [
-    { value: 'P2PK', label: 'P2PK' },
-    { value: 'P2PKH', label: 'P2PKH' },
-    { value: 'P2SH', label: 'P2SH' },
-    { value: 'P2WPKH', label: 'P2WPKH' },
-    { value: 'P2WSH', label: 'P2WSH' },
-    { value: 'P2SH-P2WPKH', label: 'P2SH-P2WPKH' },
-    { value: 'P2SH-P2WSH', label: 'P2SH-P2WSH' },
-  ];
+function DemoTxsDropdown({ fetchDemo, selectedDemo }: DemoTxsDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedLabel = selectedDemo !== null ? DEMO_OPTIONS[selectedDemo]?.label : null;
 
   return (
-    <div className="flex flex-col justify-center items-center gap-5">
-      <span className="text-(--soft-orange) text-lg">Demo Transactions</span>
-      <Select className="w-4/5" options={options} labelRender={labelRender} onSelect={handleSelect}></Select>{' '}
+    <div className="flex flex-col gap-2" ref={dropdownRef}>
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+        Demo Transactions
+      </span>
+      <div className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full flex items-center justify-between px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-sm text-left hover:border-[#3a3a3a] transition-colors cursor-pointer"
+        >
+          <span className={selectedLabel ? 'text-[#f7931a]' : 'text-gray-500'}>
+            {selectedLabel || 'Select a demo tx...'}
+          </span>
+          <svg
+            className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {isOpen && (
+          <div className="absolute z-10 w-full mt-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-xl overflow-hidden">
+            {DEMO_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  fetchDemo(option.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-3 py-2 text-sm text-left hover:bg-[#252525] transition-colors cursor-pointer ${
+                  selectedDemo === option.value
+                    ? 'text-[#f7931a] bg-[#f7931a]/10'
+                    : 'text-gray-300'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center py-2">
+      <div className="w-5 h-5 border-2 border-[#f7931a]/30 border-t-[#f7931a] rounded-full animate-spin" />
     </div>
   );
 }
@@ -89,18 +112,15 @@ type TxFetcherProps = {
   includeTaprootWarning?: boolean;
   includeInputSelector?: boolean;
 };
+
 export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputSelector }: TxFetcherProps) {
-  // Global State variables
   const { reset: resetTxStore, setSelectedInput, setTxMetadata, setTx } = useTxStore();
   const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
-
-  // Hooks
   const { fetchTransaction, error, isLoading } = useFetchTx();
   const { reset, stopDebugger } = useScriptDebugger();
 
-  // Local State Variables
   const [txid, setTxid] = useState('');
-  const [_, setSelectedDemoTx] = useState<number | null>(null);
+  const [selectedDemoTx, setSelectedDemoTx] = useState<number | null>(null);
 
   const fetchDemo = (demoTx: number) => {
     const txid = DEMO_TX_IDS[demoTx];
@@ -120,7 +140,6 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
       const tx = Tx.fromHex(response.serializedTx);
       const script = UnlockingScriptBuilder.buildUnlockingScript({ tx: tx, txMetadata: response.txJson, selectedInputIndex: 0 });
 
-      // Update the script editor textfields/object
       setScript(script);
       setScriptASM(script.toString());
       setScriptHex(script.toHex(false, false));
@@ -131,53 +150,64 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
     }
   };
 
+  const handleReset = () => {
+    reset();
+    resetTxStore();
+    setSelectedDemoTx(null);
+    setTxid('');
+  };
+
   return (
-    <div className="flex flex-0.25 flex-col items-center p-2 gap-5 h-fit md:w-[15vw] sm:w-auto rounded-md bg-(--header-gray)">
-      {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} />}
+    <div className="flex flex-col gap-4">
+      {includeDemoTxs && <DemoTxsDropdown fetchDemo={fetchDemo} selectedDemo={selectedDemoTx} />}
 
-      <h3 className="flex flex-row gap-2 items-center text-white text-lg font-bold">
-        Transaction Fetcher
-        {includeTaprootWarning && (
-          <SvgTooltip tooltipContent="Taproot Transactions not currently supported">
-            <AlertIcon height={16} width={16} className="alert-icon" />
-          </SvgTooltip>
-        )}
-      </h3>
+      {/* Divider */}
+      <div className="h-px bg-[#2a2a2a]" />
 
-      <div className="flex flex-col gap-3  items-center">
-        <label htmlFor="txid" className="flex flex-col items-start gap-2 w-full">
-          <span className="text-white text-md">Transaction ID</span>
-          <input
-            id="txid"
-            placeholder="Transaction ID"
-            type="text"
-            value={txid}
-            onChange={(e) => setTxid(e.target.value)}
-            className={` text-black bg-white rounded-md p-[5px] w-full  ${error ? 'border-red-500' : 'border-gray-300'}`}
-          />
-          {error && <p className="text-red-500">{error}</p>}
-        </label>
+      {/* Transaction Fetcher */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+            Fetch Transaction
+          </span>
+          {includeTaprootWarning && (
+            <SvgTooltip tooltipContent="Taproot transactions not currently supported">
+              <AlertIcon height={12} width={12} className="text-[#f7931a] opacity-60" />
+            </SvgTooltip>
+          )}
+        </div>
 
-        <div className="flex flex-row gap-2 w-full">
+        <input
+          placeholder="Enter transaction ID..."
+          type="text"
+          value={txid}
+          onChange={(e) => setTxid(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleFetch()}
+          className={`w-full px-3 py-2 bg-[#1a1a1a] border rounded-lg text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-[#f7931a]/50 transition-colors ${
+            error ? 'border-red-500/50' : 'border-[#2a2a2a]'
+          }`}
+        />
+
+        {error && <p className="text-red-400 text-xs">{error}</p>}
+
+        <div className="flex flex-row gap-2">
           <button
             onClick={() => handleFetch()}
-            className="flex-1 bg-amber-500 rounded-md text-white p-0.5 hover:opacity-80 cursor-pointer">
+            disabled={isLoading || !txid}
+            className="flex-1 px-3 py-1.5 bg-[#f7931a] hover:bg-[#f7931a]/90 disabled:bg-[#f7931a]/30 disabled:cursor-not-allowed rounded-lg text-sm font-medium text-white transition-colors cursor-pointer"
+          >
             Fetch
           </button>
           <button
-            onClick={() => {
-              reset();
-              resetTxStore();
-              setSelectedDemoTx(null);
-            }}
-            id="reset"
-            className="flex-1 bg-(--soft-red) rounded-md p-0.5 text-white hover:opacity-80 cursor-pointer">
-            Reset
+            onClick={handleReset}
+            className="flex-1 px-3 py-1.5 bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#3a3a3a] rounded-lg text-sm text-gray-400 hover:text-gray-300 transition-colors cursor-pointer"
+          >
+            Clear
           </button>
         </div>
       </div>
 
-      {isLoading && <Spin />}
+      {isLoading && <LoadingSpinner />}
 
       <TxDetails includeInputSelector={includeInputSelector} />
     </div>
@@ -185,13 +215,12 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
 }
 
 type TxDetailsProps = { includeInputSelector?: boolean };
+
 function TxDetails({ includeInputSelector }: TxDetailsProps) {
-  // Global state imports
   const { tx, selectedInput, txMetadata, setSelectedInput } = useTxStore();
   const { txid } = txMetadata || {};
   const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
 
-  // Hooks
   const isCoinbase = tx?.isCoinbase;
   const showInputs = txMetadata && !isCoinbase && includeInputSelector;
 
@@ -204,49 +233,76 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
       selectedInputIndex: inputIndex,
     });
 
-    // Update the script editor textfields/object
     setScript(script);
     setScriptASM(script.toString());
     setScriptHex(script.toHex(false, false));
   };
 
+  if (!txMetadata) return null;
+
   return (
-    <div className="flex flex-col items-center gap-1 w-full overflow-x-hidden truncate">
-      {txMetadata && (
-        <div className="flex flex-col items-start justify-center">
-          <div className="flex flex-col items-start justify-center w-full gap-2 truncate">
-            <span className="text-white">Tx ID: </span>
-            <CopyHover>
-              <span className="text-(--soft-green) truncate w-[175px] inline-block">{txid}</span>
-            </CopyHover>
-          </div>
+    <div className="flex flex-col gap-3">
+      {/* Divider */}
+      <div className="h-px bg-[#2a2a2a]" />
 
-          {isCoinbase && (
-            <div className="tx-metadata">
-              <ColoredText color="var(--sky-blue)">Coinbase Transaction</ColoredText>
-            </div>
-          )}
+      {/* Tx Info */}
+      <div className="flex flex-col gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+          Loaded Transaction
+        </span>
+        <div className="flex items-center gap-2">
+          <CopyHover>
+            <span className="text-sm text-[#22c55e] font-mono truncate max-w-[200px]" title={txid}>
+              {txid}
+            </span>
+          </CopyHover>
         </div>
-      )}
 
+        {isCoinbase && (
+          <div className="px-2 py-1 bg-[#0ea5e9]/10 rounded text-xs">
+            <ColoredText color="var(--sky-blue)">Coinbase Transaction</ColoredText>
+          </div>
+        )}
+      </div>
+
+      {/* Input Selector */}
       {showInputs && (
-        <div className="flex flex-col items-center text-white">
-          Input Select
-          {txMetadata.vin.map((input, i) => {
-            const isActive = i === selectedInput;
-
-            return (
-              <div
-                key={i}
-                className={`flex flex-row gap-1 p-2 ${isActive ? 'bg-(--soft-orange)/10 p-1 rounded-md' : ''} cursor-pointer`}
-                onClick={() => handleSelectInput(i)}>
-                <span className="text-(--soft-purple)">{input.prevout?.scriptpubkey_type}</span>:{' '}
-                <CopyHover>
-                  <span className={`text-${isActive ? '(--soft-green)' : 'white'} truncate w-[150px] `}>{input.txid}</span>
-                </CopyHover>
-              </div>
-            );
-          })}
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+            Select Input
+          </span>
+          <div className="flex flex-col gap-1 max-h-[150px] overflow-y-auto">
+            {txMetadata.vin.map((input, i) => {
+              const isActive = i === selectedInput;
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleSelectInput(i)}
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#f7931a]/10 border border-[#f7931a]/30'
+                      : 'bg-[#1a1a1a] border border-transparent hover:border-[#2a2a2a]'
+                  }`}
+                >
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                    isActive ? 'bg-[#f7931a]/20 text-[#f7931a]' : 'bg-[#252525] text-gray-500'
+                  }`}>
+                    {i}
+                  </span>
+                  <span className="text-xs text-purple-400 font-medium">
+                    {input.prevout?.scriptpubkey_type}
+                  </span>
+                  <CopyHover>
+                    <span className={`text-xs font-mono truncate max-w-[120px] ${
+                      isActive ? 'text-[#22c55e]' : 'text-gray-500'
+                    }`}>
+                      {input.txid}
+                    </span>
+                  </CopyHover>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
