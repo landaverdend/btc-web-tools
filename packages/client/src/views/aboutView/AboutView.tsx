@@ -1,6 +1,25 @@
+import { Link } from 'react-router-dom';
 import bitcoinStandard from '@assets/bookRecs/bitcoinStandard.webp';
 import brokenMoney from '@assets/bookRecs/brokenMoney.webp';
 import historyOfMoneyAndBanking from '@assets/bookRecs/historyOfMoneyAndBanking.webp';
+
+const tools = [
+  {
+    name: 'Script Debugger',
+    description: 'Step through Bitcoin scripts instruction by instruction. Visualize the stack as opcodes execute.',
+    path: '/script',
+  },
+  {
+    name: 'Tx Viewer',
+    description: 'Fetch and inspect real Bitcoin transactions. View inputs, outputs, and script details.',
+    path: '/txview',
+  },
+  {
+    name: 'Merkle Tree',
+    description: 'Interactive visualization of how Merkle trees work. Edit leaves and watch the root hash update.',
+    path: '/merkle',
+  },
+];
 
 const books = [
   {
@@ -50,24 +69,26 @@ export default function AboutView() {
           </div>
         </section>
 
-        {/* Resources Section */}
+        {/* Tools Section */}
         <section className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <span className="text-[#f7931a]">#</span> Technical Resources
+            <span className="text-[#f7931a]">#</span> Tools
           </h2>
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
-            <p className="text-gray-300 leading-relaxed">
-              For learning the technical details of the Bitcoin protocol, I highly recommend{' '}
-              <a
-                href="https://learnmeabitcoin.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#f7931a] hover:text-[#f7931a]/80 transition-colors underline underline-offset-2">
-                Learn Me a Bitcoin
-              </a>
-              . It's the best non-academic resource I've found for understanding the nitty-gritty details of how Bitcoin actually
-              works under the hood.
-            </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {tools.map((tool) => (
+              <Link
+                key={tool.path}
+                to={tool.path}
+                className="group bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 hover:border-[#f7931a]/30 transition-all duration-200"
+              >
+                <h3 className="text-white font-medium text-sm group-hover:text-[#f7931a] transition-colors">
+                  {tool.name}
+                </h3>
+                <p className="text-gray-500 text-xs mt-2 leading-relaxed">
+                  {tool.description}
+                </p>
+              </Link>
+            ))}
           </div>
         </section>
 
