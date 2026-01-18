@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { TokenFetcher } from './token.js';
 import { ResponseCache } from './ResponseCache.js';
+import { ElectrumClient } from './electrumClient.js';
 
 dotenv.config();
 
@@ -14,6 +15,11 @@ const __dirname = path.dirname(__filename);
 const PORT = parseInt(process.env['PORT'] || '3000', 10);
 
 const app = express();
+
+
+const electrumClient = new ElectrumClient("electrum.blockstream.info", 50002, true);
+electrumClient.connect();
+
 
 // Environment-based CORS configuration
 function getAllowedOrigins(): string[] {
