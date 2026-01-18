@@ -2,10 +2,14 @@ import net from 'net';
 import tls from 'tls';
 
 
-const DEFAULT_PORTS = { t: '50001', s: '50002' }
-const DEFAULT_SERVERS = []
+const ELECTRUM_SERVERS = {
+  "electrum.blockstream.info": {
+    port: 50002,
+    useSSL: true,
+  },
+}
 
-type Callback = {
+type Callbacks = {
   resolve: (result: any) => void;
   reject: (error: any) => void;
 }
@@ -14,7 +18,10 @@ export class ElectrumClient {
 
   private conn: net.Socket | tls.TLSSocket | null = null;
   private requestId: number = 0;
-  private callbackMap: Map<number, Callback> = new Map<number, Callback>();
+
+  private callbackMap: Map<number, Callbacks> = new Map<number, Callbacks>();
+  private _buffer: string = '';
+
 
   constructor(private host: string, private port: number, private useSSL: boolean = false) {
     this.host = host;
@@ -24,10 +31,10 @@ export class ElectrumClient {
     this.conn = null;
 
     this.requestId = 0;
-    this.callbackMap = new Map<number, Callback>();
+    this.callbackMap = new Map<number, Callbacks>();
   }
 
-
+  // Create the connection and make the first on the wire request for the electrum protocol
   async connect() {
     return new Promise((resolve, reject) => {
       console.log(`Connecting to ${this.host}:${this.port} (SSL: ${this.useSSL})`);
@@ -37,16 +44,18 @@ export class ElectrumClient {
           host: this.host,
           port: this.port,
           rejectUnauthorized: false, // Some Electrum servers use self-signed certs
-        }, () => {
-          console.log(`Connected to ${this.host}:${this.port} via SSL`);
+        }, async () => {
+          const [serverVersion, protocolVersion] = await this.getServerVersion();
+          console.log(`Connected to ${this.host}:${this.port} via SSL: ${serverVersion} (protocol: ${protocolVersion})`);
           resolve(this.conn);
         });
       } else {
         this.conn = net.createConnection({
           host: this.host,
           port: this.port,
-        }, () => {
-          console.log(`Connected to ${this.host}:${this.port}`);
+        }, async () => {
+          const [serverVersion, protocolVersion] = await this.getServerVersion();
+          console.log(`Connected to ${this.host}:${this.port}: ${serverVersion} (protocol: ${protocolVersion})`);
           resolve(this.conn);
         });
       }
@@ -63,10 +72,40 @@ export class ElectrumClient {
 
 
   private _onData(data: Buffer) {
-    console.log(`Received data: ${data.toString()}`);
+    this._buffer += data.toString();
+
+    // Electrum uses line-delimited JSON-RPC, split by newlines
+    const lines = this._buffer.split('\n');
+    console.log('lines: ', lines);
+
+    this._buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line) continue;
+
+      try {
+        const response = JSON.parse(line);
+
+        if (this.callbackMap.has(response.id)) {
+          const { resolve, reject } = this.callbackMap.get(response.id)!;
+
+          if (response.error) reject(response.error);
+          else resolve(response.result);
+
+          this.callbackMap.delete(response.id);
+        }
+        else {
+          console.error('No callback found for response: ', response);
+        }
+
+      } catch (error) {
+        console.error('Error parsing line: ', line);
+      }
+    }
+
   }
 
-  private async request(method: string, params: any[]) {
+  private async request(method: string, params: string[] = []) {
     return new Promise((resolve, reject) => {
       const id = ++this.requestId;
 
@@ -87,4 +126,18 @@ export class ElectrumClient {
       this.conn.write(payload);
     })
   }
+
+  // Should return an array of two strings:
+  // [server_version, protocol_version]
+  public async getServerVersion(): Promise<string[]> {
+    const result = await this.request('server.version', ['bitcointools.landaverde.io', '1.4.1']);
+
+    if (Array.isArray(result) && result.length === 2) {
+      return result as [string, string];
+    }
+
+    throw new Error('Invalid server.version response');
+  }
+
+
 }

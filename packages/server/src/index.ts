@@ -18,7 +18,7 @@ const app = express();
 
 
 const electrumClient = new ElectrumClient("electrum.blockstream.info", 50002, true);
-electrumClient.connect();
+electrumClient.connect()
 
 
 // Environment-based CORS configuration
