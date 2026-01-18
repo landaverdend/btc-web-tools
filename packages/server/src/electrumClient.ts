@@ -105,7 +105,7 @@ export class ElectrumClient {
 
   }
 
-  private async request(method: string, params: string[] = []) {
+  private async request(method: string, params: any[] = []) {
     return new Promise((resolve, reject) => {
       const id = ++this.requestId;
 
@@ -139,5 +139,13 @@ export class ElectrumClient {
     throw new Error('Invalid server.version response');
   }
 
+  public async getTx(txid: string, verbose: boolean = false): Promise<any> {
+    const result = await this.request("blockchain.transaction.get", [txid, verbose])  
 
+    if (result) {
+      return result;
+    }
+
+    throw new Error('Transaction not found...')
+  }
 }

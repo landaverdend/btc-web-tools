@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { TokenFetcher } from './token.js';
 import { ResponseCache } from './ResponseCache.js';
 import { ElectrumClient } from './electrumClient.js';
 
@@ -19,7 +18,6 @@ const app = express();
 
 const electrumClient = new ElectrumClient("electrum.blockstream.info", 50002, true);
 electrumClient.connect()
-
 
 // Environment-based CORS configuration
 function getAllowedOrigins(): string[] {
@@ -54,38 +52,10 @@ const BASE_TESTNET_URL = 'https://blockstream.info/testnet/api/';
 // Initialize the FIFO cache with a reasonable size limit
 const responseCache = new ResponseCache(1000);
 
-type Config = {
-  type: 'hex' | 'json';
-  testnet?: boolean;
-};
-async function fetchTx(txid: string, { type, testnet }: Config) {
-  const accessToken = await TokenFetcher.getToken();
-  let url = `${testnet ? BASE_TESTNET_URL : BASE_URL}tx/${txid}`;
-
-  if (type === 'hex') {
-    url += '/hex';
-  }
-
-  const options = {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
-
-  return fetch(url, options);
-}
-
 app.get('/tx/:txid', async (req, res) => {
   const { txid } = req.params;
-  const { testnet } = req.query;
-
-  const useTestnet = testnet === 'true';
-
-  // Generate cache key that includes testnet flag
   const cacheKey = txid;
 
-  // Check cache first
   const cachedResult = responseCache.get(cacheKey);
   if (cachedResult) {
     res.status(200).send(cachedResult);
@@ -93,76 +63,61 @@ app.get('/tx/:txid', async (req, res) => {
   }
 
   try {
-    const jsonResponse = await fetchTx(txid, { type: 'json', testnet: useTestnet });
-    const hexResponse = await fetchTx(txid, { type: 'hex', testnet: useTestnet });
+    const result = await electrumClient.getTx(txid);
 
-    if (jsonResponse.status !== 200) {
-      throw new Error(`Fetch failed: ${jsonResponse.statusText}`);
-    }
-    if (hexResponse.status !== 200) {
-      throw new Error(`Fetch failed: ${hexResponse.statusText}`);
-    }
-
-    const data = await jsonResponse.json();
-    const hexData = await hexResponse.text();
-
-    const result = {
-      serializedTx: hexData,
-      txJson: data,
-    };
-
-    // Cache the result
-    responseCache.set(cacheKey, result);
+    // TODO: Convert the rawTX to JSON prettified format
 
     res.status(200).send(result);
+
+    responseCache.set(cacheKey, result);
   } catch (error) {
     const errortxt = error instanceof Error ? error.message : 'Generic error';
     res.status(500).send(errortxt);
   }
 });
 
-app.get('/address/:address/utxo', async (req, res) => {
-  const { address } = req.params;
-  const { testnet } = req.query;
+// app.get('/address/:address/utxo', async (req, res) => {
+//   const { address } = req.params;
+//   const { testnet } = req.query;
 
-  const useTestnet = testnet === 'true';
-  const accessToken = await TokenFetcher.getToken();
+//   const useTestnet = testnet === 'true';
+//   const accessToken = await TokenFetcher.getToken();
 
-  const url = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}address/${address}/utxo`;
+//   const url = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}address/${address}/utxo`;
 
-  const options = {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
+//   const options = {
+//     method: 'GET',
+//     headers: {
+//       Authorization: `Bearer ${accessToken}`,
+//     },
+//   };
 
-  try {
-    const response = await fetch(url, options);
+//   try {
+//     const response = await fetch(url, options);
 
-    if (response.status !== 200) {
-      throw new Error(`Fetch failed: ${response.statusText}`);
-    }
+//     if (response.status !== 200) {
+//       throw new Error(`Fetch failed: ${response.statusText}`);
+//     }
 
-    const data = await response.json();
+//     const data = await response.json();
 
-    // add scriptpubkey to data each utxo...
-    const toRet = [];
-    for (const utxo of data) {
-      const txJson = await fetchTx(utxo.txid, { type: 'json', testnet: useTestnet });
-      const txJsonData = await txJson.json();
+//     // add scriptpubkey to data each utxo...
+//     const toRet = [];
+//     for (const utxo of data) {
+//       const txJson = await fetchTx(utxo.txid, { type: 'json', testnet: useTestnet });
+//       const txJsonData = await txJson.json();
 
-      const scriptpubkey = txJsonData.vout[utxo.vout].scriptpubkey;
-      toRet.push({ ...utxo, scriptpubkey });
-    }
+//       const scriptpubkey = txJsonData.vout[utxo.vout].scriptpubkey;
+//       toRet.push({ ...utxo, scriptpubkey });
+//     }
 
-    res.status(200).send(toRet);
-  } catch (error) {
-    const errortext = error instanceof Error ? error.message : 'Generic Error';
-    console.error(errortext);
-    res.status(500).send(errortext);
-  }
-});
+//     res.status(200).send(toRet);
+//   } catch (error) {
+//     const errortext = error instanceof Error ? error.message : 'Generic Error';
+//     console.error(errortext);
+//     res.status(500).send(errortext);
+//   }
+// });
 
 // Serve static files from the public directory
 app.use(express.static('public'));
