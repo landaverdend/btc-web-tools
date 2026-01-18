@@ -5,6 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { ResponseCache } from './ResponseCache.js';
 import { ElectrumClient } from './electrumClient.js';
+import * as bitcoin from 'bitcoinjs-lib'
+
 
 dotenv.config();
 
@@ -46,9 +48,6 @@ app.use(
   })
 );
 
-const BASE_URL = 'https://blockstream.info/api/';
-const BASE_TESTNET_URL = 'https://blockstream.info/testnet/api/';
-
 // Initialize the FIFO cache with a reasonable size limit
 const responseCache = new ResponseCache(1000);
 
@@ -58,14 +57,13 @@ app.get('/tx/:txid', async (req, res) => {
 
   const cachedResult = responseCache.get(cacheKey);
   if (cachedResult) {
+    console.log('cachedResult: ', cachedResult);
     res.status(200).send(cachedResult);
     return;
   }
 
   try {
     const result = await electrumClient.getTx(txid);
-
-    // TODO: Convert the rawTX to JSON prettified format
 
     res.status(200).send(result);
 
@@ -75,6 +73,11 @@ app.get('/tx/:txid', async (req, res) => {
     res.status(500).send(errortxt);
   }
 });
+
+app.get('/address/:address', async (req, res) => {
+  const { address } = req.params;
+});
+
 
 // app.get('/address/:address/utxo', async (req, res) => {
 //   const { address } = req.params;

@@ -40,8 +40,8 @@ export type TxMetadata = {
   };
 };
 
-async function fetchTx(txid: string, testnet = false): Promise<APIResponse> {
-  const url = `/tx/${txid}${testnet ? '?testnet=true' : ''}`;
+async function fetchTx(txid: string,): Promise<APIResponse> {
+  const url = `/tx/${txid}`;
 
   const response = await fetch(url);
   if (response.status !== 200) {
@@ -67,18 +67,4 @@ export type Utxo = {
   };
 };
 
-async function fetchUtxo(address: string, testnet = false) {
-  const url = `/address/${address}/utxo${testnet ? '?testnet=true' : ''}`;
-
-  const response = await fetch(url);
-
-  if (response.status !== 200) {
-    const errorText = await response.text();
-    throw new Error(`${errorText ? `${errorText}` : ''}`);
-  }
-
-  const data = (await response.json()) as Utxo[];
-  return data;
-}
-
-export { fetchTx, fetchUtxo };
+export { fetchTx };

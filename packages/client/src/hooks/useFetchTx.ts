@@ -5,8 +5,7 @@ export function useFetchTx() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // The General Idea: Fetch the transaction, set the selected input to zero.
-  const fetchTransaction = async (txid: string, testnet: boolean) => {
+  const fetchTransaction = async (txid: string) => {
     if (!txid) {
       setError('Missing txid');
       return;
@@ -14,7 +13,7 @@ export function useFetchTx() {
 
     setIsLoading(true);
     try {
-      const response = await fetchTx(txid, testnet);
+      const response = await fetchTx(txid);
 
       setError(null);
       return response;

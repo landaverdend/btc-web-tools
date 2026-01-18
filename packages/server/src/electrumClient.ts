@@ -76,7 +76,6 @@ export class ElectrumClient {
 
     // Electrum uses line-delimited JSON-RPC, split by newlines
     const lines = this._buffer.split('\n');
-    console.log('lines: ', lines);
 
     this._buffer = lines.pop() || '';
 

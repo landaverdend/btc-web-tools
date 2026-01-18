@@ -83,11 +83,10 @@ function DemoTxsDropdown({ fetchDemo, selectedDemo }: DemoTxsDropdownProps) {
                   fetchDemo(option.value);
                   setIsOpen(false);
                 }}
-                className={`w-full px-3 py-2 text-sm text-left hover:bg-[#252525] transition-colors cursor-pointer ${
-                  selectedDemo === option.value
+                className={`w-full px-3 py-2 text-sm text-left hover:bg-[#252525] transition-colors cursor-pointer ${selectedDemo === option.value
                     ? 'text-[#f7931a] bg-[#f7931a]/10'
                     : 'text-gray-300'
-                }`}
+                  }`}
               >
                 {option.label}
               </button>
@@ -135,7 +134,7 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
     reset();
     resetTxStore();
 
-    const response = await fetchTransaction(txidf || txid, false);
+    const response = await fetchTransaction(txidf || txid);
 
     if (response) {
       const tx = Tx.fromHex(response.serializedTx);
@@ -184,9 +183,8 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
           value={txid}
           onChange={(e) => setTxid(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleFetch()}
-          className={`w-full px-3 py-2 bg-[#1a1a1a] border rounded-lg text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-[#f7931a]/50 transition-colors ${
-            error ? 'border-red-500/50' : 'border-[#2a2a2a]'
-          }`}
+          className={`w-full px-3 py-2 bg-[#1a1a1a] border rounded-lg text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-[#f7931a]/50 transition-colors ${error ? 'border-red-500/50' : 'border-[#2a2a2a]'
+            }`}
         />
 
         {error && <p className="text-red-400 text-xs">{error}</p>}
@@ -293,24 +291,21 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
                 <button
                   key={i}
                   onClick={() => handleSelectInput(i)}
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all cursor-pointer ${
-                    isActive
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all cursor-pointer ${isActive
                       ? 'bg-[#f7931a]/10 border border-[#f7931a]/30'
                       : 'bg-[#1a1a1a] border border-transparent hover:border-[#2a2a2a]'
-                  }`}
+                    }`}
                 >
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                    isActive ? 'bg-[#f7931a]/20 text-[#f7931a]' : 'bg-[#252525] text-gray-500'
-                  }`}>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isActive ? 'bg-[#f7931a]/20 text-[#f7931a]' : 'bg-[#252525] text-gray-500'
+                    }`}>
                     {i}
                   </span>
                   <span className="text-xs text-purple-400 font-medium">
                     {input.prevout?.scriptpubkey_type}
                   </span>
                   <CopyHover>
-                    <span className={`text-xs font-mono truncate max-w-[120px] ${
-                      isActive ? 'text-[#22c55e]' : 'text-gray-500'
-                    }`}>
+                    <span className={`text-xs font-mono truncate max-w-[120px] ${isActive ? 'text-[#22c55e]' : 'text-gray-500'
+                      }`}>
                       {input.txid}
                     </span>
                   </CopyHover>
