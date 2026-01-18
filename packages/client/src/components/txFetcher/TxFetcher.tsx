@@ -6,6 +6,7 @@ import Tx from '@/btclib/transaction/Tx';
 import { useScriptEditorStore } from '@/state/scriptEditorStore';
 import { useScriptDebugger } from '@/hooks/useScriptDebugger';
 import { UnlockingScriptBuilder } from '@/btclib/script/UnlockingScriptBuilder';
+import { buildTxMetadata } from '@/btclib/util/txMetadataBuilder';
 import AlertIcon from '@assets/icons/alert.svg?react';
 import { SvgTooltip } from '@/views/scriptView/debugControls/DebugControls';
 import { CopyHover } from '../copyHover/CopyHover';
@@ -114,7 +115,7 @@ type TxFetcherProps = {
 };
 
 export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputSelector, buildScript }: TxFetcherProps) {
-  const { reset: resetTxStore, setTransaction, setParents, setTx } = useTxStore();
+  const { reset: resetTxStore, setTransaction, setParents, setTx, setTxMetadata } = useTxStore();
   const { fetchTransaction, error, isLoading } = useFetchTx();
   const { reset, stopDebugger } = useScriptDebugger();
 
@@ -145,6 +146,10 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
     // Create and store the custom Tx for byte encoding display
     const customTx = Tx.fromHex(response.transaction.toHex());
     setTx(customTx);
+
+    // Build and store TxMetadata for script execution
+    const metadata = buildTxMetadata(response.transaction, response.parents);
+    setTxMetadata(metadata);
 
     if (response && buildScript) {
       // const tx = Tx.fromHex(response.hex);
@@ -247,12 +252,12 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
   const isCoinbase = tx?.isCoinbase;
   const showInputs = txMetadata && !isCoinbase && includeInputSelector;
 
-  const handleSelectInput = (inputIndex: number) => {
-    setSelectedInput(inputIndex);
+  const buildScriptForInput = (inputIndex: number) => {
+    if (!tx || !txMetadata) return;
 
     const script = UnlockingScriptBuilder.buildUnlockingScript({
-      tx: tx!,
-      txMetadata: txMetadata!,
+      tx: tx,
+      txMetadata: txMetadata,
       selectedInputIndex: inputIndex,
     });
 
@@ -260,6 +265,18 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
     setScriptASM(script.toString());
     setScriptHex(script.toHex(false, false));
   };
+
+  const handleSelectInput = (inputIndex: number) => {
+    setSelectedInput(inputIndex);
+    buildScriptForInput(inputIndex);
+  };
+
+  // Automatically build script for input 0 when transaction is loaded
+  useEffect(() => {
+    if (tx && txMetadata && !isCoinbase && includeInputSelector) {
+      buildScriptForInput(selectedInput);
+    }
+  }, [txMetadata?.txid]); // Only run when a new transaction is loaded
 
   if (!txMetadata) return null;
 
