@@ -14,7 +14,6 @@ export const APP_ROUTES = {
 };
 
 export default function App() {
-  console.log('A change was pushed!');
   return (
     <BrowserRouter>
       <Navbar />
