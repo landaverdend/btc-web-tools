@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { ResponseCache } from './ResponseCache.js';
 import { ElectrumClient } from './electrumClient.js';
-import * as bitcoin from 'bitcoinjs-lib'
+import { ElectrumPool } from './electrumPool.js';
 
 
 dotenv.config();
@@ -17,9 +17,7 @@ const PORT = parseInt(process.env['PORT'] || '3000', 10);
 
 const app = express();
 
-
-const electrumClient = new ElectrumClient("electrum.blockstream.info", 50002, true);
-electrumClient.connect()
+const electrumPool = new ElectrumPool();
 
 // Environment-based CORS configuration
 function getAllowedOrigins(): string[] {
@@ -63,6 +61,7 @@ app.get('/tx/:txid', async (req, res) => {
   }
 
   try {
+    const electrumClient = await electrumPool.getConnection();
     const result = await electrumClient.getTx(txid);
 
     res.status(200).send(result);
@@ -73,54 +72,6 @@ app.get('/tx/:txid', async (req, res) => {
     res.status(500).send(errortxt);
   }
 });
-
-app.get('/address/:address', async (req, res) => {
-  const { address } = req.params;
-});
-
-
-// app.get('/address/:address/utxo', async (req, res) => {
-//   const { address } = req.params;
-//   const { testnet } = req.query;
-
-//   const useTestnet = testnet === 'true';
-//   const accessToken = await TokenFetcher.getToken();
-
-//   const url = `${useTestnet ? BASE_TESTNET_URL : BASE_URL}address/${address}/utxo`;
-
-//   const options = {
-//     method: 'GET',
-//     headers: {
-//       Authorization: `Bearer ${accessToken}`,
-//     },
-//   };
-
-//   try {
-//     const response = await fetch(url, options);
-
-//     if (response.status !== 200) {
-//       throw new Error(`Fetch failed: ${response.statusText}`);
-//     }
-
-//     const data = await response.json();
-
-//     // add scriptpubkey to data each utxo...
-//     const toRet = [];
-//     for (const utxo of data) {
-//       const txJson = await fetchTx(utxo.txid, { type: 'json', testnet: useTestnet });
-//       const txJsonData = await txJson.json();
-
-//       const scriptpubkey = txJsonData.vout[utxo.vout].scriptpubkey;
-//       toRet.push({ ...utxo, scriptpubkey });
-//     }
-
-//     res.status(200).send(toRet);
-//   } catch (error) {
-//     const errortext = error instanceof Error ? error.message : 'Generic Error';
-//     console.error(errortext);
-//     res.status(500).send(errortext);
-//   }
-// });
 
 // Serve static files from the public directory
 app.use(express.static('public'));

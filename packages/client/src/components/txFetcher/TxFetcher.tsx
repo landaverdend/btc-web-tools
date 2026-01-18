@@ -137,7 +137,7 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
     const response = await fetchTransaction(txidf || txid);
 
     if (response) {
-      const tx = Tx.fromHex(response.serializedTx);
+      const tx = Tx.fromHex(response);
       const script = UnlockingScriptBuilder.buildUnlockingScript({ tx: tx, txMetadata: response.txJson, selectedInputIndex: 0 });
 
       setScript(script);

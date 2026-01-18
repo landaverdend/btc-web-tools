@@ -1,5 +1,7 @@
+import Tx from '@/btclib/transaction/Tx';
 import { fetchTx } from '@api/api';
 import { useState } from 'react';
+import * as bitcoin from 'bitcoinjs-lib'
 
 export function useFetchTx() {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,6 +17,12 @@ export function useFetchTx() {
     try {
       const response = await fetchTx(txid);
 
+      const tx = Tx.fromHex(response);
+      const txJson = bitcoin.Transaction.fromHex(response);
+
+      console.log('My tx object: ', tx)
+      console.log('Bitcoinjs tx object: ', txJson);
+    
       setError(null);
       return response;
     } catch (error) {

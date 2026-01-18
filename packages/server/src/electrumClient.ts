@@ -2,13 +2,6 @@ import net from 'net';
 import tls from 'tls';
 
 
-const ELECTRUM_SERVERS = {
-  "electrum.blockstream.info": {
-    port: 50002,
-    useSSL: true,
-  },
-}
-
 type Callbacks = {
   resolve: (result: any) => void;
   reject: (error: any) => void;
@@ -23,7 +16,7 @@ export class ElectrumClient {
   private _buffer: string = '';
 
 
-  constructor(private host: string, private port: number, private useSSL: boolean = false) {
+  constructor(private host: string, private port: number, private useSSL: boolean = false, private onDisconnect: () => void) {
     this.host = host;
     this.port = port;
     this.useSSL = useSSL;
@@ -32,6 +25,7 @@ export class ElectrumClient {
 
     this.requestId = 0;
     this.callbackMap = new Map<number, Callbacks>();
+    this.onDisconnect = onDisconnect;
   }
 
   // Create the connection and make the first on the wire request for the electrum protocol
@@ -61,10 +55,14 @@ export class ElectrumClient {
       }
 
       this.conn.on('data', (data) => this._onData(data));
-      this.conn.on('error', reject);
+      this.conn.on('error', (err) => {
+        this.onDisconnect();
+        reject(err);
+      });
 
       this.conn.on('close', () => {
         console.log(`Disconnected from ${this.host}:${this.port}`);
+        this.onDisconnect();
         reject(new Error('Disconnected from electrum server'));
       });
     })
@@ -139,7 +137,7 @@ export class ElectrumClient {
   }
 
   public async getTx(txid: string, verbose: boolean = false): Promise<any> {
-    const result = await this.request("blockchain.transaction.get", [txid, verbose])  
+    const result = await this.request("blockchain.transaction.get", [txid, verbose])
 
     if (result) {
       return result;

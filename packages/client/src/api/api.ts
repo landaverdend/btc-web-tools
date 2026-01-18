@@ -1,7 +1,3 @@
-export type APIResponse = {
-  serializedTx: string;
-  txJson: TxMetadata; // basically parent map that holds a bunch of the transaction data, alongside previous input stuff
-};
 
 export type Vin = {
   txid: string;
@@ -40,7 +36,7 @@ export type TxMetadata = {
   };
 };
 
-async function fetchTx(txid: string,): Promise<APIResponse> {
+async function fetchTx(txid: string,): Promise<string> {
   const url = `/tx/${txid}`;
 
   const response = await fetch(url);
@@ -50,8 +46,7 @@ async function fetchTx(txid: string,): Promise<APIResponse> {
     throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
   }
 
-  const data = (await response.json()) as APIResponse;
-  return data;
+  return (await response.text());
 }
 
 export type Utxo = {
