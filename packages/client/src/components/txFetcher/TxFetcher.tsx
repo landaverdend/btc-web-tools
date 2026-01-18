@@ -84,8 +84,8 @@ function DemoTxsDropdown({ fetchDemo, selectedDemo }: DemoTxsDropdownProps) {
                   setIsOpen(false);
                 }}
                 className={`w-full px-3 py-2 text-sm text-left hover:bg-[#252525] transition-colors cursor-pointer ${selectedDemo === option.value
-                    ? 'text-[#f7931a] bg-[#f7931a]/10'
-                    : 'text-gray-300'
+                  ? 'text-[#f7931a] bg-[#f7931a]/10'
+                  : 'text-gray-300'
                   }`}
               >
                 {option.label}
@@ -110,12 +110,11 @@ type TxFetcherProps = {
   includeDemoTxs?: boolean;
   includeTaprootWarning?: boolean;
   includeInputSelector?: boolean;
-  standalone?: boolean;
+  buildScript?: boolean; // whether or not the script state variables should be set
 };
 
-export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputSelector, standalone }: TxFetcherProps) {
-  const { reset: resetTxStore, setSelectedInput, setTxMetadata, setTx } = useTxStore();
-  const { setScript, setScriptASM, setScriptHex } = useScriptEditorStore();
+export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputSelector, buildScript }: TxFetcherProps) {
+  const { reset: resetTxStore, setTransaction, setParents, setTx } = useTxStore();
   const { fetchTransaction, error, isLoading } = useFetchTx();
   const { reset, stopDebugger } = useScriptDebugger();
 
@@ -135,18 +134,29 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
     resetTxStore();
 
     const response = await fetchTransaction(txidf || txid);
+    if (!response) {
+      alert('Failed to fetch transaction');
+      return;
+    }
 
-    if (response) {
-      const tx = Tx.fromHex(response);
-      const script = UnlockingScriptBuilder.buildUnlockingScript({ tx: tx, txMetadata: response.txJson, selectedInputIndex: 0 });
+    setTransaction(response.transaction);
+    setParents(response.parents);
 
-      setScript(script);
-      setScriptASM(script.toString());
-      setScriptHex(script.toHex(false, false));
+    // Create and store the custom Tx for byte encoding display
+    const customTx = Tx.fromHex(response.transaction.toHex());
+    setTx(customTx);
 
-      setSelectedInput(0);
-      setTxMetadata(response.txJson);
-      setTx(tx);
+    if (response && buildScript) {
+      // const tx = Tx.fromHex(response.hex);
+      // const script = UnlockingScriptBuilder.buildUnlockingScript({ tx: tx, txMetadata: response.txJson, selectedInputIndex: 0 });
+
+      // setScript(script);
+      // setScriptASM(script.toString());
+      // setScriptHex(script.toHex(false, false));
+
+      // setSelectedInput(0);
+      // // setTxMetadata(response.txJson);
+      // setTx(tx);
     }
   };
 
@@ -212,7 +222,7 @@ export function TxFetcher({ includeDemoTxs, includeTaprootWarning, includeInputS
     </div>
   );
 
-  if (standalone) {
+  if (!buildScript) {
     return (
       <div className="flex flex-col p-4 min-w-[280px] max-w-[320px] bg-gradient-to-b from-[#1a1a1a] to-[#151515] rounded-xl border border-[#2a2a2a] h-fit">
         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#2a2a2a]">
@@ -292,8 +302,8 @@ function TxDetails({ includeInputSelector }: TxDetailsProps) {
                   key={i}
                   onClick={() => handleSelectInput(i)}
                   className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all cursor-pointer ${isActive
-                      ? 'bg-[#f7931a]/10 border border-[#f7931a]/30'
-                      : 'bg-[#1a1a1a] border border-transparent hover:border-[#2a2a2a]'
+                    ? 'bg-[#f7931a]/10 border border-[#f7931a]/30'
+                    : 'bg-[#1a1a1a] border border-transparent hover:border-[#2a2a2a]'
                     }`}
                 >
                   <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isActive ? 'bg-[#f7931a]/20 text-[#f7931a]' : 'bg-[#252525] text-gray-500'

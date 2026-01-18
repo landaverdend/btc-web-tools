@@ -21,7 +21,7 @@ export default function App() {
         <Route path={APP_ROUTES.Script} element={<ScriptView />} />
         <Route path={APP_ROUTES.Tx} element={<TxView />} />
         <Route path={APP_ROUTES.Merkle} element={<MerkleView />} />
-        <Route path={APP_ROUTES.Home} element={<Navigate to={APP_ROUTES.About} replace />} />
+        <Route path={APP_ROUTES.Home} element={<Navigate to={APP_ROUTES.Tx} replace />} />
         <Route path={APP_ROUTES.About} element={<AboutView />} />
       </Routes>
     </BrowserRouter>

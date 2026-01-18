@@ -17,13 +17,17 @@ export function useFetchTx() {
     try {
       const response = await fetchTx(txid);
 
-      const tx = Tx.fromHex(response.hex);
-      for (const parent of Object.values(response.parents)) {
-        const parentTx = Tx.fromHex(parent);
+      const tx = bitcoin.Transaction.fromHex(response.hex);
+
+      const parents: Record<string, bitcoin.Transaction> = {};
+
+      for (const [key, value] of Object.entries(response.parents)) {
+        const parentTx = bitcoin.Transaction.fromHex(value);
+        parents[key] = parentTx;
       }
 
       setError(null);
-      return response;
+      return { transaction: tx, parents };
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Unknown error');
     } finally {

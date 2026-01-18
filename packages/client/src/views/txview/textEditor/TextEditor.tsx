@@ -5,8 +5,15 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import { useTxStore } from '@/state/txStore';
+import { useMemo } from 'react';
+
 export default function TextEditor() {
-  const { txMetadata } = useTxStore();
+  const { tx } = useTxStore();
+
+  const txJson = useMemo(() => {
+    if (!tx) return '';
+    return tx.formatLE();
+  }, [tx])
 
   return (
     <div className="flex flex-1 flex-col sm:w-auto">
@@ -14,8 +21,8 @@ export default function TextEditor() {
       <AceEditor
         mode="json"
         theme="twilight"
-        value={txMetadata ? JSON.stringify(txMetadata, null, 2) : ''}
-        onChange={() => {}}
+        value={JSON.stringify(txJson, null, 2)}
+        onChange={() => { }}
         setOptions={{
           showPrintMargin: false,
           showGutter: true,
