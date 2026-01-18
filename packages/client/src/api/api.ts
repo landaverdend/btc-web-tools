@@ -36,7 +36,12 @@ export type TxMetadata = {
   };
 };
 
-async function fetchTx(txid: string,): Promise<string> {
+export type EnrichedTxResponse = {
+  hex: string;
+  parents: Record<string, string>;
+}
+
+async function fetchTx(txid: string,): Promise<EnrichedTxResponse> {
   const url = `/tx/${txid}`;
 
   const response = await fetch(url);
@@ -46,7 +51,7 @@ async function fetchTx(txid: string,): Promise<string> {
     throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
   }
 
-  return (await response.text());
+  return (await response.json()) as EnrichedTxResponse;
 }
 
 export type Utxo = {

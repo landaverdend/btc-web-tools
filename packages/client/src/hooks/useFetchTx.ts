@@ -17,12 +17,11 @@ export function useFetchTx() {
     try {
       const response = await fetchTx(txid);
 
-      const tx = Tx.fromHex(response);
-      const txJson = bitcoin.Transaction.fromHex(response);
+      const tx = Tx.fromHex(response.hex);
+      for (const parent of Object.values(response.parents)) {
+        const parentTx = Tx.fromHex(parent);
+      }
 
-      console.log('My tx object: ', tx)
-      console.log('Bitcoinjs tx object: ', txJson);
-    
       setError(null);
       return response;
     } catch (error) {

@@ -4,9 +4,8 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { ResponseCache } from './ResponseCache.js';
-import { ElectrumClient } from './electrumClient.js';
 import { ElectrumPool } from './electrumPool.js';
-
+import * as bitcoin from 'bitcoinjs-lib';
 
 dotenv.config();
 
@@ -55,18 +54,32 @@ app.get('/tx/:txid', async (req, res) => {
 
   const cachedResult = responseCache.get(cacheKey);
   if (cachedResult) {
-    console.log('cachedResult: ', cachedResult);
     res.status(200).send(cachedResult);
     return;
   }
 
   try {
     const electrumClient = await electrumPool.getConnection();
-    const result = await electrumClient.getTx(txid);
+    const initialTxResult = await electrumClient.getTx(txid);
 
-    res.status(200).send(result);
+    const initialTx = bitcoin.Transaction.fromHex(initialTxResult);
 
-    responseCache.set(cacheKey, result);
+    // Grab the associated parent TXs for each input...
+    const parents: Record<string, string> = {};
+    for (const input of initialTx.ins) {
+      const prevTxId = Buffer.from(input.hash).reverse().toString('hex'); 
+      const raw = await electrumClient.getTx(prevTxId);
+      parents[prevTxId] = raw;
+    }
+
+    const response = {
+      hex: initialTxResult,
+      parents 
+    }
+
+    res.status(200).send(response);
+
+    responseCache.set(cacheKey, response);
   } catch (error) {
     const errortxt = error instanceof Error ? error.message : 'Generic error';
     res.status(500).send(errortxt);
